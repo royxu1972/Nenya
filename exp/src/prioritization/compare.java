@@ -2,6 +2,9 @@ package prioritization;
 
 import Basic.TestSuite;
 import Generation.AETG;
+import Prioritization.ReorderArray;
+
+import java.util.ArrayList;
 
 public class compare {
 
@@ -17,8 +20,10 @@ public class compare {
         gen.Generation(ts);
 
         System.out.println(gen.getSize());
-        //Calculator calculator = new Calculator();
-        //int sum = calculator.evaluate("1+2+3");
-        //assertEquals(6, sum);
+        ReorderArray re = new ReorderArray();
+
+        ArrayList<int[]> data = new ArrayList<int[]>();
+        re.toMultiObjective(ts, data);
+
     }
 }

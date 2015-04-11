@@ -48,7 +48,7 @@ dependencies {
 uploadArchives {
     repositories {
         flatDir {
-            dirs 'Exp/lib'
+            dirs 'repos'
         }
     }
 }

@@ -6,6 +6,8 @@ import Prioritization.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 public class order {
 
     private TestSuite ts ;
@@ -39,6 +41,13 @@ public class order {
 
         this.re.toLKHSwitchOrder(ts);
         System.out.println("LKH (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
+    }
+
+    @Test
+    public void testMO() {
+        System.out.println("Multi-Objective Optimization");
+        ArrayList<int[]> d = new ArrayList<int[]>();
+        this.re.toMultiObjective(ts, d);
     }
 
     @Test

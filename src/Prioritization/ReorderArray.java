@@ -174,4 +174,17 @@ public class ReorderArray {
         else
             System.err.println("solver is not run correctly");
     }
+
+    /*
+     *  Multi-Objective Optimization to balance combination coverage and switching cost
+     *  NSGA-II will return a set of near optimal non-dominated solutions, which will be
+     *  saved in ArrayList<int[]> data
+     */
+    public void toMultiObjective( TestSuite test, ArrayList<int[]> data ) {
+        MEvolution me = new MEvolution(40, 1000, 0.8, 0.4, test);
+        me.evolve();
+        me.printPool();
+        me.assignBestFront(data);
+    }
+
 }

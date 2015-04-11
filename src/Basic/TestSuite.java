@@ -34,6 +34,11 @@ public class TestSuite {
         return "CA(" + system.tway + "," + system.parameter + "," + system.value[0] + ")" ;
     }
 
+    public int getTestSuiteSize() {
+        return this.tests.length ;
+    }
+
+
     /*--------------------------------------------------------------------
      * Switching Cost Based and Combination Coverage Based Prioritization
      ---------------------------------------------------------------------*/
