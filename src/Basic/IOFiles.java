@@ -4,8 +4,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 1) Read CA file (.txt) for updating parameter, value, CArray, and CSize
@@ -47,7 +45,7 @@ public class IOFiles {
                 value[k] = Integer.valueOf(tmp[k]);
 
             // CA
-            CA = new ArrayList();
+            CA = new ArrayList<int[]>();
             String str = reader.readLine() ;
             str = str.trim();
             if( str.equals("begin")) {

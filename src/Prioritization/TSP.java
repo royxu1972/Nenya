@@ -121,7 +121,7 @@ public class TSP {
      */
     public void GA(int population, int iteration, double Pc, double Pm) {
         // initialize candidate randomly
-        ArrayList<int[]> candidate = new ArrayList();
+        ArrayList<int[]> candidate = new ArrayList<int[]>();
         for (int i = 0; i < population; i++) {
             int[] can = new int[this.node_num];
             int[] assigned = new int[this.node_num];
@@ -154,12 +154,12 @@ public class TSP {
             }
 
             // regenerate candidate
-            ArrayList<int[]> nextg = new ArrayList();
+            ArrayList<int[]> nextg = new ArrayList<int[]>();
             while (nextg.size() < population) {
                 // selection
                 int par1 = this.GA_selection(fitness_all);
                 int par2 = this.GA_selection(fitness_all);
-                ArrayList<int[]> child = new ArrayList();
+                ArrayList<int[]> child = new ArrayList<int[]>();
 
                 // crossover
                 double alpha = random.nextDouble();
@@ -237,10 +237,10 @@ public class TSP {
             remain[k] = 0;
         int remain_count = this.node_num;
 
-        Map<Integer, Set> edgemap = new HashMap();
+        Map<Integer, Set<Integer>> edgemap = new HashMap<Integer, Set<Integer>>();
         // for each vertex
         for (int i = 0; i < this.node_num; i++) {
-            Set<Integer> temp = new HashSet();
+            Set<Integer> temp = new HashSet<Integer>();
 
             for (int k = 0; k < par1.length; k++) {
                 if (par1[k] == i) {
@@ -270,8 +270,8 @@ public class TSP {
         int index = 0;
 
         // the first one
-        int f1 = ((Set) edgemap.get(par1[index])).size();
-        int f2 = ((Set) edgemap.get(par2[index])).size();
+        int f1 = edgemap.get(par1[index]).size();
+        int f2 = edgemap.get(par2[index]).size();
         if (f1 < f2)
             child[index] = par1[index];
         else if (f1 > f2)
@@ -287,24 +287,24 @@ public class TSP {
         while (true) {
             // remove all occurrences of the current vertex (child[index])
             Set<Integer> tp_set = edgemap.remove(child[index - 1]);
-            for (Map.Entry<Integer, Set> entry : edgemap.entrySet())
-                ((Set) entry.getValue()).remove(child[index - 1]);
+            for (Map.Entry<Integer, Set<Integer>> entry : edgemap.entrySet())
+                (entry.getValue()).remove(child[index - 1]);
 
             // if the current vertex has entries
             if (!tp_set.isEmpty()) {
                 // find the vertex which has fewest entries, ties are broken at random
-                int min = 9999999;
+                int min = Integer.MAX_VALUE;
                 for (Integer t : tp_set) {
                     int esize = ((Set) edgemap.get(t)).size();
                     if (esize < min)
                         min = esize;
                 }
-                ArrayList<Integer> temp = new ArrayList();
+                ArrayList<Integer> temp = new ArrayList<Integer>();
                 for (Integer t : tp_set) {
                     if (((Set) edgemap.get(t)).size() == min)
                         temp.add(t);
                 }
-                int min_index = (int) temp.get(random.nextInt(temp.size()));
+                int min_index = temp.get(random.nextInt(temp.size()));
 
                 // add to child
                 child[index] = min_index;
@@ -312,7 +312,7 @@ public class TSP {
                 remain_count--;
                 index++;
             }
-            // if there are no remaining unvisited vertexs, exit
+            // if there are no remaining unvisited vertexes, exit
             else if (remain_count == 0) {
                 break;
             }
@@ -419,8 +419,8 @@ public class TSP {
 
         //System.out.println(cut1 + " " + cut2);
         // map
-        Map<Integer, Integer> partially_1 = new HashMap();
-        Map<Integer, Integer> partially_2 = new HashMap();
+        Map<Integer, Integer> partially_1 = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> partially_2 = new HashMap<Integer, Integer>();
         for (int i = cut1 + 1; i <= cut2; i++) {
             // initial children[0] and [1]
             children[0][i] = par2[i];

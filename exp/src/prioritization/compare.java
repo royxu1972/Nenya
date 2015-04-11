@@ -1,13 +1,11 @@
-package functions;
+package prioritization;
 
 import Basic.TestSuite;
 import Generation.AETG;
-import org.junit.Test;
 
-public class gen {
-    @Test
-    public void testAETG() {
-        // SUT setting
+public class compare {
+
+    public static void main(String[] args) {
         int p = 10 ;
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
@@ -24,4 +22,3 @@ public class gen {
         //assertEquals(6, sum);
     }
 }
-

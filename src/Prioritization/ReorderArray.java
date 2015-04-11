@@ -3,7 +3,6 @@ package Prioritization;
 import Basic.SUT;
 import Basic.TestSuite;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -76,7 +75,7 @@ public class ReorderArray {
             } // end for each unselected one
                 
             // ties break
-            ArrayList<Integer> Index = new ArrayList();
+            ArrayList<Integer> Index = new ArrayList<Integer>();
             for (int k = 0; k < size; k++) {
                 if (already[k] == 0) {
                     double tp = test.distance(test.order[i-1], k);
@@ -125,7 +124,7 @@ public class ReorderArray {
             } // end for each unselected one
 
             // ties break
-            ArrayList<Integer> Index = new ArrayList();
+            ArrayList<Integer> Index = new ArrayList<Integer>();
             for (int k = 0; k < size; k++) {
                 if (already[k] == 0) {
                     double cost = test.distance(test.order[i - 1], k);

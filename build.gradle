@@ -8,6 +8,10 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 
+//compileJava {
+//    options.compilerArgs = ["-Xlint:unchecked"]
+//}
+
 sourceSets {
     main {
         java {
@@ -39,4 +43,25 @@ dependencies {
     //testCompile fileTree(dir: 'lib', include: '*.jar')
     // External dependencies
     testCompile 'junit:junit:4.+'
+}
+
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'Exp/lib'
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    version = '1.0'
+}
+
+project(':exp') {
+    dependencies {
+        compile project(':')
+    }
 }
