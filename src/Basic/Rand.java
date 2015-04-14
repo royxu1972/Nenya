@@ -25,7 +25,7 @@ public class Rand {
      *  generate a random t-way schema
      *  example: Schema(2, 4, [3, 3, 3, 3]) -> [-1, -1, 2, 0]
      */
-    public int[] Schema( int t, int p, int[] val ) {
+    public int[] Schema( int t, int p, final int[] val ) {
         int[] re = new int[p] ;
         for( int k=0 ; k<p ; k++ )
             re[k] = -1 ;
