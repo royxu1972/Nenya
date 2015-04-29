@@ -41,16 +41,7 @@ jar {
 
 dependencies {
     //testCompile fileTree(dir: 'lib', include: '*.jar')
-    // External dependencies
     testCompile 'junit:junit:4.+'
-}
-
-uploadArchives {
-    repositories {
-        flatDir {
-            dirs 'repos'
-        }
-    }
 }
 
 subprojects {
@@ -58,9 +49,7 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
     version = '1.0'
-}
 
-project(':exp') {
     dependencies {
         compile project(':')
     }

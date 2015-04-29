@@ -1,21 +1,14 @@
 import prioritization.Collection;
 import prioritization.Simulation;
 
-import java.io.IOException;
-
 public class RunExp {
 
     public static void main(String[] args) {
         Collection results = new Collection();
 
         Simulation sim = new Simulation();
-        sim.exp1(results);
+        sim.exp1("exp-1 test hybrid order", new String[]{"coverage", "random", "cost-greedy", "cost-lkh"}, results);
 
-        try {
-            results.printPlainData("data.txt");
-        } catch ( IOException e ) {
-            System.err.println(e);
-        }
-
+        results.printPlainData("data.txt");
     }
 }

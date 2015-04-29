@@ -56,14 +56,21 @@ public class TestSuite {
 
     /*
      *  set executionCost based on normal distribution N(m, s)
+     *  but if m = 0, then set execution cost = 0 for all
      */
     public void setExecutionCost( double m, double s ) {
-        Rand rd = new Rand() ;
-        for( int k=0 ; k<executionCost.length ; k++ ) {
-            double c = rd.Gaussian(m,s) ;
-            if( c < 0.0 )
-                c = 0.0 ;
-            executionCost[k] = c ;
+        if( m == 0.0 ) {
+            for( int k = 0; k < executionCost.length; k++ )
+                executionCost[k] = 0.0 ;
+        }
+        else {
+            Rand rd = new Rand();
+            for( int k = 0; k < executionCost.length; k++ ) {
+                double c = rd.Gaussian(m, s);
+                if (c < 0.0)
+                    c = 0.0;
+                executionCost[k] = c;
+            }
         }
     }
 

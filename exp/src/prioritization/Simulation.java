@@ -17,18 +17,18 @@ import java.util.Set;
  *  test sequence.
  *
  *  To cover different testing scenarios, we control the following variables:
- *  orders: random, coverage based, switching cost based
+ *  orders: random, coverage based, switching cost based (greedy and lkh)
  *  weight: the distribution of parameter weights
  *      type 1: w[i] = 1 for all i
  *      type 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remaining
- *  t: covering strength, from 2 to 3
- *  p: number of parameters, 10, 20, 30, 40, 60, 80, 100
- *  v: number of values, 2, 3, 4, 6, 8
+ *  t: covering strength, [2, 3]
+ *  p: number of parameters [10, 20, 30, 40, 60, 80, 100]
+ *  v: number of values [2, 3, 4, 6, 8]
  *
- *  For each SUT, we firstly generate a covering array, and then get its different testing
- *  orders. Then, 100 random t-way failure causing schemas are generated, and so we can get
- *  100 F(t)-values for each testing order. As the randomness should be addressed,
- *  the above process will be repeated 30 times. Finally, the average number of F(t)-value
+ *  For each SUT, 1) we generate a covering array, and then get its different testing
+ *  orders. 2) 100 random t-way failure causing schemas are generated, and so we can get
+ *  100 F(t)-values for each testing order. 3) As the randomness should be addressed,
+ *  the above process will be repeated 30 times. 4) Finally, the average value of F(t)-value
  *  from 100 * 30 samples is used as the final result.
  *
  */
@@ -72,39 +72,45 @@ public class Simulation {
      *  exp - 1
      *  t = 2, weight = normal (type-1)
      */
-    public void exp1( Collection re ) {
-        re.init("exp1, t=2, w[i]=1", new String[]{"coverage", "random", "cost"}, par, val, ratio) ;
+    public void exp1( String name, String[] label, Collection re ) {
+        re.init(name, label, this.par, this.val, this.ratio) ;
 
+        // run each SUT
         for( int i=0 ; i<par.length ; i++ ) {
             for( int j=0 ; j<val.length ; j++ ) {
-                exp1Each(i, j, re);
+                expEach(2, 1, i, j, re);
             }
         }
     }
 
-    // each value of exp 1, repeat 30 times
+    // each SUT for exp, repeat 30 times
     // par[p_index]: the number of parameter
     // val[v_index]: the number of each parameter value
-    private void exp1Each( int p_index, int v_index, Collection re ) {
+    private void expEach( int t, int type, int p_index, int v_index, Collection re ) {
         int p = par[p_index] ;
         int va = val[v_index] ;
-        int t = 2 ;
         System.out.println( "processing CA(" + t + ", " + p + ", " + va + ")" );
 
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
             v[k] = va ;
-        double[] w = weightTypeOne(p);
+
+        double[] w = weightTypeOne(p); // type - 1
+        //if( type == 2 )
+        //    w = weightTypeTwo(p);   // type - 2
 
         TestSuite ts = new TestSuite(p, v, t, w);
         AETG gen = new AETG();
         ReorderArray order = new ReorderArray();
 
+        // final results to be saved
         double[] aveCoverage = new double[ratio.length] ;
         double[] aveRand = new double[ratio.length] ;
-        double[] aveCost = new double[ratio.length] ;
+        double[] aveCost_G = new double[ratio.length] ; // greedy
+        double[] aveCost_L = new double[ratio.length] ; // lkh
+
         for( int k=0 ; k<ratio.length ; k++ )
-            aveCoverage[k] = aveRand[k] = aveCost[k] = 0.0 ;
+            aveCoverage[k] = aveRand[k] = aveCost_G[k] = aveCost_L[k] = 0.0 ;
 
         // repeat 30 times
         for( int rep = 0 ; rep < 30 ; rep++ ) {
@@ -122,33 +128,41 @@ public class Simulation {
             for( int rt = 0 ; rt < ratio.length ; rt++ ) {
                 double tpCoverage = 0.0 ;
                 double tpRand = 0.0 ;
-                double tpCost = 0.0 ;
+                double tpCost_G = 0.0 ;
+                double tpCost_L = 0.0 ;
 
                 // set execution cost
                 double exe = ts.getAverageSwitchingCost() * ratio[rt] ;
-                ts.setExecutionCost( exe, 0.5 );
+                ts.setExecutionCost(exe, 0.5);
 
                 // coverage order, default
                 order.toDefaultOrder(ts);
                 for( int[] s : ss ) {
-                    tpCoverage += ts.getFt(2, s, null);
+                    tpCoverage += ts.getFt(t, s, null);
                 }
 
                 // random order
                 order.toRandomOrder(ts);
                 for( int[] s : ss ) {
-                    tpRand += ts.getFt(2, s, null);
+                    tpRand += ts.getFt(t, s, null);
                 }
 
                 // switching cost order
+                //order.toGreedySwitchOrder(ts);
+                order.toGreedyHybridOrder(ts);
+                for( int[] s : ss ) {
+                    tpCost_G += ts.getFt(t, s, null);
+                }
+
                 order.toLKHSwitchOrder(ts);
                 for( int[] s : ss ) {
-                    tpCost += ts.getFt(2, s, null);
+                    tpCost_L += ts.getFt(t, s, null);
                 }
 
                 aveCoverage[rt] += tpCoverage / 100.0 ;
                 aveRand[rt] += tpRand / 100.0 ;
-                aveCost[rt] += tpCost / 100.0 ;
+                aveCost_G[rt] += tpCost_G / 100.0 ;
+                aveCost_L[rt] += tpCost_L / 100.0 ;
             }
         }
 
@@ -156,7 +170,8 @@ public class Simulation {
         for( int k=0 ; k<ratio.length ; k++ ) {
             re.dataValue[p_index][v_index][0][k] = aveCoverage[k] / 30.0 ;
             re.dataValue[p_index][v_index][1][k] = aveRand[k] / 30.0 ;
-            re.dataValue[p_index][v_index][2][k] = aveCost[k] / 30.0 ;
+            re.dataValue[p_index][v_index][2][k] = aveCost_G[k] / 30.0 ;
+            re.dataValue[p_index][v_index][3][k] = aveCost_L[k] / 30.0 ;
         }
 
     }

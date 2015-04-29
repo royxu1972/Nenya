@@ -4,7 +4,26 @@ sourceSets {
             srcDir 'src'
         }
         resources {
-            srcDir 'data'
+            srcDir 'resources'
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'RunExp'
+    }
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'resources'
         }
     }
 }
