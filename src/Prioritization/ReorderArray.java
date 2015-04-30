@@ -75,7 +75,7 @@ public class ReorderArray {
             } // end for each unselected one
                 
             // ties break
-            ArrayList<Integer> Index = new ArrayList<Integer>();
+            ArrayList<Integer> Index = new ArrayList<>();
             for (int k = 0; k < size; k++) {
                 if (already[k] == 0) {
                     double tp = test.distance(test.order[i-1], k);
@@ -110,12 +110,12 @@ public class ReorderArray {
         already[pc] = 1;
 
         // select the i-th test case
-        int index = -1;
+        int index ;
         for (int i = 1; i < size; i++) {
             double max = 0.0;
             for (int k = 0; k < size; k++) {
                 if (already[k] == 0) {
-                    double cost = test.distance(test.order[i-1], k);
+                    double cost = test.distance(test.order[i-1], k) + test.executionCost[k] ;
                     int value = sut.FitnessValue(test.tests[k], 0);
                     double m = (double) value / cost;
                     if (m > max)
@@ -127,7 +127,7 @@ public class ReorderArray {
             ArrayList<Integer> Index = new ArrayList<Integer>();
             for (int k = 0; k < size; k++) {
                 if (already[k] == 0) {
-                    double cost = test.distance(test.order[i - 1], k);
+                    double cost = test.distance(test.order[i - 1], k) + test.executionCost[k] ;
                     int value = sut.FitnessValue(test.tests[k], 0);
                     double m = (double)value / cost ;
                     if ( m == max)

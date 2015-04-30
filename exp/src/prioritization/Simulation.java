@@ -6,7 +6,6 @@ import Generation.AETG;
 import Prioritization.ReorderArray;
 
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  *  simulation experiment
@@ -73,7 +72,7 @@ public class Simulation {
      *  t = 2, weight = normal (type-1)
      */
     public void exp1( String name, String[] label, Collection re ) {
-        re.init(name, label, this.par, this.val, this.ratio) ;
+        re.init(name, label, par, val, ratio) ;
 
         // run each SUT
         for( int i=0 ; i<par.length ; i++ ) {
@@ -118,7 +117,7 @@ public class Simulation {
             gen.Generation(ts);
 
             // 2. generate 100 random t-way failure schemas
-            Set<int[]> ss = new HashSet<int[]>() ;
+            HashSet<int[]> ss = new HashSet<>() ;
             do {
                 int[] s = rand.Schema(t, p, v);
                 ss.add(s);
