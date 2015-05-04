@@ -36,8 +36,8 @@ public class Simulation {
     // ratio = execution cost / switching cost
     private static double[] ratio = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0} ;
 
-    private static int[] par = {4,6,10};//{10, 20, 30, 40, 60, 80, 100} ;
-    private static int[] val = {2,3,4};//{2, 3, 4, 6, 8} ;
+    private static int[] par = {10, 20, 30, 40, 60};//, 80, 100} ;
+    private static int[] val = {2,3,4,6};//{2, 3, 4, 6, 8} ;
     private static int[] tway = {2,3} ;
 
     private Rand rand ;
@@ -71,8 +71,16 @@ public class Simulation {
      *  exp - 1
      *  t = 2, weight = normal (type-1)
      */
-    public void exp1( String name, String[] label, Collection re ) {
-        re.init(name, label, par, val, ratio) ;
+    public void exp1( Collection re ) {
+        String name = "exp-1 test hybrid order";
+        Collection.ORDERS[] orders = new Collection.ORDERS[]{
+                Collection.ORDERS.RANDOM,
+                Collection.ORDERS.COVERAGE,
+                Collection.ORDERS.GREEDY,
+                Collection.ORDERS.LKH,
+                Collection.ORDERS.HYBRID
+        };
+        re.init(name, orders, par, val, ratio) ;
 
         // run each SUT
         for( int i=0 ; i<par.length ; i++ ) {
@@ -82,9 +90,17 @@ public class Simulation {
         }
     }
 
-    // each SUT for exp, repeat 30 times
-    // par[p_index]: the number of parameter
-    // val[v_index]: the number of each parameter value
+    /*
+     *  each SUT for exp, repeat 30 times
+     *  five orders: random, coverage, greedy, lkh, hybrid
+     *
+     *  INPUT REQUIRED
+     *  t: coverage strength
+     *  type: distribution of parameter weight
+     *  par[p_index]: the number of parameter
+     *  val[v_index]: the number of each parameter value
+     *  re: data storage
+     */
     private void expEach( int t, int type, int p_index, int v_index, Collection re ) {
         int p = par[p_index] ;
         int va = val[v_index] ;
@@ -102,14 +118,11 @@ public class Simulation {
         AETG gen = new AETG();
         ReorderArray order = new ReorderArray();
 
-        // final results to be saved
-        double[] aveCoverage = new double[ratio.length] ;
-        double[] aveRand = new double[ratio.length] ;
-        double[] aveCost_G = new double[ratio.length] ; // greedy
-        double[] aveCost_L = new double[ratio.length] ; // lkh
-
-        for( int k=0 ; k<ratio.length ; k++ )
-            aveCoverage[k] = aveRand[k] = aveCost_G[k] = aveCost_L[k] = 0.0 ;
+        // final results to be saved |labels| * |ratios|
+        double[][] aveFinal = new double[re.dataLabel.length][ratio.length] ;
+        for (int x=0 ; x<re.dataLabel.length ; x++)
+            for (int y=0 ; y<ratio.length ; y++)
+                aveFinal[x][y] = 0.0 ;
 
         // repeat 30 times
         for( int rep = 0 ; rep < 30 ; rep++ ) {
@@ -125,53 +138,50 @@ public class Simulation {
 
             // 3. evaluate different orders under different ratios
             for( int rt = 0 ; rt < ratio.length ; rt++ ) {
-                double tpCoverage = 0.0 ;
-                double tpRand = 0.0 ;
-                double tpCost_G = 0.0 ;
-                double tpCost_L = 0.0 ;
+                double[] tpValue = new double[re.dataLabel.length];
 
                 // set execution cost
                 double exe = ts.getAverageSwitchingCost() * ratio[rt] ;
                 ts.setExecutionCost(exe, 0.5);
 
-                // coverage order, default
-                order.toDefaultOrder(ts);
-                for( int[] s : ss ) {
-                    tpCoverage += ts.getFt(t, s, null);
+                // orders
+                int index = 0 ;
+                for ( Collection.ORDERS or : re.dataLabel ) {
+                    // change order
+                    switch ( or ) {
+                        case RANDOM :
+                            order.toRandomOrder(ts);
+                            break;
+                        case COVERAGE:
+                            order.toDefaultOrder(ts);
+                            break;
+                        case GREEDY:
+                            order.toGreedySwitchOrder(ts);
+                            break;
+                        case LKH:
+                            order.toLKHSwitchOrder(ts);
+                            break;
+                        case HYBRID:
+                            order.toGreedyHybridOrder(ts);
+                            break;
+                    }
+                    // calculate ft-value
+                    for( int[] s : ss ) {
+                        tpValue[index] += ts.getFt(t, s, null);
+                    }
+                    index++ ;
                 }
 
-                // random order
-                order.toRandomOrder(ts);
-                for( int[] s : ss ) {
-                    tpRand += ts.getFt(t, s, null);
-                }
-
-                // switching cost order
-                //order.toGreedySwitchOrder(ts);
-                order.toGreedyHybridOrder(ts);
-                for( int[] s : ss ) {
-                    tpCost_G += ts.getFt(t, s, null);
-                }
-
-                order.toLKHSwitchOrder(ts);
-                for( int[] s : ss ) {
-                    tpCost_L += ts.getFt(t, s, null);
-                }
-
-                aveCoverage[rt] += tpCoverage / 100.0 ;
-                aveRand[rt] += tpRand / 100.0 ;
-                aveCost_G[rt] += tpCost_G / 100.0 ;
-                aveCost_L[rt] += tpCost_L / 100.0 ;
+                // get average
+                for (int k=0; k<re.dataLabel.length; k++)
+                    aveFinal[k][rt] += tpValue[k] / 100.0 ;
             }
         }
 
-        // save mean results
-        for( int k=0 ; k<ratio.length ; k++ ) {
-            re.dataValue[p_index][v_index][0][k] = aveCoverage[k] / 30.0 ;
-            re.dataValue[p_index][v_index][1][k] = aveRand[k] / 30.0 ;
-            re.dataValue[p_index][v_index][2][k] = aveCost_G[k] / 30.0 ;
-            re.dataValue[p_index][v_index][3][k] = aveCost_L[k] / 30.0 ;
-        }
+        // save final average results
+        for (int x=0 ; x<re.dataLabel.length ; x++)
+            for (int y=0 ; y<ratio.length ; y++)
+                re.dataValue[p_index][v_index][x][y] = aveFinal[x][y] / 30.0 ;
 
     }
 

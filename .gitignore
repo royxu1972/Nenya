@@ -1,6 +1,12 @@
 # Java class files
 *.class
+
+# General files
 *.txt
+*.par
+*.tsp
+*.tour
+.DS_Store
 
 # generated files
 bin/
@@ -19,6 +25,5 @@ proguard/
 
 # Gradle
 .gradle
-local.properties
-.DS_Store
 build/
+local.properties

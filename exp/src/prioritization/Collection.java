@@ -9,6 +9,28 @@ import java.io.IOException;
  */
 public class Collection {
 
+    /*
+     *  the orders that can be examined
+     */
+    public enum ORDERS {
+        RANDOM("random"),
+        COVERAGE("coverage"),
+        GREEDY("switch-greedy"),
+        LKH("switch-lkh"),
+        HYBRID("hybrid");
+
+        private final String text;
+
+        private ORDERS(String t) {
+            this.text = t;
+        }
+
+        @Override
+        public String toString() {
+            return this.text;
+        }
+    }
+
     public String name ;
 
     // variables: p, v and ratio (execution / switching)
@@ -17,12 +39,12 @@ public class Collection {
     public double[] rValue ;
 
     // obtained data
-    public String[] dataLabel ;  // label for different orders
+    public ORDERS[] dataLabel ;  // label for different orders
     public double[][][][] dataValue ;  // p * v * order * ratio
 
     public Collection() {}
 
-    public void init( String nn, String[] l, int[] p, int[] v, double[] r) {
+    public void init( String nn, ORDERS[] l, int[] p, int[] v, double[] r) {
         this.name = nn ;
 
         this.pValue = new int[p.length];
@@ -33,8 +55,9 @@ public class Collection {
         System.arraycopy(r, 0, this.rValue, 0, r.length);
 
         // |data| = |p| * |v| * |order| * |ratio|
-        this.dataLabel = new String[l.length];
+        this.dataLabel = new ORDERS[l.length];
         System.arraycopy(l, 0, this.dataLabel, 0, l.length);
+
         this.dataValue = new double[p.length][v.length][l.length][r.length];
         for( int i=0 ; i<p.length ; i++ )
             for( int j=0 ; j<v.length ; j++ )
@@ -58,15 +81,13 @@ public class Collection {
      */
     public void printPlainData( String filename ) {
         for( int i=0 ; i<pValue.length ; i++ ) {
-            System.out.println("------------------------" );
-            System.out.println("p = " + pValue[i] );
-            System.out.println("------------------------" );
-
             for( int j=0 ; j<vValue.length ; j++ ) {
-                System.out.println("v = " + vValue[j] );
+                System.out.println("------------------------\n");
+                System.out.println("p = " + pValue[i] + " , v = " + vValue[j] + "\n");
+                System.out.println("------------------------\n");
                 System.out.println("ratio: " + array2str(rValue, 1) );
                 for (int k=0 ; k<dataLabel.length ; k++) {
-                    System.out.println(dataLabel[k] + ": " + array2str(dataValue[i][j][k], 3));
+                    System.out.println(dataLabel[k].toString() + ": " + array2str(dataValue[i][j][k], 3));
                 }
                 System.out.print("\n");
             }
@@ -75,17 +96,15 @@ public class Collection {
         if( filename != null ) {
             try {
                 BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename )) ;
-                bw.write(name + "\n");
+                bw.write(name + "\n\n");
                 for( int i=0 ; i<pValue.length ; i++ ) {
-                    bw.write("------------------------\n");
-                    bw.write("p = " + pValue[i] + "\n");
-                    bw.write("------------------------\n");
-
                     for( int j=0 ; j<vValue.length ; j++ ) {
-                        bw.write("v = " + vValue[j] + "\n");
+                        bw.write("------------------------\n");
+                        bw.write("p = " + pValue[i] + " , v = " + vValue[j] + "\n");
+                        bw.write("------------------------\n");
                         bw.write("ratio: " + array2str(rValue, 1) + "\n");
                         for (int k=0 ; k<dataLabel.length ; k++) {
-                            bw.write(dataLabel[k] + ": " + array2str(dataValue[i][j][k], 3) + "\n");
+                            bw.write(dataLabel[k].toString() + ": " + array2str(dataValue[i][j][k], 3) + "\n");
                         }
                         bw.write("\n");
                     }
@@ -98,37 +117,5 @@ public class Collection {
             }
         }
     }
-
-    /*
-     *  print data for plot to file [beta]
-     */
-    public void printPlotData( String filename ) throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename ));
-
-        // for each parameter
-        for( int p=0 ; p<pValue.length ; p++ ) {
-            bw.write("TITLE p=" + pValue[p] + "\n");
-            bw.write("X-AXIS ratios\n");
-            bw.write("Y-AXIS f(t)-switching/f(t)-coverage\n");
-            bw.write("LABEL ");
-            for( int v=0 ; v<vValue.length ; v++ )
-                bw.write("v="+vValue[v]+ " ");
-            bw.write("\n");
-            bw.write("X-STICKS " + array2str(rValue, 1) + "\n");
-            bw.write("DATA\n");
-            for( int v=0 ; v<vValue.length ; v++ ) {
-                for( int m=0 ; m<rValue.length ; m++ ) {
-                    // cost / coverage
-                    double d = dataValue[p][v][2][m] / dataValue[p][v][0][m] ;
-                    bw.write( String.format("%.3f", d) + " ");
-                }
-                bw.write("\n");
-                bw.flush();
-            }
-            bw.write("\n");
-        }
-        bw.close();
-    }
-
 
 }

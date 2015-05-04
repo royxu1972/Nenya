@@ -3,9 +3,6 @@ sourceSets {
         java {
             srcDir 'src'
         }
-        resources {
-            srcDir 'resources'
-        }
     }
 }
 
@@ -23,7 +20,7 @@ jar {
 uploadArchives {
     repositories {
         flatDir {
-            dirs 'resources'
+            dirs '../archives'
         }
     }
 }

@@ -15,10 +15,10 @@ Reordering existing test suite to maximize combination coverage or minimize swit
 * Combination coverage based prioritization
 
 * Switching cost based prioritization
-	* Greedy Algorithm (basic and enhanced)
+	* Greedy Algorithm
 	* Dynamic Programming (optimal)
 	* Genetic Algorithm
-	* LKH Solver for TSP (only in Windows)
+	* LKH Solver for TSP (Windows only)
 
 * Multi Objective Optimization
 	* Hybrid Based Greedy Algorithm
