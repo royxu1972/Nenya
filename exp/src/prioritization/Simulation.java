@@ -34,11 +34,15 @@ import java.util.HashSet;
 public class Simulation {
 
     // ratio = execution cost / switching cost
-    private static double[] ratio = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0} ;
-
-    private static int[] par = {10, 20, 30, 40, 60};//, 80, 100} ;
-    private static int[] val = {2,3,4,6};//{2, 3, 4, 6, 8} ;
-    private static int[] tway = {2,3} ;
+    private static double[] ratio = {
+            0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0
+    };
+    private static double[] ratio_fined = {
+            0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+            1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0
+    };
+    private static int[] par = {10, 20, 30, 40, 60};
+    private static int[] val = {2, 3, 4, 6, 8};
 
     private Rand rand ;
 
@@ -69,10 +73,10 @@ public class Simulation {
 
     /*
      *  exp - 1
-     *  t = 2, weight = normal (type-1)
+     *  t = 2, weight = normal (type-1), all 5 orders
      */
     public void exp1( Collection re ) {
-        String name = "exp-1 test hybrid order";
+        String name = "exp-1 test all five orders";
         Collection.ORDERS[] orders = new Collection.ORDERS[]{
                 Collection.ORDERS.RANDOM,
                 Collection.ORDERS.COVERAGE,
@@ -80,7 +84,7 @@ public class Simulation {
                 Collection.ORDERS.LKH,
                 Collection.ORDERS.HYBRID
         };
-        re.init(name, orders, par, val, ratio) ;
+        re.init(name, orders, par, val, ratio_fined) ;
 
         // run each SUT
         for( int i=0 ; i<par.length ; i++ ) {
@@ -102,8 +106,8 @@ public class Simulation {
      *  re: data storage
      */
     private void expEach( int t, int type, int p_index, int v_index, Collection re ) {
-        int p = par[p_index] ;
-        int va = val[v_index] ;
+        int p = re.pValue[p_index] ;
+        int va = re.vValue[v_index] ;
         System.out.println( "processing CA(" + t + ", " + p + ", " + va + ")" );
 
         int[] v = new int[p] ;
@@ -119,9 +123,9 @@ public class Simulation {
         ReorderArray order = new ReorderArray();
 
         // final results to be saved |labels| * |ratios|
-        double[][] aveFinal = new double[re.dataLabel.length][ratio.length] ;
+        double[][] aveFinal = new double[re.dataLabel.length][re.rValue.length] ;
         for (int x=0 ; x<re.dataLabel.length ; x++)
-            for (int y=0 ; y<ratio.length ; y++)
+            for (int y=0 ; y<re.rValue.length ; y++)
                 aveFinal[x][y] = 0.0 ;
 
         // repeat 30 times
@@ -137,11 +141,11 @@ public class Simulation {
             } while( ss.size() < 100 );
 
             // 3. evaluate different orders under different ratios
-            for( int rt = 0 ; rt < ratio.length ; rt++ ) {
+            for( int rt = 0 ; rt < re.rValue.length ; rt++ ) {
                 double[] tpValue = new double[re.dataLabel.length];
 
                 // set execution cost
-                double exe = ts.getAverageSwitchingCost() * ratio[rt] ;
+                double exe = ts.getAverageSwitchingCost() * re.rValue[rt] ;
                 ts.setExecutionCost(exe, 0.5);
 
                 // orders
@@ -180,9 +184,8 @@ public class Simulation {
 
         // save final average results
         for (int x=0 ; x<re.dataLabel.length ; x++)
-            for (int y=0 ; y<ratio.length ; y++)
+            for (int y=0 ; y<re.rValue.length ; y++)
                 re.dataValue[p_index][v_index][x][y] = aveFinal[x][y] / 30.0 ;
-
     }
 
 }

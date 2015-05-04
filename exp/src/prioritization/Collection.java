@@ -33,14 +33,14 @@ public class Collection {
 
     public String name ;
 
-    // variables: p, v and ratio (execution / switching)
+    // variables: p, v, ratio (execution / switching)
     public int[] pValue ;
     public int[] vValue ;
     public double[] rValue ;
 
     // obtained data
-    public ORDERS[] dataLabel ;  // label for different orders
-    public double[][][][] dataValue ;  // p * v * order * ratio
+    public ORDERS[] dataLabel ;         // label for different orders
+    public double[][][][] dataValue ;   // p * v * order * ratio
 
     public Collection() {}
 
