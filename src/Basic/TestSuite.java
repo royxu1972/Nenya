@@ -120,6 +120,19 @@ public class TestSuite {
     }
 
     /*
+     *  get the switching cost between adjacent test cases
+     */
+    public double[] getAdjacentSwitchingCost( int[] od ) {
+        if( od == null )
+            od = this.order ;
+
+        double[] ad = new double[od.length-1];
+        for (int i=0 ; i<od.length-1 ; i++)
+            ad[i] = distance(od[i], od[i+1]);
+        return ad ;
+    }
+
+    /*
      *  get the total testing cost, i.e. switching cost + execution cost
      */
     public double getTotalCost( int[] od ) {

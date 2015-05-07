@@ -77,4 +77,38 @@ public class order {
         re.toDPSwitchOrder(ts);
         System.out.println("DP (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
     }
+
+    @Test
+    public void testPaperCase() {
+        TestSuite ts = new TestSuite(
+                5,
+                new int[]{3,3,2,3,2},
+                2,
+                new double[]{2.0, 4.0, 1.0, 2.0, 1.0}
+        );
+        ts.tests = new int[][]{
+                {2,2,0,0,0},
+                {1,0,1,1,0},
+                {0,1,1,2,1},
+                {0,0,0,0,1},
+                {2,1,0,1,1},
+                {1,2,0,2,1},
+                {1,1,1,0,0},
+                {0,2,1,1,0},
+                {2,0,1,2,0}
+        };
+        ts.order = new int[]{0,1,2,3,4,5,6,7,8};
+
+        re.toDefaultOrder(ts);
+        System.out.println("default (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
+        double[] a = ts.getAdjacentSwitchingCost(null);
+        for ( int i=0 ; i<a.length ; i++ )
+            System.out.println( a[i] + " ");
+
+        re.toLKHSwitchOrder(ts);
+        System.out.println("switching (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
+        a = ts.getAdjacentSwitchingCost(null);
+        for ( int i=0 ; i<a.length ; i++ )
+            System.out.println( a[i] + " ");
+    }
 }
