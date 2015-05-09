@@ -181,6 +181,23 @@ public class TestSuite {
     }
 
     /*
+     *  get the number of covered t-way combinations till each test case
+     */
+    public long[] getRFDeach( int[] od ) {
+        if( od == null )
+            od =this.order ;
+        long[] rfds = new long[tests.length];
+        long pre = 0;
+        system.GenerateS();
+        for( int k=0 ; k<tests.length ; k++ ) {
+            int cov = system.FitnessValue(tests[od[k]], 1);
+            pre += cov;
+            rfds[k] = pre;
+        }
+        return rfds ;
+    }
+
+    /*
      *  get F(t)-measure: the required time unit to detect specified t-way failure schema with order od[]
      */
     public double getFt(int tway, final int[] schema, int[] od) {

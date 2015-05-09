@@ -103,12 +103,32 @@ public class order {
         System.out.println("default (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
         double[] a = ts.getAdjacentSwitchingCost(null);
         for ( int i=0 ; i<a.length ; i++ )
-            System.out.println( a[i] + " ");
+            System.out.print( a[i] + " ");
+        System.out.print("\n");
 
         re.toLKHSwitchOrder(ts);
         System.out.println("switching (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
         a = ts.getAdjacentSwitchingCost(null);
         for ( int i=0 ; i<a.length ; i++ )
-            System.out.println( a[i] + " ");
+            System.out.print( a[i] + " ");
+        System.out.print("\n");
+
+        // rfd
+        System.out.println("----------------------");
+        int[] Pd = new int[]{0,1,2,3,4,5,6,7,8};
+        int[] Po = new int[]{3,8,1,6,2,4,0,5,7};
+
+        System.out.println("default cost = " + ts.getTotalSwitchingCost(Pd) + ", rfd = " + ts.getRFD(Pd));
+        long[] od = ts.getRFDeach(Pd);
+        for ( int i=0 ; i<od.length ; i++ )
+            System.out.print( od[i] + " ");
+        System.out.print("\n");
+
+        System.out.println("optimized cost = " + ts.getTotalSwitchingCost(Po) + ", rfd = " + ts.getRFD(Po));
+        od = ts.getRFDeach(Po);
+        for ( int i=0 ; i<od.length ; i++ )
+            System.out.print( od[i] + " ");
+        System.out.print("\n");
+
     }
 }
