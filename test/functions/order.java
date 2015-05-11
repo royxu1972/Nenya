@@ -106,7 +106,7 @@ public class order {
             System.out.print( a[i] + " ");
         System.out.print("\n");
 
-        re.toLKHSwitchOrder(ts);
+        re.toDPSwitchOrder(ts);
         System.out.println("switching (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
         a = ts.getAdjacentSwitchingCost(null);
         for ( int i=0 ; i<a.length ; i++ )
@@ -129,6 +129,5 @@ public class order {
         for ( int i=0 ; i<od.length ; i++ )
             System.out.print( od[i] + " ");
         System.out.print("\n");
-
     }
 }
