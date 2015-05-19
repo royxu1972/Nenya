@@ -121,7 +121,7 @@ public class TSP {
      */
     public void GA(int population, int iteration, double Pc, double Pm) {
         // initialize candidate randomly
-        ArrayList<int[]> candidate = new ArrayList<int[]>();
+        ArrayList<int[]> candidate = new ArrayList<>();
         for (int i = 0; i < population; i++) {
             int[] can = new int[this.node_num];
             int[] assigned = new int[this.node_num];
@@ -154,25 +154,25 @@ public class TSP {
             }
 
             // regenerate candidate
-            ArrayList<int[]> nextg = new ArrayList<int[]>();
+            ArrayList<int[]> nextg = new ArrayList<>();
             while (nextg.size() < population) {
                 // selection
                 int par1 = this.GA_selection(fitness_all);
                 int par2 = this.GA_selection(fitness_all);
-                ArrayList<int[]> child = new ArrayList<int[]>();
+                ArrayList<int[]> child = new ArrayList<>();
 
                 // crossover
                 double alpha = random.nextDouble();
                 if (alpha < Pc) {
-                    //child.add(GA_crossover_ER(candidate.get(par1), candidate.get(par2)));
-
-                    int[][] c = GA_crossover_PMX(candidate.get(par1), candidate.get(par2));
-                    child.add(c[0]);
-                    child.add(c[1]);
-
+                    child.add(GA_crossover_ER(candidate.get(par1), candidate.get(par2)));
+                    //int[][] c = GA_crossover_PMX(candidate.get(par1), candidate.get(par2));
+                    //child.add(c[0]);
+                    //child.add(c[1]);
                 } else {
-                    child.add(candidate.get(par1));
-                    child.add(candidate.get(par2));
+                    if( random.nextDouble() <= 0.5 )
+                        child.add(candidate.get(par1));
+                    else
+                        child.add(candidate.get(par2));
                 }
 
                 // mutation
@@ -183,7 +183,6 @@ public class TSP {
                         GA_mutation_EM(a);
                     }
                 }
-
                 // add
                 nextg.addAll(child);
             } // end for

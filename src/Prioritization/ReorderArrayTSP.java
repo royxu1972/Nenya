@@ -126,7 +126,7 @@ public class ReorderArrayTSP {
     public int[] GAOrder( TestSuite test ) {
         int size = test.tests.length ;
         TSP tsp = new TSP(size+1, this.toGraph(test, false, null));
-        tsp.GA(20, 1000, 0.7, 0.7);
+        tsp.GA(128, 512, 0.5, 0.33);
 
         // remove v0 (dummy vertex) and then get shortest hamiltonian path
         int[] re = new int[size];
