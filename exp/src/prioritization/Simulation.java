@@ -16,13 +16,13 @@ import java.util.HashSet;
  *  test sequence.
  *
  *  To cover different testing scenarios, we control the following variables:
- *  orders: random, coverage based, switching cost based (greedy and lkh)
+ *  orders: random, coverage based, switching cost based (greedy and lkh), multi objective based
  *  weight: the distribution of parameter weights
  *      type 1: w[i] = 1 for all i
- *      type 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remaining
+ *      type 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remains
  *  t: covering strength, [2, 3]
- *  p: number of parameters [10, 20, 30, 40, 60, 80, 100]
- *  v: number of values [2, 3, 4, 6, 8]
+ *  p: number of parameters, [10, 20, 30, 40, 60]
+ *  v: number of values, [2, 3, 4, 6, 8]
  *
  *  For each SUT, 1) we generate a covering array, and then get its different testing
  *  orders. 2) 100 random t-way failure causing schemas are generated, and so we can get
@@ -61,8 +61,7 @@ public class Simulation {
     }
     private double[] weightTypeTwo( int len ) {
         double[] w = new double[len];
-
-        // the first 10% parameters has weight 10
+        // the first 10% parameters have weight 10, the others have weight 1
         int th = (int)((double)len * 0.1) ;
         for( int k=0 ; k<th ; k++ )
             w[k] = 10.0 ;
@@ -74,6 +73,16 @@ public class Simulation {
     /*
      *  exp - 1
      *  t = 2, weight = normal (type-1), all 5 orders
+     *
+     *  exp - 2
+     *  t = 2, weight = biased (type-2), all 5 orders
+     *
+     *  exp - 3
+     *  t = 3, weight = normal (type-1), all 5 orders
+     *
+     *  exp - 4
+     *  t = 3, weight = biased (type-2), all 5 orders
+     *
      */
     public void exp1( Collection re ) {
         String name = "exp-1 test all five orders";
@@ -93,6 +102,26 @@ public class Simulation {
             }
         }
     }
+
+    public void exp2( Collection re ) {
+        String name = "exp-2 (type2) test all five orders";
+        Collection.ORDERS[] orders = new Collection.ORDERS[]{
+                Collection.ORDERS.RANDOM,
+                Collection.ORDERS.COVERAGE,
+                Collection.ORDERS.GREEDY,
+                Collection.ORDERS.LKH,
+                Collection.ORDERS.HYBRID
+        };
+        re.init(name, orders, par, val, ratio_fined) ;
+
+        // run each SUT
+        for( int i=0 ; i<par.length ; i++ ) {
+            for( int j=0 ; j<val.length ; j++ ) {
+                expEach(2, 2, i, j, re);
+            }
+        }
+    }
+
 
     /*
      *  each SUT for exp, repeat 30 times
@@ -114,9 +143,11 @@ public class Simulation {
         for( int k=0 ; k<p ; k++ )
             v[k] = va ;
 
-        double[] w = weightTypeOne(p); // type - 1
-        //if( type == 2 )
-        //    w = weightTypeTwo(p);   // type - 2
+        double[] w ;
+        if( type == 1 )
+            w = weightTypeOne(p);   // type - 1
+        else
+            w = weightTypeTwo(p);   // type - 2
 
         TestSuite ts = new TestSuite(p, v, t, w);
         AETG gen = new AETG();

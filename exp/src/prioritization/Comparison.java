@@ -19,6 +19,9 @@ public class Comparison {
     double[][] best_cost ;
     long[][] best_rfd ;
     long[][] best_time ;
+    double[][] mean_cost ;
+    long[][] mean_rfd ;
+    long[][] mean_time ;
     // 6 subjects * 4 approaches * 30 repeat
     double[][][] cost ;
     long[][][] rfd ;
@@ -34,6 +37,9 @@ public class Comparison {
         this.best_cost = new double[6][4];
         this.best_rfd = new long[6][4];
         this.best_time = new long[6][4];
+        this.mean_cost = new double[6][4];
+        this.mean_rfd = new long[6][4];
+        this.mean_time = new long[6][4];
         this.cost = new double[6][4][30];
         this.rfd = new long[6][4][30];
         this.time = new long[6][4][30];
@@ -107,17 +113,26 @@ public class Comparison {
         // sort
         for (int i = 0 ; i < 6 ; i++) {
             for (int j = 0; j < 4; j++) {
-                int index = 0 ;
-                double min = Double.MAX_VALUE ;
-                for (int k = 0 ; k < 30 ; k++) {
-                    if( cost[i][j][k] < min ) {
-                        index = k ;
-                        min = cost[i][j][k] ;
+                int index = 0;
+                double min = Double.MAX_VALUE;
+                double sum1 = 0.0;
+                long sum2 = 0, sum3 = 0;
+                for (int k = 0; k < 30; k++) {
+                    if (cost[i][j][k] < min) {
+                        index = k;
+                        min = cost[i][j][k];
                     }
+                    sum1 += cost[i][j][k];
+                    sum2 += rfd[i][j][k];
+                    sum3 += time[i][j][k];
                 }
-                best_cost[i][j] = min ;
+                best_cost[i][j] = min;
                 best_rfd[i][j] = rfd[i][j][index];
                 best_time[i][j] = time[i][j][index];
+
+                mean_cost[i][j] = sum1 / 30.0;
+                mean_rfd[i][j] = sum2 / 30 ;
+                mean_time[i][j] = sum3 / 30 ;
             }
         }
 
@@ -188,7 +203,7 @@ public class Comparison {
         v4[4] = 3 ;
         v4[5] = 6 ;
         v4[6] = 16 ;
-        Subject.add(new TestSuite(7, v4, 2));
+        Subject.add(new TestSuite(7, v4, 3));
 
         // ts5, make, 3-way
         int[] v5 = new int[8] ;
@@ -200,7 +215,7 @@ public class Comparison {
         v5[5] = 3 ;
         v5[6] = 4 ;
         v5[7] = 5 ;
-        Subject.add(new TestSuite(8, v5, 3));
+        Subject.add(new TestSuite(8, v5, 4));
 
         // ts5, grep, 4-way
         int[] v6 = new int[7];
@@ -211,7 +226,7 @@ public class Comparison {
         v6[4] = 4 ;
         v6[5] = 4 ;
         v6[6] = 12 ;
-        Subject.add(new TestSuite(7, v6, 2));
+        Subject.add(new TestSuite(7, v6, 4));
 
     }
 

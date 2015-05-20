@@ -30,11 +30,11 @@ public class Rand {
         for( int k=0 ; k<p ; k++ )
             re[k] = -1 ;
 
-        HashSet<Integer> posset = new HashSet<Integer>() ;
-        while ( posset.size() != t )
-            posset.add( rand.nextInt(p) );
+        HashSet<Integer> pos_set = new HashSet<>() ;
+        while ( pos_set.size() != t )
+            pos_set.add( rand.nextInt(p) );
 
-        for( Integer x : posset ) {
+        for( Integer x : pos_set ) {
             re[x] = rand.nextInt( val[x] );
         }
 
