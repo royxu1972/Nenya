@@ -122,6 +122,26 @@ public class Simulation {
         }
     }
 
+    public void exp3( Collection re ) {
+        String name = "exp-3 (type1, 3-way) test all five orders";
+        Collection.ORDERS[] orders = new Collection.ORDERS[]{
+                Collection.ORDERS.RANDOM,
+                Collection.ORDERS.COVERAGE,
+                Collection.ORDERS.GREEDY,
+                Collection.ORDERS.LKH,
+                Collection.ORDERS.HYBRID
+        };
+        re.init(name, orders, par, val, ratio_fined) ;
+
+        // run each SUT
+        for( int i=0 ; i<par.length ; i++ ) {
+            for( int j=0 ; j<val.length ; j++ ) {
+                expEach(3, 1, i, j, re);
+            }
+        }
+    }
+
+
 
     /*
      *  each SUT for exp, repeat 30 times

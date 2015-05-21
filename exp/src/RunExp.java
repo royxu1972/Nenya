@@ -8,9 +8,10 @@ public class RunExp {
         //Comparison cc = new Comparison();
         //cc.run();
 
+        System.out.print("-----------\nSimulation\n-----------\n");
         Collection results = new Collection();
         Simulation sim = new Simulation();
-        sim.exp2(results);
+        sim.exp3(results);
         results.printPlainData("data.txt");
     }
 }

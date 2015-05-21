@@ -146,21 +146,21 @@ public class Comparison {
             System.out.println("size: " + Subject.get(index).getTestSuiteSize() );
             System.out.println("default: cost = " + default_cost[index] + ", rfd = " + default_rfd[index]);
             System.out.print("greedy: " +
-                    "cost = " + best_cost[index][0] + ", " +
-                    "rfd = " + best_rfd[index][0] + ", " +
-                    "time = " + best_time[index][0] + "\n");
+                    "cost = " + best_cost[index][0] + " (" + mean_cost[index][0] + "), " +
+                    "rfd = " + best_rfd[index][0] + " (" + mean_rfd[index][0] + "), " +
+                    "time = " + best_time[index][0] + " (" + mean_time[index][0] + ")\n");
             System.out.print("GA: " +
-                    "cost = " + best_cost[index][1] + ", " +
-                    "rfd = " + best_rfd[index][1] + ", " +
-                    "time = " + best_time[index][1] + "\n" );
+                    "cost = " + best_cost[index][1] + " (" + mean_cost[index][1] + "), " +
+                    "rfd = " + best_rfd[index][1] + " (" + mean_rfd[index][1] + "), " +
+                    "time = " + best_time[index][1] + " (" + mean_time[index][1] + ")\n");
             System.out.print("LKH: " +
-                    "cost = " + best_cost[index][2] + ", " +
-                    "rfd = " + best_rfd[index][2] + ", " +
-                    "time = " + best_time[index][2] + "\n" );
+                    "cost = " + best_cost[index][2] + " (" + mean_cost[index][2] + "), " +
+                    "rfd = " + best_rfd[index][2] + " (" + mean_rfd[index][2] + "), " +
+                    "time = " + best_time[index][2] + " (" + mean_time[index][2] + ")\n");
             System.out.print("MO: " +
-                    "cost = " + best_cost[index][3] + ", " +
-                    "rfd = " + best_rfd[index][3] + ", " +
-                    "time = " + best_time[index][3] + "\n" );
+                    "cost = " + best_cost[index][3] + " (" + mean_cost[index][3] + "), " +
+                    "rfd = " + best_rfd[index][3] + " (" + mean_rfd[index][3] + "), " +
+                    "time = " + best_time[index][3] + " (" + mean_time[index][3] + ")\n");
             System.out.println("");
         }
     }
