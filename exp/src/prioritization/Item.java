@@ -104,12 +104,11 @@ public class Item {
      *  OUTPUT: "P, V, T, Type, R, Best"
      */
     public static String getColumnName() {
-        return "P, V, T, Type, R, TOP" ;
+        return "P,V,T,Type,R,TOP" ;
     }
     public String getRowData() {
         return P + ", " + V + ", " + T + ", " + Type + ", " + R + ", " + getBestOrder() ;
     }
-
 
     public String getData() {
         String str = "" ;

@@ -1,7 +1,4 @@
-import prioritization.Collection;
-import prioritization.Comparison;
-import prioritization.Simulation;
-import prioritization.SimulationRandom;
+import prioritization.*;
 
 public class RunExp {
 
@@ -9,9 +6,11 @@ public class RunExp {
         //Comparison cc = new Comparison();
         //cc.run();
 
-        SimulationRandom sr = new SimulationRandom();
-        sr.exp1( 1000 );
-        sr.printItems("data.txt");
+        //SimulationRandom sr = new SimulationRandom();
+        //sr.exp1( 300, "3-way.samples.300" );
+
+        SimulationEach se = new SimulationEach();
+        se.exp("each");
 
         //System.out.print("-----------\nSimulation\n-----------\n");
         //Collection results = new Collection();

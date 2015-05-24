@@ -77,7 +77,7 @@ public class SimulationRandom {
            // randomly
             int p = par_lower + random.nextInt(par_upper-par_lower+1);
             int v = val_lower + random.nextInt(val_upper-val_lower+1);
-            int t = 2 ;
+            int t = 3 ;
             int type = 1 + random.nextInt(2);
             double r = ratio_lower + (ratio_upper - ratio_lower) * random.nextDouble();
             Item item = new Item(o, p, v, t, type, r);
@@ -88,16 +88,40 @@ public class SimulationRandom {
     /*
      *  exp - 1
      */
-    public void exp1( int num ) {
+    public void exp1( int num , String filename ) {
+        // initialization
         ORDER[] order = new ORDER[]{
                 ORDER.RANDOM, ORDER.COVERAGE, ORDER.LKH, ORDER.HYBRID
         };
         initSubjects(num, order);
-        //printSubjects();
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename + ".txt"));
+            bw.write(new Item().getColumnName() + "\n");
+            bw.close();
+        } catch (IOException e) {
+            System.err.println(e);
+        }
 
         // evaluate each SUT
+        int n = 0 ;
         for( Item item : subjects ) {
+            // evaluate
+            System.out.println( "evaluating the " + n + "-th, CA(" + item.T + ", " + item.P + ", " + item.V + ")" );
             evaluate( item );
+            n++;
+
+            // write data to file
+            try {
+                BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename + ".txt", true));
+                BufferedWriter log = new BufferedWriter(new FileWriter("resources//" + filename + ".log", true));
+                bw.write(item.getRowData() + "\n");
+                bw.close();
+                log.write(item.getData() + "\n");
+                log.close();
+            } catch (IOException e) {
+                System.err.println(e);
+            }
         }
     }
 
@@ -111,8 +135,6 @@ public class SimulationRandom {
         for( int k=0 ; k<p ; k++ )
             v[k] = va ;
         int t = item.T ;
-
-        System.out.println( "processing CA(" + t + ", " + p + ", " + va + ")" );
 
         double[] w ;
         if( item.Type == 1 )
@@ -191,34 +213,10 @@ public class SimulationRandom {
 
 
     /*
-     *  print data
+     *  print subjects to console
      */
     public void printSubjects() {
         for( Item a : subjects )
             System.out.println(a.name());
-    }
-
-    public void printItems( String filename ) {
-        //for( Item item : subjects ) {
-        //    System.out.println(item.getRowData());
-        //}
-        if( filename != null ) {
-            try {
-                BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename )) ;
-                BufferedWriter log = new BufferedWriter(new FileWriter("resources//log.txt" )) ;
-                bw.write(new Item().getColumnName() + "\n");
-                for( Item item : subjects ) {
-                    bw.write( item.getRowData() + "\n");
-                    bw.flush();
-                    log.write(item.getData() + "\n");
-                    log.flush();
-                }
-                bw.close();
-                log.close();
-            }
-            catch ( IOException e ) {
-                System.err.println(e);
-            }
-        }
     }
 }
