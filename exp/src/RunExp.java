@@ -6,11 +6,11 @@ public class RunExp {
         //Comparison cc = new Comparison();
         //cc.run();
 
-        //SimulationRandom sr = new SimulationRandom();
-        //sr.exp1( 300, "3-way.samples.300" );
+        SimulationRandom sr = new SimulationRandom();
+        sr.exp1( 300, "samples.0601" );
 
-        SimulationEach se = new SimulationEach();
-        se.exp("each");
+        //SimulationEach se = new SimulationEach();
+        //se.exp("each");
 
         //System.out.print("-----------\nSimulation\n-----------\n");
         //Collection results = new Collection();

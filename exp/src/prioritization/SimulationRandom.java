@@ -73,14 +73,15 @@ public class SimulationRandom {
      *  initialize subjects
      */
     public void initSubjects( int num, ORDER o[] ) {
+        int t = 2 ;
+        int tau = 3 ;
         do {
            // randomly
             int p = par_lower + random.nextInt(par_upper-par_lower+1);
             int v = val_lower + random.nextInt(val_upper-val_lower+1);
-            int t = 3 ;
             int type = 1 + random.nextInt(2);
             double r = ratio_lower + (ratio_upper - ratio_lower) * random.nextDouble();
-            Item item = new Item(o, p, v, t, type, r);
+            Item item = new Item(o, p, v, t, type, r, tau);
             subjects.add(item);
         } while( subjects.size() < num );
     }
@@ -88,7 +89,7 @@ public class SimulationRandom {
     /*
      *  exp - 1
      */
-    public void exp1( int num , String filename ) {
+    public void exp1( int num, String filename ) {
         // initialization
         ORDER[] order = new ORDER[]{
                 ORDER.RANDOM, ORDER.COVERAGE, ORDER.LKH, ORDER.HYBRID
@@ -97,7 +98,7 @@ public class SimulationRandom {
 
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename + ".txt"));
-            bw.write(new Item().getColumnName() + "\n");
+            bw.write( Item.getColumnName() + "\n" );
             bw.close();
         } catch (IOException e) {
             System.err.println(e);
@@ -126,7 +127,7 @@ public class SimulationRandom {
     }
 
     /*
-     *  evaluate each SUT, repeat 30 times * 100 failure schemas
+     *  evaluate each SUT, repeat 30 times * 100 tau-way failure schemas
      */
     private void evaluate( Item item ) {
         int p = item.P ;
@@ -135,6 +136,7 @@ public class SimulationRandom {
         for( int k=0 ; k<p ; k++ )
             v[k] = va ;
         int t = item.T ;
+        int tau = item.Tau ;
 
         double[] w ;
         if( item.Type == 1 )
@@ -164,10 +166,10 @@ public class SimulationRandom {
             double exe = ts.getAverageSwitchingCost() * item.R;
             ts.setExecutionCost(exe, 0.5);
 
-            // 2. generate 100 random t-way failure schemas
+            // 2. generate 100 random K-way failure schemas
             HashSet<int[]> ss = new HashSet<>();
             do {
-                int[] s = rand.Schema(t, p, v);
+                int[] s = rand.Schema(tau, p, v);
                 ss.add(s);
             } while (ss.size() < 100);
 
@@ -195,7 +197,7 @@ public class SimulationRandom {
                 }
                 // calculate ft-value
                 for (int[] s : ss) {
-                    tpValue[index] += ts.getFt(t, s, null);
+                    tpValue[index] += ts.getFt(tau, s, null);
                 }
                 index++;
             }

@@ -10,7 +10,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Random;
 
 /**
  *  examining the impact of each factor
@@ -73,7 +72,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer pp : allP ) {
-            Item it = new Item(order, pp, v, t, type, r);
+            Item it = new Item(order, pp, v, t, type, r, t);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -102,7 +101,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer vv : allV ) {
-            Item it = new Item(order, p, vv, t, type, r);
+            Item it = new Item(order, p, vv, t, type, r, t);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -131,7 +130,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer tt : allT ) {
-            Item it = new Item(order, p, v, tt, type, r);
+            Item it = new Item(order, p, v, tt, type, r, t);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -160,7 +159,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer yy : allType ) {
-            Item it = new Item(order, p, v, t, yy, r);
+            Item it = new Item(order, p, v, t, yy, r, t);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -189,7 +188,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Double rr : allR ) {
-            Item it = new Item(order, p, v, t, type, rr);
+            Item it = new Item(order, p, v, t, type, rr, t);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -220,6 +219,7 @@ public class SimulationEach {
         for( int k=0 ; k<p ; k++ )
             v[k] = va ;
         int t = item.T ;
+        int tau = item.Tau ;
 
         double[] w ;
         if( item.Type == 1 )
@@ -252,7 +252,7 @@ public class SimulationEach {
             // 2. generate 100 random t-way failure schemas
             HashSet<int[]> ss = new HashSet<>();
             do {
-                int[] s = rand.Schema(t, p, v);
+                int[] s = rand.Schema(tau, p, v);
                 ss.add(s);
             } while (ss.size() < 100);
 
@@ -280,7 +280,7 @@ public class SimulationEach {
                 }
                 // calculate ft-value
                 for (int[] s : ss) {
-                    tpValue[index] += ts.getFt(t, s, null);
+                    tpValue[index] += ts.getFt(tau, s, null);
                 }
                 index++;
             }

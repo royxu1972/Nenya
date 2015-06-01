@@ -31,18 +31,22 @@ public class Item {
     public int Type ;
     public double R ;
 
+    // Tau-way failure causing schema
+    public int Tau ;
+
     // dependent variable: the ft-measure value of each order
     public ORDER[] orders ;
     public double[] data ;
     public ORDER best ;
 
     public Item() {}
-    public Item( ORDER[] l, int p, int v, int t, int type, double r) {
+    public Item( ORDER[] l, int p, int v, int t, int type, double r, int tau) {
         this.P = p ;
         this.V = v ;
         this.T = t ;
         this.Type = type ;
         this.R = r ;
+        this.Tau = tau ;
 
         this.orders = new ORDER[l.length];
         System.arraycopy(l, 0, this.orders, 0, l.length);
@@ -54,7 +58,7 @@ public class Item {
 
     public String name() {
         return "p = " + P + ", v = " + V + ", t = " + T + ", type = " +
-                Type + ", ratio = " + R + ", orders " + orders.length ;
+                Type + ", ratio = " + R + ", tau = " + Tau + ", orders " + orders.length ;
     }
 
     @Override
@@ -69,7 +73,7 @@ public class Item {
         else if (obj != null && obj instanceof Item ) {
             Item a = (Item)obj;
             if( this.P == a.P && this.V == a.V && this.T == a.T &&
-                    this.Type == a.Type && this.R == a.R )
+                    this.Type == a.Type && this.R == a.R && this.Tau == a.Tau )
                 return true ;
             else
                 return false ;
@@ -104,10 +108,10 @@ public class Item {
      *  OUTPUT: "P, V, T, Type, R, Best"
      */
     public static String getColumnName() {
-        return "P,V,T,Type,R,TOP" ;
+        return "P,V,T,Type,R,Tau,TOP" ;
     }
     public String getRowData() {
-        return P + ", " + V + ", " + T + ", " + Type + ", " + R + ", " + getBestOrder() ;
+        return P + ", " + V + ", " + T + ", " + Type + ", " + R + ", " + Tau + ", " + getBestOrder() ;
     }
 
     public String getData() {
@@ -117,7 +121,5 @@ public class Item {
         }
         return str ;
     }
-
-
 
 }
