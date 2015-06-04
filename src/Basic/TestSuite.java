@@ -163,6 +163,30 @@ public class TestSuite {
     }
 
     /*
+     *  get the average number of switches of each parameter
+     */
+    public double getAverageSwitches( int[] od ) {
+        if( od == null )
+            od = this.order ;
+
+        int sum = 0 ;
+        int[] number = new int[system.parameter] ;
+        for( int k = 0 ; k < system.parameter ; k++ )
+            number[k] = 0 ;
+
+        for( int i = 0 ; i < od.length-1 ; i++ ) {
+            // add the # of switches between od[i] and od[i+1]
+            for( int k = 0 ; k < system.parameter ; k++ ) {
+                if( tests[od[i]][k] != tests[od[i+1]][k] ) {
+                    number[k]++;
+                    sum++;
+                }
+            }
+        }
+        return (double)sum / (double)system.parameter ;
+    }
+
+    /*
      *  get the t-RFD value: the rate of t-way combination coverage based on test cases
      */
     public long getRFD( int[] od ) {

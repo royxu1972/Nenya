@@ -99,6 +99,9 @@ public class order {
         };
         ts.order = new int[]{0,1,2,3,4,5,6,7,8};
 
+        // test getAverageSwitches()
+        System.out.println("average switches = " + ts.getAverageSwitches(null));
+
         re.toDefaultOrder(ts);
         System.out.println("default (" + ts.getOrderString() + "), cost = " + ts.getTotalSwitchingCost(null));
         double[] a = ts.getAdjacentSwitchingCost(null);
