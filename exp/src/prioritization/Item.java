@@ -7,10 +7,14 @@ public class Item {
      */
     public enum ORDER {
         RANDOM("random"),
-        COVERAGE("coverage"),
+        COVERAGE2("2-cov"),
+        COVERAGE3("3-cov"),
+        COVERAGE4("4-cov"),
         GREEDY("switch-greedy"),
         LKH("switch-lkh"),
-        HYBRID("hybrid");
+        HYBRID2("2-hybrid"),
+        HYBRID3("3-hybrid"),
+        HYBRID4("4-hybrid");
 
         private final String text;
 
@@ -27,12 +31,10 @@ public class Item {
     // independent variables: the SUT
     public int P ;
     public int V ;
-    public int T ;
+    public int T ;      // covering strength
+    public int Tau ;    // Tau-way failure causing schema
     public int Type ;
     public double R ;
-
-    // Tau-way failure causing schema
-    public int Tau ;
 
     // dependent variable: the ft-measure value of each order
     public ORDER[] orders ;
@@ -40,13 +42,13 @@ public class Item {
     public ORDER best ;
 
     public Item() {}
-    public Item( ORDER[] l, int p, int v, int t, int type, double r, int tau) {
+    public Item( ORDER[] l, int p, int v, int t, int tau, int type, double r) {
         this.P = p ;
         this.V = v ;
         this.T = t ;
+        this.Tau = tau ;
         this.Type = type ;
         this.R = r ;
-        this.Tau = tau ;
 
         this.orders = new ORDER[l.length];
         System.arraycopy(l, 0, this.orders, 0, l.length);
@@ -57,8 +59,8 @@ public class Item {
     }
 
     public String name() {
-        return "p = " + P + ", v = " + V + ", t = " + T + ", type = " +
-                Type + ", ratio = " + R + ", tau = " + Tau + ", orders " + orders.length ;
+        return "p = " + P + ", v = " + V + ", t = " + T + ", tau = " + Tau +
+                ", type = " + Type + ", ratio = " + R + ", orders " + orders.length ;
     }
 
     @Override
@@ -105,13 +107,13 @@ public class Item {
 
     /*
      *  get the data based on csv format
-     *  OUTPUT: "P, V, T, Type, R, Best"
+     *  OUTPUT: "P, V, Type, R, T, Tau, Best"
      */
     public static String getColumnName() {
-        return "P,V,T,Type,R,Tau,TOP" ;
+        return "P, V, T, Tau, Type, R, TOP" ;
     }
     public String getRowData() {
-        return P + ", " + V + ", " + T + ", " + Type + ", " + R + ", " + Tau + ", " + getBestOrder() ;
+        return P + ", " + V + ", " + T + ", " + Tau + ", " + Type + ", " + R + ", " + getBestOrder() ;
     }
 
     public String getData() {

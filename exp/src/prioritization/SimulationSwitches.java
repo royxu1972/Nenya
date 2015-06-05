@@ -46,7 +46,7 @@ public class SimulationSwitches {
                     re.toRandomOrder(ts);
                     //ave += ts.getAverageSwitches(null) ;
                     //ave += (double)size / (double)v[0] ;
-                    ave += ts.getAverageSwitchingCost() ;
+                    ave += ts.getAverageSwitchingCost() / (double)ts.system.parameter ;
                 }
 
                 // save data
@@ -58,7 +58,7 @@ public class SimulationSwitches {
         for( int i = 0 ; i < par.length ; i++ ) {
             System.out.print("par = " + par[i] + ": ");
             for( int j = 0 ; j < val.length ; j++ ) {
-                System.out.print( String.format("%.2f", data[i][j]) + " " );
+                System.out.print( String.format("%.4f", data[i][j]) + " " );
             }
             System.out.print("\n");
         }

@@ -189,6 +189,24 @@ public class TestSuite {
     /*
      *  get the t-RFD value: the rate of t-way combination coverage based on test cases
      */
+    public long getRFD( int[] od, int t ) {
+        if( od == null )
+            od = this.order ;
+
+        long rfd = 0;
+        long pre = 0;
+
+        SUT s = new SUT(system.parameter, system.value, t);
+        s.GenerateS();
+
+        for( int k=0 ; k<tests.length ; k++ ) {
+            int cov = s.FitnessValue(tests[od[k]], 1);
+            pre += cov;
+            rfd += pre;
+        }
+        return rfd;
+    }
+
     public long getRFD( int[] od ) {
         if( od == null )
             od = this.order ;
@@ -238,8 +256,9 @@ public class TestSuite {
                 if( schema[k] != -1 && schema[k] == tests[index][k] )
                     flag++ ;
             }
-            if( flag == tway )
-                return time ;
+            if( flag == tway ) {
+                return time;
+            }
 
             if( i+1 < tests.length )       // switch to the next test
                 time += distance(index, od[i+1]) ;
