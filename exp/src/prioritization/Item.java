@@ -74,8 +74,8 @@ public class Item {
             return true;
         else if (obj != null && obj instanceof Item ) {
             Item a = (Item)obj;
-            if( this.P == a.P && this.V == a.V && this.T == a.T &&
-                    this.Type == a.Type && this.R == a.R && this.Tau == a.Tau )
+            if( this.P == a.P && this.V == a.V && this.T == a.T && this.Tau == a.Tau
+                    && this.Type == a.Type && this.R == a.R )
                 return true ;
             else
                 return false ;
