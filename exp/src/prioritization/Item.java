@@ -7,10 +7,14 @@ public class Item {
      */
     public enum ORDER {
         RANDOM("random"),
-        COVERAGE("coverage"),
+        COVERAGE2("2-cov"),
+        COVERAGE3("3-cov"),
+        COVERAGE4("4-cov"),
         GREEDY("switch-greedy"),
         LKH("switch-lkh"),
-        HYBRID("hybrid");
+        HYBRID2("2-hybrid"),
+        HYBRID3("3-hybrid"),
+        HYBRID4("4-hybrid");
 
         private final String text;
 

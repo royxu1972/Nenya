@@ -8,7 +8,7 @@ import java.util.Random;
 
 /**
  *  Test Suite Prioritization
- *  Using toSomeOrder() function to change the TestSuite.order[]
+ *  Using toSomeOrder() function to change TestSuite.order[]
  */
 public class ReorderArray {
 
@@ -18,7 +18,7 @@ public class ReorderArray {
     }
 
     /*
-     *  default order, from 0 to n
+     *  default order, from 0 to n-1
      */
     public void toDefaultOrder( TestSuite test ) {
         for( int i=0 ; i<test.order.length ; i++ )
@@ -30,9 +30,7 @@ public class ReorderArray {
      */
     public void toRandomOrder( TestSuite test ) {
         int size = test.order.length ;
-        int[] flag = new int[size];
-        for( int k=0 ; k<size; k++ )
-            flag[k] = 0 ;
+        int[] flag = new int[size]; // default = 0
         
         int pos = rand.nextInt(size) ;
         test.order[0] = pos ;
@@ -46,16 +44,61 @@ public class ReorderArray {
     }
 
     /*
+     *  greedy prioritization by t-way coverage only
+     *  randomly select the first one
+     */
+    public void toGreedyCoverageOrder( TestSuite test, int t ) {
+        int size = test.order.length ;
+        int[] already = new int[size] ;  // this test case has been added, default = 0
+
+        // coverage measurement
+        SUT s = new SUT(test.system.parameter, test.system.value, t) ;
+        s.GenerateS();
+
+        // randomly select the first one
+        int pc = rand.nextInt(size) ;
+        test.order[0] = pc ;
+        already[pc] = 1 ;
+        s.FitnessValue(test.tests[pc], 1);
+
+        // select the i-th test case
+        int index ;
+        for (int i = 1; i < size; i++) {
+            // compute the # of covered combinations for remaining test cases
+            int[] covered = new int[size] ;
+            int max = Integer.MIN_VALUE ;
+            for (int k = 0; k < size; k++) {
+                if (already[k] == 0) {
+                    covered[k] = s.FitnessValue(test.tests[k], 0);
+                    if( covered[k] > max )
+                        max = covered[k] ;
+                }
+                else
+                    covered[k] = -1 ;
+            }
+
+            // ties break
+            ArrayList<Integer> II = new ArrayList<>();
+            for (int k = 0; k < size; k++) {
+                if (already[k] == 0 && covered[k] == max )
+                    II.add(k);
+            }
+            index = rand.nextInt(II.size());
+            index = II.get(index);
+
+            test.order[i] = index;
+            already[index] = 1;
+            s.FitnessValue(test.tests[index], 1);
+        }
+    }
+
+    /*
      *  greedy prioritization by switching cost only
      *  randomly select the first one
      */
     public void toGreedySwitchOrder( TestSuite test ) {
-
         int size = test.order.length ;
-        int[] already = new int[size];      // this test case has been added
-        for (int k = 0; k < size; k++) {
-            already[k] = 0;
-        }
+        int[] already = new int[size];      // this test case has been added, default = 0
         
         // randomly select the first one
         int pc = rand.nextInt(size) ;
@@ -63,28 +106,29 @@ public class ReorderArray {
         already[pc] = 1;
 
         // select the i-th test case
-        int index = -1;
+        int index ;
         for (int i = 1; i < size; i++) {
+            // compute the cost for remaining test cases
+            double[] costs = new double[size];
             double min = Double.MAX_VALUE ;
             for (int k = 0; k < size; k++) {
                 if (already[k] == 0) {
-                    double tp = test.distance(test.order[i-1], k);
-                    if (tp < min)
-                        min = tp;
+                    costs[k] = test.distance(test.order[i-1], k);
+                    if (costs[k] < min)
+                        min = costs[k];
                 }
+                else
+                    costs[k] = -1.0 ;
             } // end for each unselected one
                 
             // ties break
-            ArrayList<Integer> Index = new ArrayList<>();
+            ArrayList<Integer> II = new ArrayList<>();
             for (int k = 0; k < size; k++) {
-                if (already[k] == 0) {
-                    double tp = test.distance(test.order[i-1], k);
-                    if (tp == min)
-                        Index.add(k);
-                }
+                if (already[k] == 0 && costs[k] == min)
+                    II.add(k);
             }
-            index = rand.nextInt(Index.size());
-            index = Index.get(index);
+            index = rand.nextInt(II.size());
+            index = II.get(index);
 
             test.order[i] = index;
             already[index] = 1;
@@ -92,8 +136,58 @@ public class ReorderArray {
     }
 
     /*
-     *  greedy prioritization by hybridising combination coverage and switching cost (coverage/cost)
+     *  greedy prioritization by hybridising combination coverage and switching cost
+     *            coverage
+     *  metric = ---------- when selecting each test case
+     *              cost
      */
+    public void toGreedyHybridOrder( TestSuite test, int t ) {
+        // coverage measurement
+        SUT s = new SUT(test.system.parameter, test.system.value, t) ;
+        s.GenerateS();
+
+        int size = test.order.length ;
+        int[] already = new int[size];  // this test case has been added, default = 0
+
+        // randomly select the first one
+        int pc = rand.nextInt(size) ;
+        test.order[0] = pc;
+        already[pc] = 1;
+        s.FitnessValue(test.tests[pc], 1);
+
+        // select the i-th test case
+        int index ;
+        for (int i = 1; i < size; i++) {
+            // compute the metric value for remaining test cases
+            double[] metrics = new double[size] ;
+            double max = 0.0;
+            for (int k = 0; k < size; k++) {
+                if (already[k] == 0) {
+                    double cost = test.distance(test.order[i-1], k) + test.executionCost[k] ;
+                    int value = s.FitnessValue(test.tests[k], 0);
+                    metrics[k] = (double) value / cost;
+                    if (metrics[k] > max)
+                        max = metrics[k] ;
+                }
+                else
+                    metrics[k] = -1.0 ;
+            }
+
+            // ties break
+            ArrayList<Integer> II = new ArrayList<>();
+            for (int k = 0; k < size; k++) {
+                if (already[k] == 0 && metrics[k] == max )
+                    II.add(k);
+            }
+            index = rand.nextInt(II.size());
+            index = II.get(index);
+
+            test.order[i] = index;
+            already[index] = 1;
+            s.FitnessValue(test.tests[index], 1);
+        }
+    }
+
     public void toGreedyHybridOrder( TestSuite test ) {
         // coverage measurement
         SUT sut = test.system ;

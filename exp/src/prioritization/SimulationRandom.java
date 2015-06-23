@@ -98,7 +98,10 @@ public class SimulationRandom {
     public void exp1( int num, String filename ) {
         // initialization
         ORDER[] order = new ORDER[]{
-                ORDER.RANDOM, ORDER.COVERAGE, ORDER.LKH, ORDER.HYBRID
+                ORDER.RANDOM,
+                ORDER.COVERAGE2, ORDER.COVERAGE3, ORDER.COVERAGE4,
+                ORDER.LKH,
+                ORDER.HYBRID2, ORDER.HYBRID3, ORDER.HYBRID4
         };
         initSubjects(num, order);
 
@@ -196,17 +199,29 @@ public class SimulationRandom {
                     case RANDOM:
                         order.toRandomOrder(ts);
                         break;
-                    case COVERAGE:
-                        order.toDefaultOrder(ts);
-                        break;
                     case GREEDY:
                         order.toGreedySwitchOrder(ts);
                         break;
                     case LKH:
                         order.toLKHSwitchOrder(ts);
                         break;
-                    case HYBRID:
-                        order.toGreedyHybridOrder(ts);
+                    case COVERAGE2:
+                        order.toDefaultOrder(ts);
+                        break;
+                    case COVERAGE3:
+                        order.toGreedyCoverageOrder(ts, 3);
+                        break;
+                    case COVERAGE4:
+                        order.toGreedyCoverageOrder(ts, 4);
+                        break;
+                    case HYBRID2:
+                        order.toGreedyHybridOrder(ts, 2);
+                        break;
+                    case HYBRID3:
+                        order.toGreedyHybridOrder(ts, 3);
+                        break;
+                    case HYBRID4:
+                        order.toGreedyHybridOrder(ts, 4);
                         break;
                 }
                 // calculate ft-value
