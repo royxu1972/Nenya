@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 /**
- *  simulation (Random version) experiment
+ *  Main Simulation Experiment
  *
  *  The goal of this simulation is to compare the efficacy of different testing orders
  *  under different testing scenarios. F(t)-measure (i.e. the time unit required to detect
@@ -21,23 +21,25 @@ import java.util.Random;
  *  test sequence.
  *
  *  To cover different testing scenarios, we control the following independent variables:
- *  p: number of parameters, [10, 60]
- *  v: number of values, [2, 8]
- *  t: covering strength, 2 or 3
+ *  p:    number of parameters, [10, 60]
+ *  v:    number of values, [2, 8]
+ *  t:    covering strength, 2
+ *  tau:  strength of failure schemas, [2, 4]
  *  type: the distribution of parameter weights
- *      type = 1: w[i] = 1 for all i
- *      type = 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remains
- *  r: ratio, execution cost / switching cost, [0.0, 2,0]
+ *        type = 1: w[i] = 1 for all i
+ *        type = 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remains
+ *  r:    ratio, execution cost / switching cost, [0.0, 2,0]
  *
- *  We firstly construct 2000 different SUTs (independent variables) randomly,
- *  and then evaluate which order is the best one for this SUT.
- *
+ *  We firstly construct 1000 different SUTs (based on independent variables) randomly,
+ *  and then evaluate which order is the best one for this SUT. Class Item is used to
+ *  save the data.
  */
 public class SimulationRandom {
 
     private static int par_lower = 10, par_upper = 60 ;
     private static int val_lower = 2, val_upper = 8 ;
     private static double ratio_lower = 0.0, ratio_upper = 2.0 ;
+    private static int strength_lower = 2, strength_upper = 4 ;
 
     private Rand rand ;
     private Random random ;
@@ -73,17 +75,21 @@ public class SimulationRandom {
      *  initialize subjects
      */
     public void initSubjects( int num, ORDER o[] ) {
-        int t = 2 ;
-        int tau = 3 ;
+
         do {
-           // randomly
+            // randomly
             int p = par_lower + random.nextInt(par_upper-par_lower+1);
             int v = val_lower + random.nextInt(val_upper-val_lower+1);
             int type = 1 + random.nextInt(2);
             double r = ratio_lower + (ratio_upper - ratio_lower) * random.nextDouble();
-            Item item = new Item(o, p, v, t, type, r, tau);
+            //int t = strength_lower + random.nextInt(strength_upper - strength_lower);
+            int t = 2 ;
+            int tau = strength_lower + random.nextInt(strength_upper-strength_lower+1);
+
+            Item item = new Item(o, p, v, t, tau, type, r);
             subjects.add(item);
         } while( subjects.size() < num );
+
     }
 
     /*
@@ -108,9 +114,11 @@ public class SimulationRandom {
         int n = 0 ;
         for( Item item : subjects ) {
             // evaluate
-            System.out.println( "evaluating the " + n + "-th, CA(" + item.T + ", " + item.P + ", " + item.V + ")" );
-            evaluate( item );
+            System.out.print("evaluating the " + n + "-th, CA(" + item.T + ", " + item.P + ", " + item.V + ")" +
+                    ", Tau = " + item.Tau + " ");
+            evaluate(item);
             n++;
+            System.out.print("\n");
 
             // write data to file
             try {
@@ -158,23 +166,29 @@ public class SimulationRandom {
             aveFinal[x] = 0.0 ;
 
         // repeat 30 times
-        for( int rep = 0 ; rep < 30 ; rep++ ) {
+        int repeat_num = 30 ;    // # of CA re-generations
+        int valid_num = 100 ;    // # of failure schemas
+        for( int rep = 0 ; rep < repeat_num ; rep++ ) {
             // 1. generate a covering array
+            System.out.print(".");
             gen.Generation(ts);
 
             // set execution cost
             double exe = ts.getAverageSwitchingCost() * item.R;
             ts.setExecutionCost(exe, 0.5);
 
-            // 2. generate 100 random K-way failure schemas
+            // 2. generate 100 (valid_num) random K-way failure schemas
             HashSet<int[]> ss = new HashSet<>();
             do {
-                int[] s = rand.Schema(tau, p, v);
+                int[] s = rand.SchemaExist(tau, p, v, ts);
                 ss.add(s);
-            } while (ss.size() < 100);
+            } while (ss.size() < valid_num);
 
             // 3. evaluate different orders
             double[] tpValue = new double[item.orders.length] ;
+            for( int l = 0 ; l < item.orders.length ; l++ )
+                tpValue[l] = 0.0 ;
+
             int index = 0;
             for (ORDER od : item.orders) {
                 // change order
@@ -197,19 +211,22 @@ public class SimulationRandom {
                 }
                 // calculate ft-value
                 for (int[] s : ss) {
-                    tpValue[index] += ts.getFt(tau, s, null);
+                    double ft = ts.getFt(tau, s, null);
+                    tpValue[index] += ft ;
                 }
                 index++;
             }
 
             // 4. get average
-            for (int k = 0 ; k < item.orders.length ; k++)
-                aveFinal[k] += tpValue[k] / 100.0;
+            for (int k = 0 ; k < item.orders.length ; k++) {
+                aveFinal[k] += tpValue[k] / (double)valid_num ;
+            }
+
         }
 
         // save final results to item
         for (int x = 0 ; x < item.orders.length ; x++)
-            item.data[x] = aveFinal[x] / 30.0 ;
+            item.data[x] = aveFinal[x] / (double)repeat_num ;
         item.updateBestOrder();
     }
 

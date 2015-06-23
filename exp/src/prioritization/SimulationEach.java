@@ -72,7 +72,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer pp : allP ) {
-            Item it = new Item(order, pp, v, t, type, r, t);
+            Item it = new Item(order, pp, v, t, t, type, r);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -101,7 +101,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer vv : allV ) {
-            Item it = new Item(order, p, vv, t, type, r, t);
+            Item it = new Item(order, p, vv, t, t, type, r);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -130,7 +130,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer tt : allT ) {
-            Item it = new Item(order, p, v, tt, type, r, t);
+            Item it = new Item(order, p, v, tt, t, type, r);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -159,7 +159,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Integer yy : allType ) {
-            Item it = new Item(order, p, v, t, yy, r, t);
+            Item it = new Item(order, p, v, t, t, yy, r);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 
@@ -188,7 +188,7 @@ public class SimulationEach {
             data[i] = order[i].toString() + ": " ;
 
         for( Double rr : allR ) {
-            Item it = new Item(order, p, v, t, type, rr, t);
+            Item it = new Item(order, p, v, t, t, type, rr);
             System.out.println( "evaluating CA(" + it.T + ", " + it.P + ", " + it.V + ")" );
             evaluate(it);
 

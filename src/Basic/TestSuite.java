@@ -238,8 +238,9 @@ public class TestSuite {
                 if( schema[k] != -1 && schema[k] == tests[index][k] )
                     flag++ ;
             }
-            if( flag == tway )
-                return time ;
+            if( flag == tway ) {
+                return time;
+            }
 
             if( i+1 < tests.length )       // switch to the next test
                 time += distance(index, od[i+1]) ;
