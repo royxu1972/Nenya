@@ -275,9 +275,9 @@ public class ReorderArray {
      *  saved in ArrayList<int[]> data
      */
     public void toMultiObjective( TestSuite test, ArrayList<int[]> data ) {
-        MEvolution me = new MEvolution(40, 1000, 0.8, 0.4, test);
+        MEvolution me = new MEvolution(40, 1000, 0.9, 0.7, test);
         me.evolve();
-        me.printPool();
+        //me.printPool();
         me.assignBestFront(data);
     }
 

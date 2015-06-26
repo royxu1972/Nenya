@@ -10,18 +10,18 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * basic AETG generator
+ *  Basic AETG generator
  */
 public class AETG {
 
     private SUT sut ;
     private ArrayList<int[]> CoverArray ;
-    private int[][] firstWeight;    // 记录各参数各取值在未覆盖对中出现次数
+    private int[][] firstWeight;  // 记录各参数各取值在未覆盖对中出现次数
     private Random random ;
 
     public AETG() {
         sut = null ;
-        CoverArray = new ArrayList<int[]>();
+        CoverArray = new ArrayList<>();
         random = new Random();
     }
 
