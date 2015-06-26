@@ -21,7 +21,7 @@ public class MPopulation {
         this.SIZE = size ;
         this.LENGTH = length ;
         this.TS = ts ;
-        population = new ArrayList<Sequence>() ;
+        population = new ArrayList<>() ;
     }
 
     public void print() {

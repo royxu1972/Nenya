@@ -97,13 +97,6 @@ public class order {
     }
 
     @Test
-    public void testMO() {
-        System.out.println("Multi-Objective Optimization");
-        ArrayList<int[]> d = new ArrayList<>();
-        this.re.toMultiObjective(ts, d);
-    }
-
-    @Test
     public void testPaperCase() {
         TestSuite ts = new TestSuite(
                 5,
