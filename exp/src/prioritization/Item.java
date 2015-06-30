@@ -14,7 +14,8 @@ public class Item {
         LKH("switch-lkh"),
         HYBRID2("2-hybrid"),
         HYBRID3("3-hybrid"),
-        HYBRID4("4-hybrid");
+        HYBRID4("4-hybrid"),
+        MO("NSGA");
 
         private final String text;
 

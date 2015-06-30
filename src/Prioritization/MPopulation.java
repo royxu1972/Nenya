@@ -24,7 +24,10 @@ public class MPopulation {
         population = new ArrayList<>() ;
     }
 
-    public void print() {
+    /*
+     *  print current population
+     */
+    public void printPopulation() {
         int i = 0 ;
         for( Sequence seq : population ) {
             System.out.print(i + ") ");
@@ -61,7 +64,7 @@ public class MPopulation {
                 flag[pos] = 1 ;
             }
 
-            Sequence seq = new Sequence(order, (int)TS.getTotalSwitchingCost(order),
+            Sequence seq = new Sequence(order, (int)TS.getTotalCost(order),
                     TS.getRFD(order), 0, 0.0) ;
             population.add(seq) ;
         }
@@ -70,7 +73,7 @@ public class MPopulation {
         int[] o = new int[LENGTH] ;
         for( int k=0 ; k<LENGTH ; k++ )
             o[k] = k ;
-        Sequence seq = new Sequence(o, (int)TS.getTotalSwitchingCost(o), TS.getRFD(o), 0, 0.0) ;
+        Sequence seq = new Sequence(o, (int)TS.getTotalCost(o), TS.getRFD(o), 0, 0.0) ;
         population.add(seq) ;
 
     }
@@ -103,7 +106,7 @@ public class MPopulation {
                     dominateCount[p_index]++;
                     //System.out.println(p_index + " < " + q_index);
                 }
-                    q_index += 1 ;
+                q_index += 1 ;
             }
             dominateSet.add(p_index, Sp);
 
@@ -195,7 +198,7 @@ public class MPopulation {
      *  the first N sequences and remove the others
      */
     public void CandidateSort( int N ) {
-        // sort
+        // sort, ascending order
         Collections.sort(this.population, new Sequence.allSort());
 
         // select
@@ -214,10 +217,44 @@ public class MPopulation {
         for( Sequence seq : B ) {
             int[] nt = new int[LENGTH] ;
             System.arraycopy(seq.order, 0, nt, 0, LENGTH);
+            // remain cost and value, but level = 0 and crowed = 0
             Sequence nq = new Sequence(nt, seq.cost, seq.value, 0, 0.0);
             this.population.add(nq);
         }
         this.SIZE = this.population.size() ;
     }
+
+
+    /*
+     *  add one solution to the current population
+     *  (for constructing reference front)
+     */
+    public void append( int[] a, int cost, long rfd ) {
+        int[] nt = new int[LENGTH] ;
+        System.arraycopy(a, 0, nt, 0, LENGTH);
+        Sequence nq = new Sequence(nt, cost, rfd, 0, 0.0);
+        this.population.add(nq);
+        this.SIZE = this.population.size() ;
+    }
+
+    /*
+    *  get the first level front
+    *  (for constructing reference front)
+    */
+    public void getFirstLevelFront( ArrayList<Sequence> data ) {
+        data.clear();
+        if( this.population.size() == 0 )
+            return ;
+        for( Sequence each : this.population ) {
+            if( each.level == 1 ) {
+                int[] a = new int[LENGTH];
+                System.arraycopy(each.order, 0, a, 0, LENGTH);
+                Sequence nq = new Sequence(a, each.cost, each.value, each.level, each.crowd);
+                data.add(nq);
+            }
+        }
+    }
+
+
 
 }
