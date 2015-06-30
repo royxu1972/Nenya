@@ -45,6 +45,7 @@ public class orderMO {
 
         // MO
         ArrayList<int[]> d = new ArrayList<>();
+        /*
         this.re.toMultiObjective(ts, d);
 
         double sum_cost = 0.0 ;
@@ -68,7 +69,7 @@ public class orderMO {
                 System.out.println("worse | cost = " + cc + ", rfd = " + rr );
             }
         }
-
+        */
 
 
     }

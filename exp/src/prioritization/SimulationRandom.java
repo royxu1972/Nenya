@@ -3,12 +3,15 @@ package prioritization;
 import Basic.Rand;
 import Basic.TestSuite;
 import Generation.AETG;
+import Prioritization.MPopulation;
 import Prioritization.ReorderArray;
+import Prioritization.Sequence;
 import prioritization.Item.ORDER;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -37,7 +40,7 @@ import java.util.Random;
 public class SimulationRandom {
 
     private static int par_lower = 10, par_upper = 60 ;
-    private static int val_lower = 2, val_upper = 8 ;
+    private static int val_lower = 2, val_upper = 4 ;
     private static double ratio_lower = 0.0, ratio_upper = 2.0 ;
     private static int strength_lower = 2, strength_upper = 4 ;
 
@@ -75,16 +78,15 @@ public class SimulationRandom {
      *  initialize subjects
      */
     public void initSubjects( int num, ORDER o[] ) {
-
         do {
-            // randomly
             int p = par_lower + random.nextInt(par_upper-par_lower+1);
             int v = val_lower + random.nextInt(val_upper-val_lower+1);
             int type = 1 + random.nextInt(2);
             double r = ratio_lower + (ratio_upper - ratio_lower) * random.nextDouble();
             //int t = strength_lower + random.nextInt(strength_upper - strength_lower);
             int t = 2 ;
-            int tau = strength_lower + random.nextInt(strength_upper-strength_lower+1);
+            //int tau = strength_lower + random.nextInt(strength_upper-strength_lower+1);
+            int tau = 2 ;
 
             Item item = new Item(o, p, v, t, tau, type, r);
             subjects.add(item);
@@ -99,9 +101,10 @@ public class SimulationRandom {
         // initialization
         ORDER[] order = new ORDER[]{
                 ORDER.RANDOM,
-                ORDER.COVERAGE2, ORDER.COVERAGE3, ORDER.COVERAGE4,
+                ORDER.COVERAGE2,
                 ORDER.LKH,
-                ORDER.HYBRID2, ORDER.HYBRID3, ORDER.HYBRID4
+                ORDER.HYBRID2,
+                ORDER.MO
         };
         initSubjects(num, order);
 
@@ -119,7 +122,7 @@ public class SimulationRandom {
             // evaluate
             System.out.print("evaluating the " + n + "-th, CA(" + item.T + ", " + item.P + ", " + item.V + ")" +
                     ", Tau = " + item.Tau + " ");
-            evaluate(item);
+            evaluateNew(item);
             n++;
             System.out.print("\n");
 
@@ -136,6 +139,168 @@ public class SimulationRandom {
             }
         }
     }
+
+
+    /*
+     *  evaluate each SUT, repeat 30 times * 100 tau-way failure schemas
+     *  evaluate based on reference pareto front
+     */
+    private void evaluateNew( Item item ) {
+        int p = item.P ;
+        int va = item.V ;
+        int[] v = new int[p] ;
+        for( int k=0 ; k<p ; k++ )
+            v[k] = va ;
+        int t = item.T ;
+        int tau = item.Tau ;
+
+        double[] w ;
+        if( item.Type == 1 )
+            w = weightTypeOne(p);   // type - 1
+        else if ( item.Type == 2 )
+            w = weightTypeTwo(p);   // type - 2
+        else {
+            System.out.println("error type");
+            return;
+        }
+
+        TestSuite ts = new TestSuite(p, v, t, w);
+        AETG gen = new AETG();
+        ReorderArray order = new ReorderArray();
+
+        // final results to be saved
+        int order_length = item.orders.length ;
+        double[] aveFinal = new double[order_length] ;
+
+
+        // repeat 30 times
+        int repeat_num = 30 ;    // # of CA re-generations
+        int valid_num = 100 ;    // # of failure schemas
+        for( int rep = 0 ; rep < repeat_num ; rep++ ) {
+            // 1. generate a covering array
+            System.out.print(".");
+            gen.Generation(ts);
+            int length = ts.getTestSuiteSize();
+
+            // set execution cost
+            double exe = ts.getAverageSwitchingCost() * item.R;
+            ts.setExecutionCost(exe, 0.5);
+
+            // 2. generate 100 (valid_num) random Tau-way failure schemas
+            HashSet<int[]> ss = new HashSet<>();
+            do {
+                int[] s = rand.SchemaExist(tau, p, v, ts);
+                ss.add(s);
+            } while (ss.size() < valid_num);
+
+            // 3. get different orders
+            MPopulation ref_candidate = new MPopulation(0, length, ts);
+
+            // single and multi objective orders
+            int[][] so_solutions = new int[order_length-1][length];
+            ArrayList<Sequence> mo_solution = new ArrayList<>();
+
+            // for each order
+            for (int i = 0 ; i < order_length ; i++ ) {
+                switch ( item.orders[i] ) {
+                    case RANDOM:
+                        order.toRandomOrder(ts);
+                        break;
+                    case GREEDY:
+                        order.toGreedySwitchOrder(ts);
+                        break;
+                    case LKH:
+                        order.toLKHSwitchOrder(ts);
+                        break;
+                    case COVERAGE2:
+                        order.toDefaultOrder(ts);
+                        break;
+                    case COVERAGE3:
+                        order.toGreedyCoverageOrder(ts, 3);
+                        break;
+                    case COVERAGE4:
+                        order.toGreedyCoverageOrder(ts, 4);
+                        break;
+                    case HYBRID2:
+                        order.toGreedyHybridOrder(ts, 2);
+                        break;
+                    case HYBRID3:
+                        order.toGreedyHybridOrder(ts, 3);
+                        break;
+                    case HYBRID4:
+                        order.toGreedyHybridOrder(ts, 4);
+                        break;
+                    case MO:
+                        order.toMultiObjective(ts, mo_solution);
+                        break;
+                }
+                if( item.orders[i] != ORDER.MO ) {  // single objective
+                    int[] oo = ts.getOrderInt();
+                    System.arraycopy(oo, 0, so_solutions[i], 0, length);
+                    ref_candidate.append(oo, (int) ts.getTotalCost(oo), ts.getRFD(oo));
+                }
+                else {  // multi objective
+                    ref_candidate.unionSet(mo_solution);
+                }
+            } // end for each order
+
+
+            // 4. evaluation
+
+            // reference pareto front
+            ArrayList<Sequence> reference = new ArrayList<>();
+            ref_candidate.NonDominatedSort();
+            ref_candidate.getFirstLevelFront(reference);
+            //System.out.println("candidate front size = " + ref_candidate.population.size() +
+            //", reference front size = " + reference.size());
+
+            // compute ft-values for single objective order
+            for( int a = 0 ; a < order_length-1 ; a++ ) {
+                double ft = 0.0 ;
+                for (int[] s : ss) {
+                    ft += ts.getFt(tau, s, so_solutions[a]);
+                }
+                aveFinal[a] += ft / (double)valid_num ;
+            }
+
+            // compute ft-values for multi objective order
+            // get the solutions that contributes to the reference pareto front
+            ArrayList<int[]> mo_solution_used = new ArrayList<>();
+            for( Sequence mo : mo_solution ) {
+                for( Sequence ref : reference ) {
+                    // if contribute
+                    if( mo.isEqualOrder(ref) ) {
+                        int[] tp = new int[length];
+                        System.arraycopy(mo.order, 0, tp, 0, length);
+                        mo_solution_used.add(tp);
+                    }
+                }
+            }
+
+            double ft_ave = 0.0 ;
+            for( int[] mo : mo_solution_used ) {
+                double ft = 0.0 ;
+                for (int[] s : ss) {
+                    ft += ts.getFt(tau, s, mo);
+                }
+                ft_ave += ft / (double)valid_num ;
+            }
+            aveFinal[order_length-1] += ft_ave / (double)mo_solution_used.size() ;
+
+            //System.out.print( rep + " - ");
+            //for( int k = 0 ; k < aveFinal.length ; k++ )
+            //    System.out.print( aveFinal[k] + " " );
+            //System.out.print("\n");
+
+
+        } // end for each iteration
+
+        // save final results to item
+        for (int x = 0 ; x < item.orders.length ; x++)
+            item.data[x] = aveFinal[x] / (double)repeat_num ;
+        item.updateBestOrder();
+    }
+
 
     /*
      *  evaluate each SUT, repeat 30 times * 100 tau-way failure schemas
@@ -180,7 +345,7 @@ public class SimulationRandom {
             double exe = ts.getAverageSwitchingCost() * item.R;
             ts.setExecutionCost(exe, 0.5);
 
-            // 2. generate 100 (valid_num) random K-way failure schemas
+            // 2. generate 100 (valid_num) random Tau-way failure schemas
             HashSet<int[]> ss = new HashSet<>();
             do {
                 int[] s = rand.SchemaExist(tau, p, v, ts);
@@ -192,9 +357,9 @@ public class SimulationRandom {
             for( int l = 0 ; l < item.orders.length ; l++ )
                 tpValue[l] = 0.0 ;
 
-            int index = 0;
-            for (ORDER od : item.orders) {
-                // change order
+            ArrayList<int[]> MO_Solutions = null ;
+            for (int i = 0 ; i < item.orders.length ; i++ ) {
+                ORDER od = item.orders[i];
                 switch (od) {
                     case RANDOM:
                         order.toRandomOrder(ts);
@@ -224,20 +389,17 @@ public class SimulationRandom {
                         order.toGreedyHybridOrder(ts, 4);
                         break;
                 }
-                // calculate ft-value
+
+                // calculate average ft-value
+                double ft = 0.0 ;
                 for (int[] s : ss) {
-                    double ft = ts.getFt(tau, s, null);
-                    tpValue[index] += ft ;
+                    ft += ts.getFt(tau, s, null);
                 }
-                index++;
-            }
+                aveFinal[i] += ft / (double)valid_num ;
 
-            // 4. get average
-            for (int k = 0 ; k < item.orders.length ; k++) {
-                aveFinal[k] += tpValue[k] / (double)valid_num ;
-            }
+            } // end for each order
 
-        }
+        } // end for each iteration
 
         // save final results to item
         for (int x = 0 ; x < item.orders.length ; x++)

@@ -39,22 +39,24 @@ public class MEvolution {
      */
     public void printPool() {
         System.out.println("the population pool: ");
-        pool.print();
+        pool.printPopulation();
     }
 
     /*
-     *  copy best_front
+     *  get current population pool
      */
-    public void assignBestFront( ArrayList<int[]> data ) {
+    public ArrayList<Sequence> getPopulation() {
+        return pool.population ;
+    }
+
+    /*
+     *  copy best_front (i.e. final population)
+     */
+    public void assignBestFront( ArrayList<Sequence> data ) {
         data.clear();
-        if( this.pool.population.size() == 0 )
+        if( pool.population.size() == 0 )
             return ;
-        int ln = ts.getTestSuiteSize();
-        for( Sequence each : this.pool.population ) {
-            int[] a = new int[ln] ;
-            System.arraycopy(each.order, 0, a, 0, ln);
-            data.add(a);
-        }
+        pool.getFirstLevelFront(data);
     }
 
     /*
@@ -74,11 +76,8 @@ public class MEvolution {
             // select the first N candidates as the new pool
             pool.CandidateSort(N);
 
-            //if( it == 0 )
-            //    pool.print();
-
             // make new population
-            ArrayList<Sequence> Q = new ArrayList<Sequence>();
+            ArrayList<Sequence> Q = new ArrayList<>();
             for( int i=0 ; i<N ; i++ ) {
                 // selection
                 int x1 = selection_BT() ;
@@ -101,8 +100,7 @@ public class MEvolution {
                     mutation_EX( child ) ;
 
                 // add to Q
-                Sequence q = new Sequence(child, (int)ts.getTotalCost(child),
-                        ts.getRFD(child), 0, 0);
+                Sequence q = new Sequence(child, (int)ts.getTotalCost(child), ts.getRFD(child), 0, 0);
                 Q.add(q) ;
             }
 

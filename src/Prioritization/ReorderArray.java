@@ -274,10 +274,12 @@ public class ReorderArray {
      *  NSGA-II will return a set of near optimal non-dominated solutions, which will be
      *  saved in ArrayList<int[]> data
      */
-    public void toMultiObjective( TestSuite test, ArrayList<int[]> data ) {
-        MEvolution me = new MEvolution(40, 1000, 0.9, 0.7, test);
+    public void toMultiObjective( TestSuite test, ArrayList<Sequence> data ) {
+        MEvolution me = new MEvolution(100, 250, 0.9, 1.0/(double)test.getTestSuiteSize(), test);
         me.evolve();
+        //System.out.println("-------------------");
         //me.printPool();
+        //System.out.println("-------------------");
         me.assignBestFront(data);
     }
 

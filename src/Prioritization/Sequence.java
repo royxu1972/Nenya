@@ -105,6 +105,18 @@ public class Sequence {
     }
 
 
+    /*
+     *  determine weather order is equal
+     */
+    public boolean isEqualOrder( Sequence B ) {
+        for( int i = 0 ; i < order.length ; i++ ) {
+            if( this.order[i] != B.order[i] ) {
+                return false ;
+            }
+        }
+        return true ;
+    }
+
 }
 
 
