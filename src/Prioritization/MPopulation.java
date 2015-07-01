@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 /**
- *  Multi-Objective Optimization
+ *  Population for Multi-Objective Optimization
  */
 public class MPopulation {
 
@@ -215,8 +215,7 @@ public class MPopulation {
      */
     public void unionSet( ArrayList<Sequence> B ) {
         for( Sequence seq : B ) {
-            int[] nt = new int[LENGTH] ;
-            System.arraycopy(seq.order, 0, nt, 0, LENGTH);
+            int[] nt = seq.order.clone() ;
             // remain cost and value, but level = 0 and crowed = 0
             Sequence nq = new Sequence(nt, seq.cost, seq.value, 0, 0.0);
             this.population.add(nq);
@@ -224,35 +223,67 @@ public class MPopulation {
         this.SIZE = this.population.size() ;
     }
 
-
     /*
      *  add one solution to the current population
      *  (for constructing reference front)
      */
-    public void append( int[] a, int cost, long rfd ) {
-        int[] nt = new int[LENGTH] ;
-        System.arraycopy(a, 0, nt, 0, LENGTH);
-        Sequence nq = new Sequence(nt, cost, rfd, 0, 0.0);
+    public void append( Sequence a ) {
+        int[] nt = a.order.clone() ;
+        Sequence nq = new Sequence(nt, a.cost, a.value, 0, 0.0);
         this.population.add(nq);
         this.SIZE = this.population.size() ;
     }
 
     /*
-    *  get the first level front
-    *  (for constructing reference front)
-    */
+     *  get the first level front
+     *  (for constructing reference front)
+     */
     public void getFirstLevelFront( ArrayList<Sequence> data ) {
         data.clear();
-        if( this.population.size() == 0 )
+        if( population.size() == 0 )
             return ;
-        for( Sequence each : this.population ) {
+        for( Sequence each : population ) {
             if( each.level == 1 ) {
-                int[] a = new int[LENGTH];
-                System.arraycopy(each.order, 0, a, 0, LENGTH);
+                int[] a = each.order.clone() ;
                 Sequence nq = new Sequence(a, each.cost, each.value, each.level, each.crowd);
                 data.add(nq);
             }
         }
+    }
+
+    /*
+     *  return the IGD value between reference front REF and front A
+     */
+    public static double getIGD( ArrayList<Sequence> REF, ArrayList<Sequence> A ) {
+        double sum_dis = 0.0 ;
+        // for each point in REF front
+        for( Sequence ref : REF ) {
+            double min = Double.MAX_VALUE ;
+            // find the closet distance to point in A
+            for( Sequence a : A ) {
+                double dis = EDistance(ref, a);
+                if( dis < min )
+                    min = dis ;
+            }
+            sum_dis += min ;
+        }
+        return sum_dis / (double)REF.size() ;
+    }
+
+    public static double getIGD( ArrayList<Sequence> REF, Sequence A ) {
+        double min = Double.MAX_VALUE ;
+        for( Sequence ref : REF ) {
+            double dis = EDistance(ref, A);
+            if( dis < min )
+                min = dis ;
+        }
+        return min ;
+    }
+
+    public static double EDistance( Sequence x, Sequence y ) {
+        double dist = (double)((x.cost-y.cost)*(x.cost-y.cost)) +
+                (double)((x.value-y.value)*(x.value-y.value)) ;
+        return ( Math.sqrt(dist) );
     }
 
 

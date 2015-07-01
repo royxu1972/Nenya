@@ -39,7 +39,7 @@ import java.util.Random;
  */
 public class SimulationRandom {
 
-    private static int par_lower = 10, par_upper = 60 ;
+    private static int par_lower = 10, par_upper = 30 ;
     private static int val_lower = 2, val_upper = 4 ;
     private static double ratio_lower = 0.0, ratio_upper = 2.0 ;
     private static int strength_lower = 2, strength_upper = 4 ;
@@ -83,10 +83,14 @@ public class SimulationRandom {
             int v = val_lower + random.nextInt(val_upper-val_lower+1);
             int type = 1 + random.nextInt(2);
             double r = ratio_lower + (ratio_upper - ratio_lower) * random.nextDouble();
-            //int t = strength_lower + random.nextInt(strength_upper - strength_lower);
-            int t = 2 ;
-            //int tau = strength_lower + random.nextInt(strength_upper-strength_lower+1);
-            int tau = 2 ;
+            int t = strength_lower + random.nextInt(strength_upper - strength_lower);
+            int tau = strength_lower + random.nextInt(strength_upper-strength_lower+1);
+
+            p = 10 ;
+            v = 2 ;
+            t = 2 ;
+            tau = 2 ;
+            type = 1 ;
 
             Item item = new Item(o, p, v, t, tau, type, r);
             subjects.add(item);
@@ -153,6 +157,7 @@ public class SimulationRandom {
             v[k] = va ;
         int t = item.T ;
         int tau = item.Tau ;
+        int order_length = item.orders.length ;
 
         double[] w ;
         if( item.Type == 1 )
@@ -169,13 +174,12 @@ public class SimulationRandom {
         ReorderArray order = new ReorderArray();
 
         // final results to be saved
-        int order_length = item.orders.length ;
         double[] aveFinal = new double[order_length] ;
-
+        double[] aveIGD = new double[order_length] ;
 
         // repeat 30 times
-        int repeat_num = 30 ;    // # of CA re-generations
-        int valid_num = 100 ;    // # of failure schemas
+        int repeat_num = 10 ;    // # of CA re-generations
+        int valid_num = 30 ;    // # of failure schemas
         for( int rep = 0 ; rep < repeat_num ; rep++ ) {
             // 1. generate a covering array
             System.out.print(".");
@@ -186,7 +190,7 @@ public class SimulationRandom {
             double exe = ts.getAverageSwitchingCost() * item.R;
             ts.setExecutionCost(exe, 0.5);
 
-            // 2. generate 100 (valid_num) random Tau-way failure schemas
+            // 2. generate valid_num (100) random Tau-way failure schemas
             HashSet<int[]> ss = new HashSet<>();
             do {
                 int[] s = rand.SchemaExist(tau, p, v, ts);
@@ -197,7 +201,7 @@ public class SimulationRandom {
             MPopulation ref_candidate = new MPopulation(0, length, ts);
 
             // single and multi objective orders
-            int[][] so_solutions = new int[order_length-1][length];
+            Sequence[] so_solutions = new Sequence[order_length-1];
             ArrayList<Sequence> mo_solution = new ArrayList<>();
 
             // for each order
@@ -236,42 +240,46 @@ public class SimulationRandom {
                 }
                 if( item.orders[i] != ORDER.MO ) {  // single objective
                     int[] oo = ts.getOrderInt();
-                    System.arraycopy(oo, 0, so_solutions[i], 0, length);
-                    ref_candidate.append(oo, (int) ts.getTotalCost(oo), ts.getRFD(oo));
+                    so_solutions[i] = new Sequence(ts.getOrderInt(), (int)ts.getTotalCost(oo),
+                            ts.getRFD(oo), 0, 0.0 );
+                    ref_candidate.append(so_solutions[i]);
                 }
                 else {  // multi objective
                     ref_candidate.unionSet(mo_solution);
+                    //System.out.println("-----------MO-------------");
+                    //ref_candidate.printPopulation();
                 }
             } // end for each order
 
-
             // 4. evaluation
-
-            // reference pareto front
+            // get reference pareto front
             ArrayList<Sequence> reference = new ArrayList<>();
             ref_candidate.NonDominatedSort();
             ref_candidate.getFirstLevelFront(reference);
-            //System.out.println("candidate front size = " + ref_candidate.population.size() +
-            //", reference front size = " + reference.size());
+
+            //System.out.println("-------------------REF-----------------");
+            //for( Sequence each : reference )
+            //    each.printSequence();
+            //System.out.println("size: " + reference.size());
 
             // compute ft-values for single objective order
             for( int a = 0 ; a < order_length-1 ; a++ ) {
+                //if( !ts.isValidOrder(so_solutions[a]) )
+                //    System.err.println("invalid order in single objective");
                 double ft = 0.0 ;
                 for (int[] s : ss) {
-                    ft += ts.getFt(tau, s, so_solutions[a]);
+                    ft += ts.getFt(tau, s, so_solutions[a].order);
                 }
                 aveFinal[a] += ft / (double)valid_num ;
             }
 
             // compute ft-values for multi objective order
-            // get the solutions that contributes to the reference pareto front
+            // firstly get the solutions that contributes to the reference pareto front
             ArrayList<int[]> mo_solution_used = new ArrayList<>();
             for( Sequence mo : mo_solution ) {
                 for( Sequence ref : reference ) {
-                    // if contribute
-                    if( mo.isEqualOrder(ref) ) {
-                        int[] tp = new int[length];
-                        System.arraycopy(mo.order, 0, tp, 0, length);
+                    if( mo.isEqualOrder(ref) ) {    // if contribute
+                        int[] tp = mo.order.clone() ;
                         mo_solution_used.add(tp);
                     }
                 }
@@ -279,6 +287,8 @@ public class SimulationRandom {
 
             double ft_ave = 0.0 ;
             for( int[] mo : mo_solution_used ) {
+                //if( !ts.isValidOrder(mo) )
+                //    System.err.println("invalid order in multi objective");
                 double ft = 0.0 ;
                 for (int[] s : ss) {
                     ft += ts.getFt(tau, s, mo);
@@ -287,11 +297,16 @@ public class SimulationRandom {
             }
             aveFinal[order_length-1] += ft_ave / (double)mo_solution_used.size() ;
 
+
             //System.out.print( rep + " - ");
             //for( int k = 0 ; k < aveFinal.length ; k++ )
             //    System.out.print( aveFinal[k] + " " );
             //System.out.print("\n");
 
+            // evaluate IGD
+            for( int a = 0 ; a < order_length-1 ; a++ )
+                aveIGD[a] += MPopulation.getIGD(reference, so_solutions[a]);
+            aveIGD[order_length-1] += MPopulation.getIGD(reference, mo_solution);
 
         } // end for each iteration
 
@@ -299,6 +314,19 @@ public class SimulationRandom {
         for (int x = 0 ; x < item.orders.length ; x++)
             item.data[x] = aveFinal[x] / (double)repeat_num ;
         item.updateBestOrder();
+
+        for (int x = 0 ; x < item.orders.length ; x++)
+            aveIGD[x] = aveIGD[x] / (double)repeat_num ;
+
+        System.out.print("\nIGD: ");
+        for( int k = 0 ; k < aveIGD.length ; k++ )
+            System.out.print( aveIGD[k] + " " );
+        System.out.print("\n");
+
+        System.out.print("aveFinal: ");
+        for( int k = 0 ; k < aveFinal.length ; k++ )
+            System.out.print( aveFinal[k] + " " );
+        System.out.print("\n");
     }
 
 

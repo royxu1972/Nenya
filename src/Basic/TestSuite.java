@@ -18,8 +18,7 @@ public class TestSuite {
         this.tests = null ;
         this.order = null ;
         this.executionCost = null ;
-        this.weight = new double[p] ;
-        System.arraycopy(w, 0, weight, 0, p);
+        this.weight = w.clone() ;
     }
     public TestSuite(int p, int[] v, int t) {
         this.system = new SUT(p, v, t);
@@ -51,7 +50,7 @@ public class TestSuite {
             System.err.println("error length of weight[]");
             return ;
         }
-        System.arraycopy(w, 0, weight, 0, w.length);
+        this.weight = w.clone() ;
     }
 
     /*
@@ -93,15 +92,31 @@ public class TestSuite {
      *  get current testing order
      */
     public int[] getOrderInt() {
-        int[] od = new int[order.length] ;
-        System.arraycopy(order, 0, od, 0, order.length);
-        return od ;
+        return order.clone() ;
     }
     public String getOrderString() {
         String str = "" ;
         for( int i=0 ; i<order.length ; i++ )
             str += String.valueOf(order[i]) + " " ;
         return str ;
+    }
+
+    /*
+     *  testing whether order is valid
+     */
+    public boolean isValidOrder( int[] od ) {
+        if( od == null )
+            od = this.order ;
+
+        int[] bit = new int[od.length];
+        int assigned = 0 ;
+        for( int k = 0 ; k < od.length ; k++ ) {
+            if( bit[od[k]] == 0 ) {
+                bit[od[k]] = 1 ;
+                assigned++ ;
+            }
+        }
+        return (assigned == od.length);
     }
 
     /*
@@ -139,8 +154,7 @@ public class TestSuite {
         if( od == null )
             od = this.order ;
 
-        double sum = 0 ;
-        sum += executionCost[od[0]] ;
+        double sum = executionCost[od[0]] ;
         for( int i=0 ; i<od.length-1 ; i++ ) {
             sum += distance(od[i], od[i+1]) ;
             sum += executionCost[od[i+1]] ;
@@ -208,22 +222,11 @@ public class TestSuite {
     }
 
     public long getRFD( int[] od ) {
-        if( od == null )
-            od = this.order ;
-
-        long rfd = 0;
-        long pre = 0;
-        system.GenerateS();
-        for( int k=0 ; k<tests.length ; k++ ) {
-            int cov = system.FitnessValue(tests[od[k]], 1);
-            pre += cov;
-            rfd += pre;
-        }
-        return rfd;
+        return getRFD(od, 2) ;
     }
 
     /*
-     *  get the number of covered t-way combinations till each test case
+     *  get the number of covered 2-way combinations till each test case
      */
     public long[] getRFDeach( int[] od ) {
         if( od == null )
