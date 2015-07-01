@@ -18,16 +18,23 @@ public class Sequence {
     public int cost ;
 
     public Sequence( int[] seq, int cost, long value, int level, double crowd ) {
-        order = new int[seq.length];
-        System.arraycopy(seq, 0, this.order, 0, seq.length);
+        this.order = seq.clone() ;
         this.level = level ;
         this.crowd = crowd ;
         this.cost = cost ;
         this.value = value ;
     }
 
+    public void printSequence() {
+        for( int k=0; k<order.length; k++ ) {
+            System.out.print(order[k] + " ");
+        }
+        System.out.print(", cost=" + cost + ", value=" + value +
+                ", level=" + level + ", crowd=" + crowd + "\n");
+    }
+
     public void UpdateSequence( int[] seq ) {
-        System.arraycopy(seq, 0, this.order, 0, seq.length);
+        this.order = seq.clone() ;
     }
 
     public void UpdateFitness( int value, int cost ) {

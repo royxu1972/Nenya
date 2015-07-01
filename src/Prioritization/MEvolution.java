@@ -1,5 +1,6 @@
 package Prioritization;
 
+import Basic.Rand;
 import Basic.TestSuite;
 
 import java.util.*;
@@ -7,21 +8,19 @@ import java.util.*;
 /**
  *  Multi-Objective Optimization, NSGA-II
  *  designed specifically for test suite prioritization according to
- *  two goals: switching cost and t-way combination coverage
+ *  two goals: testing cost (execution + switching) and 2-way combination coverage
  */
 public class MEvolution {
-
-    //public ArrayList<Sequence> best_front ;
 
     private MPopulation pool;
     private TestSuite ts ;
     private Random random ;
 
     // parameter setting
-    int N ;
-    int ITE ;
-    double CROSS_PRO ;
-    double MUTATION_PRO ;
+    private int N ;
+    private int ITE ;
+    private double CROSS_PRO ;
+    private double MUTATION_PRO ;
 
     public MEvolution( int size, int iteration, double cross, double mutation, TestSuite ts ) {
         this.N = size ;
@@ -82,16 +81,16 @@ public class MEvolution {
                 // selection
                 int x1 = selection_BT() ;
                 int x2 = selection_BT() ;
+                Sequence p1 = pool.population.get(x1) ;
+                Sequence p2 = pool.population.get(x2) ;
                 int[] child ;
 
                 // crossover
                 double alpha = random.nextDouble() ;
                 if( alpha < CROSS_PRO )
-                    child = crossover_ER(pool.population.get(x1).order,
-                                         pool.population.get(x2).order) ;
+                    child = crossover_PMX(p1.order, p2.order) ;
                 else {
-                    child = new int[pool.LENGTH] ;
-                    System.arraycopy(pool.population.get(x1).order, 0, child, 0, pool.LENGTH);
+                    child = p1.order.clone() ;
                 }
 
                 // mutation
@@ -107,9 +106,9 @@ public class MEvolution {
             // union two population set
             pool.unionSet(Q);
 
-        }
+        } // end main loop
 
-        // the result front
+        // the result front, only save the first N candidates
         pool.NonDominatedSort();
         pool.CandidateSort(N);
 
@@ -118,12 +117,11 @@ public class MEvolution {
     }
 
 
-
     /*
      *  binary tournament selection
      *  output: an integer representing the indexes selected from two parents
      */
-    public int selection_BT() {
+    private int selection_BT() {
 
         int a = random.nextInt(N);
         int b = random.nextInt(N);
@@ -138,12 +136,60 @@ public class MEvolution {
             return b ;
     }
 
+    /*
+     *  partially matched crossover (PMX)
+     *  build an offspring by choosing a sub-sequence of a tour from one parent
+     *  preserving the order and position of as many positions as possible from
+     *  the other parent
+     *
+     *  p1 : 1 5 | 2 8 7 | 4 3 6
+     *  p2 : 4 2 | 5 8 1 | 3 6 7
+     *  mapping: 2-5, 8-8, 7-1
+     *  o  : 4 [2] | 2 8 7 | 3 6 [7]
+     *  ==>  4  5  | 2 8 7 | 3 6  1
+     */
+    public static int[] crossover_PMX( final int[] p1, final int[] p2 ) {
+        int LEN = p1.length ;
+        int[] child = new int[LEN] ;
+
+        // generate two cut points
+        Random random = new Random();
+        int cut1 = random.nextInt(LEN);
+        int cut2 = cut1 + random.nextInt(LEN - cut1);
+
+        // the mapping part
+        Map<Integer, Integer> mapping = new HashMap<>(); // (p1, p2)
+        for( int k = cut1 ; k <= cut2 ; k++ ) {
+            child[k] = p1[k] ;
+            mapping.put(p1[k], p2[k]);
+        }
+
+        // the remain part
+        for( int k = 0 ; k < cut1 ; k++ ) {
+            int tp = p2[k] ;
+            while( mapping.containsKey(tp) ) {
+                tp = mapping.get(tp);
+            }
+            child[k] = tp ;
+
+        }
+        for( int k = cut2 + 1 ; k < LEN ; k++ ) {
+            int tp = p2[k] ;
+            while( mapping.containsKey(tp) ) {
+                tp = mapping.get(tp);
+            }
+            child[k] = tp ;
+        }
+
+        return child ;
+    }
+
 
     /*
      *  genetic edge recombination crossover
      *  output: a new sequence by combining p1 and p2
      */
-    public int[] crossover_ER( final int[] p1 , final int[] p2 ) {
+    private int[] crossover_ER( final int[] p1, final int[] p2 ) {
         int len = p1.length ;
         int[] child = new int[len];
         int[] remain = new int[len];
@@ -249,11 +295,10 @@ public class MEvolution {
     }
 
     /*
-     *  exchange mutation
-     *  output: mutate one point of sequence a
+     *  swap mutation
+     *  randomly pick two positions and swap their values
      */
-    public void mutation_EX( int[] a ) {
-
+    private void mutation_EX( int[] a ) {
         int pos1 = random.nextInt(a.length) ;
         int pos2 = random.nextInt(a.length) ;
 
@@ -262,7 +307,6 @@ public class MEvolution {
             a[pos1] = a[pos2] ;
             a[pos2] = tp ;
         }
-
     }
 
 }
