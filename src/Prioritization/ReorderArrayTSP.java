@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *  Do switching cost based prioritization by TSP based algorithms
@@ -26,6 +27,9 @@ public class ReorderArrayTSP {
     public String tsp_file ;
     public String par_file ;
     public String tour_file ;
+
+    // random
+    Random random;
 
     /*
      *  convert CA to graph representation with a dummy vertex v0
@@ -102,6 +106,7 @@ public class ReorderArrayTSP {
         return graph ;
     }
 
+
     /*
      *  prioritization CA by DP algorithm
      *  TSP solution:
@@ -110,43 +115,91 @@ public class ReorderArrayTSP {
      */
     public int[] DPOrder( TestSuite test ) {
         int size = test.tests.length ;
-        TSP tsp = new TSP(size+1, this.toGraph(test, false, null));
-        tsp.DP();
+        int[] opt_sequence = new int[size+1];
+
+        // run DP
+        this.DP( this.toGraph(test, false, null), opt_sequence );
 
         // remove v0 (dummy vertex) and then get shortest hamiltonian path
         int[] re = new int[size];
         for( int k=0 ; k<size ; k++ )
-            re[k] = tsp.opt_sequence[k+1] - 1;
+            re[k] = opt_sequence[k+1] - 1;
         return re ;
     }
+
 
     /*
-     *  prioritization CA by GA algorithm
+     *  dynamic programming, O(n^2*2^n)
      */
-    public int[] GAOrder( TestSuite test ) {
-        int size = test.tests.length ;
-        TSP tsp = new TSP(size+1, this.toGraph(test, false, null));
-        tsp.GA(128, 512, 0.5, 0.33);
+    public void DP( int[][] Graph , int[] opt_sequence ) {
+        int node_num = Graph.length ;
 
-        // remove v0 (dummy vertex) and then get shortest hamiltonian path
-        int[] re = new int[size];
+        int column = (int) Math.pow(2.0, (double) (node_num - 1));  // 列数
+        int[][] state = new int[node_num][column];                  // 状态矩阵，n * 2^(n-1)
+        int[][] best = new int[node_num][column];                   // 最优策略
 
-        int i = 0, j = 0 ;
-        for( ; i<size+1 && tsp.opt_sequence[i] != 0 ; i++ );
-        for( i=i+1 ; i<size+1 ; i++, j++ )
-            re[j] = tsp.opt_sequence[i]-1 ;
-        for( i = 0, j=j+1 ; j<size ; j++, i++ )
-            re[j] = tsp.opt_sequence[i]-1 ;
+        // 初始化
+        for (int i = 0; i < node_num; i++) {
+            for (int j = 0; j < column; j++) {
+                state[i][j] = best[i][j] = -1;
+            }
+        }
 
-        return re ;
+        // 初始化state第一列
+        for (int k = 1; k < node_num; k++)
+            state[k][0] = Graph[k][0];
+
+        // DP
+        int min;
+        for (int j = 1; j < column - 1; j++) {
+            for (int i = 1; i < node_num; i++) {
+                // 结点i不在列j中
+                if (((int) (Math.pow(2.0, i - 1)) & j) == 0x00) {
+                    min = Integer.MAX_VALUE;
+                    // 对于j中所有结点
+                    for (int k = 0; k < node_num; k++) {
+                        if (((int) (Math.pow(2.0, k - 1)) & j) != 0x00) {
+                            int tp = Graph[i][k] + state[k][j - (int) (Math.pow(2.0, k - 1))];
+                            if (tp < min) {
+                                min = tp;
+                                state[i][j] = min;
+                                best[i][j] = k;
+                            }
+                        }
+                    } // for each k
+                } // end if node i is not in column j
+            }
+        }
+
+        // 最后一列
+        min = Integer.MAX_VALUE;
+        for (int i = 1; i < node_num; i++) {
+            int tp = Graph[0][i] + state[i][column - 1 - (int) (Math.pow(2.0, i - 1))];
+            if (tp < min) {
+                min = tp;
+                state[0][column - 1] = min;
+                best[0][column - 1] = i;
+            }
+        }
+
+        // save result
+        // opt_length = state[0][column - 1];
+        opt_sequence[0] = 0;
+        for (int k = column - 1, next = 0, index = 1; k > 0; index++) {
+            next = best[next][k];
+            k = k - (int) Math.pow(2.0, next - 1);
+
+            opt_sequence[index] = next;
+        }
     }
+
 
     /*
      *  read best test sequence from .tour file
      */
     public int[] GetFromTour() {
         String file = tour_file ;
-        ArrayList<Integer> tp = new ArrayList<Integer>();
+        ArrayList<Integer> tp = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             // skip the first 7 lines

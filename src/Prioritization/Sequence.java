@@ -14,10 +14,10 @@ public class Sequence {
     public double crowd ;
 
     // fitness value
-    public long value ;
-    public int cost ;
+    public long value ;     // efd value
+    public double cost ;    // testing cost
 
-    public Sequence( int[] seq, int cost, long value, int level, double crowd ) {
+    public Sequence( int[] seq, double cost, long value, int level, double crowd ) {
         this.order = seq.clone() ;
         this.level = level ;
         this.crowd = crowd ;
@@ -37,7 +37,7 @@ public class Sequence {
         this.order = seq.clone() ;
     }
 
-    public void UpdateFitness( int value, int cost ) {
+    public void UpdateFitness( int value, double cost ) {
         this.cost = cost ;
         this.value = value ;
     }
@@ -55,7 +55,7 @@ public class Sequence {
      *  fitness comparison
      *  A > B : if A can make at least one attribute better than B
      *          without making any other worse off
-     *  if A > B, namely A dominates B, return True, else, return False
+     *  if A > B (A dominates B), return True, else, return False
      */
     public boolean isDominate( Sequence B ) {
         // low cost, large value is better
@@ -113,7 +113,7 @@ public class Sequence {
 
 
     /*
-     *  determine weather order is equal
+     *  determine weather two orders are equal
      */
     public boolean isEqualOrder( Sequence B ) {
         for( int i = 0 ; i < order.length ; i++ ) {

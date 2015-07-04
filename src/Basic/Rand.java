@@ -10,8 +10,11 @@ import java.util.Random;
 public class Rand {
 
     private Random rand ;
+    public Rand( long seed ) {
+        rand = new Random(seed);
+    }
     public Rand() {
-        rand = new Random() ;
+        rand = new Random();
     }
 
     /*

@@ -189,52 +189,16 @@ public class ReorderArray {
     }
 
     public void toGreedyHybridOrder( TestSuite test ) {
-        // coverage measurement
-        SUT sut = test.system ;
-        sut.GenerateS();
+        this.toGreedyHybridOrder(test, 2);
+    }
 
-        int size = test.order.length ;
-        int[] already = new int[size];      // this test case has been added
-        for (int k = 0; k < size; k++)
-            already[k] = 0;
-
-        // random
-        int pc = rand.nextInt(size) ;
-        test.order[0] = pc;
-        already[pc] = 1;
-
-        // select the i-th test case
-        int index ;
-        for (int i = 1; i < size; i++) {
-            double max = 0.0;
-            for (int k = 0; k < size; k++) {
-                if (already[k] == 0) {
-                    double cost = test.distance(test.order[i-1], k) + test.executionCost[k] ;
-                    int value = sut.FitnessValue(test.tests[k], 0);
-                    double m = (double) value / cost;
-                    if (m > max)
-                        max = m;
-                }
-            } // end for each unselected one
-
-            // ties break
-            ArrayList<Integer> Index = new ArrayList<Integer>();
-            for (int k = 0; k < size; k++) {
-                if (already[k] == 0) {
-                    double cost = test.distance(test.order[i - 1], k) + test.executionCost[k] ;
-                    int value = sut.FitnessValue(test.tests[k], 0);
-                    double m = (double)value / cost ;
-                    if ( m == max)
-                        Index.add(k);
-                }
-            }
-            index = rand.nextInt(Index.size());
-            index = Index.get(index);
-
-            test.order[i] = index;
-            already[index] = 1;
-            sut.FitnessValue(test.tests[index],1);
-        }
+    /*
+     *  GA
+     */
+    public void toGASwitchOrder( TestSuite test ) {
+        SEvolution se = new SEvolution(30, 1000, 0.9, 1.0/(double)test.getTestSuiteSize(), test);
+        se.GA();
+        System.arraycopy(se.opt_sequence, 0, test.order, 0, se.opt_sequence.length);
     }
 
     /*
@@ -243,15 +207,6 @@ public class ReorderArray {
     public void toDPSwitchOrder( TestSuite test ) {
         ReorderArrayTSP tsp = new ReorderArrayTSP();
         int[] best = tsp.DPOrder(test);
-        System.arraycopy(best, 0, test.order, 0, best.length);
-    }
-
-    /*
-     *  GA for TSP
-     */
-    public void toGASwitchOrder( TestSuite test ) {
-        ReorderArrayTSP tsp = new ReorderArrayTSP();
-        int[] best = tsp.GAOrder(test);
         System.arraycopy(best, 0, test.order, 0, best.length);
     }
 

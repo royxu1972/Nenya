@@ -3,51 +3,136 @@ package prioritization;
 import Basic.Rand;
 import Basic.TestSuite;
 import Generation.AETG;
+import Prioritization.MPopulation;
 import Prioritization.ReorderArray;
+import Prioritization.Sequence;
+import Prioritization.MIndicator;
+import prioritization.DataItem.ORDER;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 
 /**
- *  simulation experiment
+ *  Main Simulation Experiment
  *
  *  The goal of this simulation is to compare the efficacy of different testing orders
  *  under different testing scenarios. F(t)-measure (i.e. the time unit required to detect
  *  the first failure) is used as the criterion, so a smaller F(t)-value indicates a better
  *  test sequence.
  *
- *  To cover different testing scenarios, we control the following variables:
- *  orders: random, coverage based, switching cost based (greedy and lkh), multi objective based
- *  weight: the distribution of parameter weights
- *      type 1: w[i] = 1 for all i
- *      type 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remains
- *  t: covering strength, [2, 3]
- *  p: number of parameters, [10, 20, 30, 40, 60]
- *  v: number of values, [2, 3, 4, 6, 8]
+ *  To cover different testing scenarios, we control the following independent variables:
+ *  p:    number of parameters, [10, 60]
+ *  v:    number of values, [2, 8]
+ *  t:    covering strength, 2
+ *  tau:  strength of failure schemas, [2, 4]
+ *  type: the distribution of parameter weights
+ *        type = 1: w[i] = 1 for all i
+ *        type = 2: w[i] = 10 for 10% parameters, w[i] = 1 for the remains
+ *  r:    ratio, execution cost / switching cost, [0.0, 2,0]
  *
- *  For each SUT, 1) we generate a covering array, and then get its different testing
- *  orders. 2) 100 random t-way failure causing schemas are generated, and so we can get
- *  100 F(t)-values for each testing order. 3) As the randomness should be addressed,
- *  the above process will be repeated 30 times. 4) Finally, the average value of F(t)-value
- *  from 100 * 30 samples is used as the final result.
- *
+ *  We firstly construct 1000 different SUTs (based on independent variables) randomly,
+ *  and then evaluate which order is the best one for this SUT. Class Item is used to
+ *  save the data.
  */
 public class Simulation {
 
-    // ratio = execution cost / switching cost
-    private static double[] ratio = {
-            0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0
-    };
-    private static double[] ratio_fined = {
-            0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-            1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0
-    };
-    private static int[] par = {10, 20, 30, 40, 60};
-    private static int[] val = {2, 3, 4, 6, 8};
-
     private Rand rand ;
+    private Random random ;
+    private HashSet<DataItem> subjects ;
 
     public Simulation() {
         this.rand = new Rand();
+        this.random = new Random();
+        this.subjects = new HashSet<>();
+    }
+
+    public static ORDER[] order_1 = new ORDER[]{
+            ORDER.RANDOM,
+            ORDER.COVERAGE,
+            ORDER.GREEDY,
+            ORDER.GA,
+            ORDER.LKH,
+            ORDER.HYBRID,
+            ORDER.MO};
+    public static ORDER[] order_2 = new ORDER[]{ORDER.LKH};
+
+    /*
+     *  initialize subjects and save it to file
+     */
+    public void initSubjects( int num ) {
+        int par_lower = 10, par_upper = 60 ;
+        int val_lower = 2, val_upper = 8 ;
+        double ratio_lower = 0.0, ratio_upper = 2.0 ;
+        int strength_lower = 2, strength_upper = 4 ;
+        ORDER[] oo = new ORDER[]{ORDER.RANDOM};
+
+        do {
+            int p = par_lower + random.nextInt(par_upper-par_lower+1);
+            int v = val_lower + random.nextInt(val_upper-val_lower+1);
+            int type = 1 + random.nextInt(2);
+            double r = ratio_lower + (ratio_upper - ratio_lower) * random.nextDouble();
+            int t = strength_lower + random.nextInt(strength_upper - strength_lower);
+            int tau = strength_lower + random.nextInt(strength_upper-strength_lower+1);
+
+            //p = 10 ;
+            //v = 2 ;
+            t = 2 ;
+            tau = 2 ;
+            //type = 1 ;
+
+            DataItem di = new DataItem(oo, p, v, t, tau, type, r, 30);
+            subjects.add(di);
+        } while( subjects.size() < num );
+
+        // write
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("resources//SUT.txt"));
+            bw.write("NUM, P, V, T, Tau, Type, R\n");
+
+            int i = 0 ;
+            for( DataItem item : subjects ) {
+                bw.write( i + ", " + item.getRow() + "\n" );
+                i++ ;
+            }
+
+            bw.close();
+
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    /*
+     *  read the n-th DataItem from SUT file
+     */
+    public DataItem getDataItem( int n , ORDER[] o , int repeat ) {
+        String str = "" ;
+        try {
+            BufferedReader rd = new BufferedReader(new FileReader("resources//SUT.txt"));
+            // skip n+1 lines
+            for( int i=0 ; i<n+1 ; i++ )
+                rd.readLine();
+            str = rd.readLine() ;
+            rd.close();
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+
+        str = str.substring( str.indexOf(",") + 1 ).trim();
+        String[] strs = str.split(" ");
+
+        // P, V, T, Tau, Type, R
+        int p = Integer.valueOf(strs[0]);
+        int v = Integer.valueOf(strs[1]);
+        int t = Integer.valueOf(strs[2]);
+        int tau = Integer.valueOf(strs[3]);
+        int type = Integer.valueOf(strs[4]);
+        double r = Double.valueOf(strs[5]);
+
+        return new DataItem(o, p, v, t, tau, type, r, repeat);
     }
 
     /*
@@ -70,173 +155,207 @@ public class Simulation {
         return w ;
     }
 
+
     /*
-     *  exp - 1
-     *  t = 2, weight = normal (type-1), all 5 orders
-     *
-     *  exp - 2
-     *  t = 2, weight = biased (type-2), all 5 orders
-     *
-     *  exp - 3
-     *  t = 3, weight = normal (type-1), all 5 orders
-     *
-     *  exp - 4
-     *  t = 3, weight = biased (type-2), all 5 orders
-     *
+     *  exp for order_1
      */
-    public void exp1( Collection re ) {
-        String name = "exp-1 test all five orders";
-        Collection.ORDERS[] orders = new Collection.ORDERS[]{
-                Collection.ORDERS.RANDOM,
-                Collection.ORDERS.COVERAGE,
-                Collection.ORDERS.GREEDY,
-                Collection.ORDERS.LKH,
-                Collection.ORDERS.HYBRID
-        };
-        re.init(name, orders, par, val, ratio_fined) ;
+    public void exp1( int n1 , int n2) {
+        // repeat 30 times, testing 100 schemas for each
+        int repeat = 30 ;
+        int valid = 100 ;
 
-        // run each SUT
-        for( int i=0 ; i<par.length ; i++ ) {
-            for( int j=0 ; j<val.length ; j++ ) {
-                expEach(2, 1, i, j, re);
-            }
+        // evaluate SUT, from n1 to n2
+        for( int i = n1 ; i <= n2 ; i++ ) {
+            DataItem item = getDataItem(i, order_1, repeat);
+
+            System.out.print("evaluating CA(" + item.T + ", " + item.P + ", " + item.V +
+                    ") with type " + item.Type + " and ratio " + item.R + " ");
+            evaluate( item, repeat , valid );
+            System.out.print("\n");
+
+            item.writeFile(i + ".txt");
         }
     }
-
-    public void exp2( Collection re ) {
-        String name = "exp-2 (type2) test all five orders";
-        Collection.ORDERS[] orders = new Collection.ORDERS[]{
-                Collection.ORDERS.RANDOM,
-                Collection.ORDERS.COVERAGE,
-                Collection.ORDERS.GREEDY,
-                Collection.ORDERS.LKH,
-                Collection.ORDERS.HYBRID
-        };
-        re.init(name, orders, par, val, ratio_fined) ;
-
-        // run each SUT
-        for( int i=0 ; i<par.length ; i++ ) {
-            for( int j=0 ; j<val.length ; j++ ) {
-                expEach(2, 2, i, j, re);
-            }
-        }
-    }
-
-    public void exp3( Collection re ) {
-        String name = "exp-3 (type1, 3-way) test all five orders";
-        Collection.ORDERS[] orders = new Collection.ORDERS[]{
-                Collection.ORDERS.RANDOM,
-                Collection.ORDERS.COVERAGE,
-                Collection.ORDERS.GREEDY,
-                Collection.ORDERS.LKH,
-                Collection.ORDERS.HYBRID
-        };
-        re.init(name, orders, par, val, ratio_fined) ;
-
-        // run each SUT
-        for( int i=0 ; i<par.length ; i++ ) {
-            for( int j=0 ; j<val.length ; j++ ) {
-                expEach(3, 1, i, j, re);
-            }
-        }
-    }
-
 
 
     /*
-     *  each SUT for exp, repeat 30 times
-     *  five orders: random, coverage, greedy, lkh, hybrid
-     *
-     *  INPUT REQUIRED
-     *  t: coverage strength
-     *  type: distribution of parameter weight
-     *  par[p_index]: the number of parameter
-     *  val[v_index]: the number of each parameter value
-     *  re: data storage
+     *  evaluate each SUT, repeat N times * S tau-way failure schemas
      */
-    private void expEach( int t, int type, int p_index, int v_index, Collection re ) {
-        int p = re.pValue[p_index] ;
-        int va = re.vValue[v_index] ;
-        System.out.println( "processing CA(" + t + ", " + p + ", " + va + ")" );
-
+    private void evaluate( DataItem item, int N, int S ) {
+        int p = item.P ;
+        int va = item.V ;
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
             v[k] = va ;
+        int t = item.T ;
+        int tau = item.Tau ;
+        int order_length = item.orders.length ;
 
         double[] w ;
-        if( type == 1 )
+        if( item.Type == 1 )
             w = weightTypeOne(p);   // type - 1
-        else
+        else if ( item.Type == 2 )
             w = weightTypeTwo(p);   // type - 2
+        else {
+            System.err.println("error type");
+            return;
+        }
 
         TestSuite ts = new TestSuite(p, v, t, w);
         AETG gen = new AETG();
-        ReorderArray order = new ReorderArray();
-
-        // final results to be saved |labels| * |ratios|
-        double[][] aveFinal = new double[re.dataLabel.length][re.rValue.length] ;
-        for (int x=0 ; x<re.dataLabel.length ; x++)
-            for (int y=0 ; y<re.rValue.length ; y++)
-                aveFinal[x][y] = 0.0 ;
+        ReorderArray reorder = new ReorderArray();
 
         // repeat 30 times
-        for( int rep = 0 ; rep < 30 ; rep++ ) {
+        int repeat_num = N ;    // # of CA re-generations
+        int valid_num = S ;     // # of failure schemas
+
+
+        for( int rep = 0 ; rep < repeat_num ; rep++ ) {
             // 1. generate a covering array
+            System.out.print(".");
             gen.Generation(ts);
+            int length = ts.getTestSuiteSize();
 
-            // 2. generate 100 random t-way failure schemas
-            HashSet<int[]> ss = new HashSet<>() ;
+            // set execution cost
+            double exe = ts.getAverageSwitchingCost() * item.R;
+            ts.setExecutionCost(exe, 0.5);
+
+            // 2. generate valid_num (100) random Tau-way failure schemas
+            HashSet<int[]> ss = new HashSet<>();
             do {
-                int[] s = rand.Schema(t, p, v);
+                int[] s = rand.SchemaExist(tau, p, v, ts);
                 ss.add(s);
-            } while( ss.size() < 100 );
+            } while (ss.size() < valid_num);
 
-            // 3. evaluate different orders under different ratios
-            for( int rt = 0 ; rt < re.rValue.length ; rt++ ) {
-                double[] tpValue = new double[re.dataLabel.length];
+            // 3. get different orders
+            // single and multi objective orders
+            Sequence[] so_solutions = new Sequence[order_length-1];
+            ArrayList<Sequence> mo_solution = new ArrayList<>();
+            // used to construct reference front and evaluation
+            MPopulation ref_candidate = new MPopulation(0, length, ts);
 
-                // set execution cost
-                double exe = ts.getAverageSwitchingCost() * re.rValue[rt] ;
-                ts.setExecutionCost(exe, 0.5);
+            // for each order
+            // order_1 = random coverage switch-greedy switch-GA hybrid NSGA-II
 
-                // orders
-                int index = 0 ;
-                for ( Collection.ORDERS or : re.dataLabel ) {
-                    // change order
-                    switch ( or ) {
-                        case RANDOM :
-                            order.toRandomOrder(ts);
-                            break;
-                        case COVERAGE:
-                            order.toDefaultOrder(ts);
-                            break;
-                        case GREEDY:
-                            order.toGreedySwitchOrder(ts);
-                            break;
-                        case LKH:
-                            order.toLKHSwitchOrder(ts);
-                            break;
-                        case HYBRID:
-                            order.toGreedyHybridOrder(ts);
-                            break;
-                    }
-                    // calculate ft-value
-                    for( int[] s : ss ) {
-                        tpValue[index] += ts.getFt(t, s, null);
-                    }
-                    index++ ;
+            // for each single objective order
+            for (int i = 0 ; i < order_length - 1 ; i++ ) {
+                switch ( item.orders[i] ) {
+                    case RANDOM:
+                        reorder.toRandomOrder(ts);
+                        break;
+                    case COVERAGE:
+                        reorder.toDefaultOrder(ts);
+                        break;
+                    case GREEDY:
+                        reorder.toGreedySwitchOrder(ts);
+                        break;
+                    case GA:
+                        reorder.toGASwitchOrder(ts);
+                        break;
+                    case LKH:
+                        reorder.toLKHSwitchOrder(ts);
+                        break;
+                    case HYBRID:
+                        reorder.toGreedyHybridOrder(ts, 2);
+                        break;
                 }
 
-                // get average
-                for (int k=0; k<re.dataLabel.length; k++)
-                    aveFinal[k][rt] += tpValue[k] / 100.0 ;
-            }
-        }
+                if( !ts.isValidOrder(null))
+                    System.err.println( item.orders[i].toString() + " error");
 
-        // save final average results
-        for (int x=0 ; x<re.dataLabel.length ; x++)
-            for (int y=0 ; y<re.rValue.length ; y++)
-                re.dataValue[p_index][v_index][x][y] = aveFinal[x][y] / 30.0 ;
+                // evaluate basic indicators
+                double c = ts.getTotalCost(null);
+                long r = ts.getRFD(null);
+                so_solutions[i] = new Sequence(ts.order, c, r, 0, 0.0 );
+                ref_candidate.append(so_solutions[i]);
+
+                // save data to Item
+                item.Cost[i][rep] = c ;
+                item.RFD[i][rep] = r ;
+            }
+
+            // multi objective order
+            reorder.toMultiObjective(ts, mo_solution);
+            ref_candidate.unionSet(mo_solution);
+
+            double cc = 0.0 ;
+            long rr = 0 ;
+            for( Sequence seq : mo_solution ) {
+                cc += ts.getTotalCost(seq.order);
+                rr += ts.getRFD(seq.order);
+            }
+            item.Cost[order_length-1][rep] = cc / (double)mo_solution.size() ;
+            item.RFD[order_length-1][rep] = rr / mo_solution.size() ;
+
+            //
+            // 4. evaluate optimization and testing indicator
+            //
+            // get reference pareto front
+            ArrayList<Sequence> reference = new ArrayList<>();
+            ref_candidate.NonDominatedSort();
+            ref_candidate.getFirstLevelFront(reference);
+
+            //System.out.println("-------------------REF-----------------");
+            //for( Sequence each : reference )
+            //    each.printSequence();
+            //System.out.println("size: " + reference.size());
+
+            // EPSILON and IGD
+            for( int a = 0 ; a < order_length-1 ; a++ ) {
+                MIndicator mid = new MIndicator(so_solutions[a], reference);
+                item.EPSILON[a][rep] = mid.EPSILON();
+                item.IGD[a][rep] = mid.IGD();
+            }
+
+            MIndicator mid = new MIndicator(mo_solution, reference);
+            item.EPSILON[order_length-1][rep] = mid.EPSILON();
+            item.IGD[order_length-1][rep] = mid.IGD();
+
+
+            // Ft-measure
+            for( int a = 0 ; a < order_length-1 ; a++ ) {
+                //if( !ts.isValidOrder(so_solutions[a]) )
+                //    System.err.println("invalid order in single objective");
+                double ft = 0.0 ;
+                for (int[] s : ss) {
+                    ft += ts.getFt(tau, s, so_solutions[a].order);
+                }
+                item.Ft_measure[a][rep] = ft / (double)valid_num ;
+            }
+
+            // compute ft-values for multi objective order
+            // firstly get the solutions that contributes to the reference pareto front
+            ArrayList<int[]> mo_solution_used = new ArrayList<>();
+            for( Sequence mo : mo_solution ) {
+                for( Sequence ref : reference ) {
+                    if( mo.isEqualOrder(ref) ) {    // if contribute
+                        int[] tp = mo.order.clone() ;
+                        mo_solution_used.add(tp);
+                    }
+                }
+            }
+
+            double ft_ave = 0.0 ;
+            for( int[] mo : mo_solution_used ) {
+                //if( !ts.isValidOrder(mo) )
+                //    System.err.println("invalid order in multi objective");
+                double ft = 0.0 ;
+                for (int[] s : ss) {
+                    ft += ts.getFt(tau, s, mo);
+                }
+                ft_ave += ft / (double)valid_num ;
+            }
+            item.Ft_measure[order_length-1][rep] = ft_ave / (double)mo_solution_used.size() ;
+
+
+            //System.out.print( rep + " - ");
+            //for( int k = 0 ; k < aveFinal.length ; k++ )
+            //    System.out.print( aveFinal[k] + " " );
+            //System.out.print("\n");
+
+        } // end for each iteration
+
     }
+
 
 }

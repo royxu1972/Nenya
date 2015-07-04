@@ -12,11 +12,14 @@ public class RunExp {
         //for( int i=0 ; i<10 ; i++ )
         //    MEvolution.crossover_PMX(p1,p2);
 
-        SimulationRandom sr = new SimulationRandom();
-        sr.exp1( 1, "testing" );
+        Simulation s = new Simulation();
+        //s.initSubjects(1000);
+        //System.out.println(s.getDataItem(6, s.order_1, 30).toString());
+        s.exp1(0,100);
 
-        //SimulationSwitches ss = new SimulationSwitches();
-        //ss.run();
+
+        //SimulationRandom ss = new SimulationRandom();
+        //ss.exp1(1, "ddd");
 
         //SimulationEach se = new SimulationEach();
         //se.exp("each");
