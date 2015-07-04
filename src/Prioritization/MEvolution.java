@@ -1,6 +1,5 @@
 package Prioritization;
 
-import Basic.Rand;
 import Basic.TestSuite;
 
 import java.util.*;
@@ -148,7 +147,7 @@ public class MEvolution {
      *  o  : 4 [2] | 2 8 7 | 3 6 [7]
      *  ==>  4  5  | 2 8 7 | 3 6  1
      */
-    public static int[] crossover_PMX( final int[] p1, final int[] p2 ) {
+    public int[] crossover_PMX( final int[] p1, final int[] p2 ) {
         int LEN = p1.length ;
         int[] child = new int[LEN] ;
 

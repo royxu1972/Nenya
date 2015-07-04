@@ -64,8 +64,7 @@ public class MPopulation {
                 flag[pos] = 1 ;
             }
 
-            Sequence seq = new Sequence(order, (int)TS.getTotalCost(order),
-                    TS.getRFD(order), 0, 0.0) ;
+            Sequence seq = new Sequence(order, TS.getTotalCost(order), TS.getRFD(order), 0, 0.0) ;
             population.add(seq) ;
         }
 
@@ -73,7 +72,7 @@ public class MPopulation {
         int[] o = new int[LENGTH] ;
         for( int k=0 ; k<LENGTH ; k++ )
             o[k] = k ;
-        Sequence seq = new Sequence(o, (int)TS.getTotalCost(o), TS.getRFD(o), 0, 0.0) ;
+        Sequence seq = new Sequence(o, TS.getTotalCost(o), TS.getRFD(o), 0, 0.0) ;
         population.add(seq) ;
 
     }
@@ -85,14 +84,14 @@ public class MPopulation {
     public void NonDominatedSort() {
         // for each sequence, initialize dominateCount and dominateSet
         int[] dominateCount = new int[SIZE] ;
-        ArrayList<HashSet<Integer>> dominateSet = new ArrayList<HashSet<Integer>>();
-        ArrayList<Integer> F = new ArrayList<Integer>() ;
+        ArrayList<HashSet<Integer>> dominateSet = new ArrayList<>();
+        ArrayList<Integer> F = new ArrayList<>() ;
 
         int level = 1 ;
         int p_index = 0 ;
         for( Sequence p : population ) {
             dominateCount[p_index] = 0 ;
-            HashSet<Integer> Sp = new HashSet<Integer>() ;
+            HashSet<Integer> Sp = new HashSet<>() ;
 
             // if p dominates q, add q to p's dominateSet
             // if q dominates p, increase p's dominateCount
@@ -152,7 +151,7 @@ public class MPopulation {
      *  output: assign crowd distance to each member of I
      */
     public void CrowdAssignment( ArrayList<Integer> I ) {
-        ArrayList<Sequence> II = new ArrayList<Sequence>() ;
+        ArrayList<Sequence> II = new ArrayList<>() ;
         for( Integer i : I )
             II.add(population.get(i)) ;
         int l = II.size() ;
@@ -163,14 +162,14 @@ public class MPopulation {
         // cost distance, <
         //
         Collections.sort(II, new Sequence.costSort());
-        int f_min = II.get(0).cost ;
-        int f_max = II.get(l-1).cost ;
+        double f_min = II.get(0).cost ;
+        double f_max = II.get(l-1).cost ;
 
         II.get(0).UpdateCrowd(Integer.MAX_VALUE);   // boundary points
         II.get(l-1).UpdateCrowd(Integer.MAX_VALUE);
         for( int i=1 ; i<l-1 ; i++ ) {
             Sequence si = II.get(i) ;
-            double tp = (double)(II.get(i+1).cost-II.get(i-1).cost) / (double)(f_max-f_min) ;
+            double tp = (II.get(i+1).cost-II.get(i-1).cost) / (f_max-f_min) ;
             si.UpdateCrowd( si.crowd + tp ) ;
         }
 
@@ -235,8 +234,7 @@ public class MPopulation {
     }
 
     /*
-     *  get the first level front
-     *  (for constructing reference front)
+     *  get the first level front (level = 1)
      */
     public void getFirstLevelFront( ArrayList<Sequence> data ) {
         data.clear();
@@ -250,42 +248,5 @@ public class MPopulation {
             }
         }
     }
-
-    /*
-     *  return the IGD value between reference front REF and front A
-     */
-    public static double getIGD( ArrayList<Sequence> REF, ArrayList<Sequence> A ) {
-        double sum_dis = 0.0 ;
-        // for each point in REF front
-        for( Sequence ref : REF ) {
-            double min = Double.MAX_VALUE ;
-            // find the closet distance to point in A
-            for( Sequence a : A ) {
-                double dis = EDistance(ref, a);
-                if( dis < min )
-                    min = dis ;
-            }
-            sum_dis += min ;
-        }
-        return sum_dis / (double)REF.size() ;
-    }
-
-    public static double getIGD( ArrayList<Sequence> REF, Sequence A ) {
-        double min = Double.MAX_VALUE ;
-        for( Sequence ref : REF ) {
-            double dis = EDistance(ref, A);
-            if( dis < min )
-                min = dis ;
-        }
-        return min ;
-    }
-
-    public static double EDistance( Sequence x, Sequence y ) {
-        double dist = (double)((x.cost-y.cost)*(x.cost-y.cost)) +
-                (double)((x.value-y.value)*(x.value-y.value)) ;
-        return ( Math.sqrt(dist) );
-    }
-
-
 
 }
