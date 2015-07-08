@@ -90,8 +90,8 @@ public class DataItem {
     public boolean equals( Object obj ) {
         if (this == obj)
             return true;
-        else if (obj != null && obj instanceof Item ) {
-            Item a = (Item)obj;
+        else if (obj != null && obj instanceof DataItem ) {
+            DataItem a = (DataItem)obj;
             if( this.P == a.P && this.V == a.V && this.T == a.T && this.Tau == a.Tau
                     && this.Type == a.Type && this.R == a.R )
                 return true ;
