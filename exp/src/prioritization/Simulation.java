@@ -168,7 +168,7 @@ public class Simulation {
         for( int i = n1 ; i <= n2 ; i++ ) {
             DataItem item = getDataItem(i, order_1, repeat);
 
-            System.out.print("evaluating CA(" + item.T + ", " + item.P + ", " + item.V +
+            System.out.print("evaluating " + i + "-th CA(" + item.T + ", " + item.P + ", " + item.V +
                     ") with type " + item.Type + " and ratio " + item.R + " ");
             evaluate( item, repeat , valid );
             System.out.print("\n");
@@ -208,7 +208,6 @@ public class Simulation {
         // repeat 30 times
         int repeat_num = N ;    // # of CA re-generations
         int valid_num = S ;     // # of failure schemas
-
 
         for( int rep = 0 ; rep < repeat_num ; rep++ ) {
             // 1. generate a covering array

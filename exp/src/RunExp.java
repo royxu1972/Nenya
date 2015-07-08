@@ -15,19 +15,6 @@ public class RunExp {
         Simulation s = new Simulation();
         //s.initSubjects(1000);
         //System.out.println(s.getDataItem(6, s.order_1, 30).toString());
-        s.exp1(0,100);
-
-
-        //SimulationRandom ss = new SimulationRandom();
-        //ss.exp1(1, "ddd");
-
-        //SimulationEach se = new SimulationEach();
-        //se.exp("each");
-
-        //System.out.print("-----------\nSimulation\n-----------\n");
-        //Collection results = new Collection();
-        //Simulation sim = new Simulation();
-        //sim.exp3(results);
-        //results.printPlainData("data.txt");
+        s.exp1(59,100);
     }
 }
