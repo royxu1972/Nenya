@@ -357,4 +357,138 @@ public class Simulation {
     }
 
 
+    /*
+     *  Alg_Cost exp
+     */
+    public void exp2cost( String filename ) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename, true));
+            bw.write( "size random coverage switch-greedy switch-GA switch-lkh hybrid NSGA-II\n\n");
+            bw.close();
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+
+        int repeat = 30 ;
+        int[] vNum = {2, 3, 4, 5, 6, 7, 8} ;
+        int[] pNum = {10, 20, 30, 40, 50, 60} ;
+        //int[] pNum = {60} ;
+
+        int t = 2 ;
+        int tau = 2 ;
+
+        int i = 0 ;
+        for( int p : pNum ) {
+            for( int v : vNum ) {
+                // initialize DataItem
+                int type = 1 + random.nextInt(2);
+                double r =  2.0 * random.nextDouble();
+                DataItem di = new DataItem(order_1, p, v, t, tau, type, r, repeat);
+
+                System.out.print("evaluating " + i + "-th CA(" + di.T + ", " + di.P + ", " + di.V +
+                        ") with type " + di.Type + " and ratio " + di.R + " ");
+
+                double size = evaluateCost( di, repeat );
+                System.out.print("\n");
+
+                di.writeFileCost(filename, size);
+                i++ ;
+            }
+        }
+    }
+
+    private double evaluateCost( DataItem item, int N ) {
+        int p = item.P ;
+        int va = item.V ;
+        int[] v = new int[p] ;
+        for( int k=0 ; k<p ; k++ )
+            v[k] = va ;
+        int t = item.T ;
+        int tau = item.Tau ;
+        int order_length = item.orders.length ;
+
+        double[] w ;
+        if( item.Type == 1 )
+            w = weightTypeOne(p);   // type - 1
+        else if ( item.Type == 2 )
+            w = weightTypeTwo(p);   // type - 2
+        else {
+            System.err.println("error type");
+            return 0;
+        }
+
+        TestSuite ts = new TestSuite(p, v, t, w);
+        AETG gen = new AETG();
+        ReorderArray reorder = new ReorderArray();
+
+        double size_average = 0 ;
+
+        for( int rep = 0 ; rep < N ; rep++ ) {
+            // generate a covering array
+            System.out.print(".");
+            gen.Generation(ts);
+            size_average += (double)ts.getTestSuiteSize() ;
+
+            // set execution cost
+            double exe = ts.getAverageSwitchingCost() * item.R;
+            ts.setExecutionCost(exe, 0.5);
+
+            // for each order
+            // order_1 = [random coverage switch-greedy switch-GA hybrid NSGA-II]
+
+            // for each single objective order
+            for (int i = 0 ; i < order_length - 1 ; i++ ) {
+
+                // start time
+                long time_start = System.currentTimeMillis() ;
+
+                switch ( item.orders[i] ) {
+                    case RANDOM:
+                        reorder.toRandomOrder(ts);
+                        break;
+                    case COVERAGE:
+                        reorder.toDefaultOrder(ts);
+                        break;
+                    case GREEDY:
+                        reorder.toGreedySwitchOrder(ts);
+                        break;
+                    case GA:
+                        reorder.toGASwitchOrder(ts);
+                        break;
+                    case LKH:
+                        reorder.toLKHSwitchOrder(ts);
+                        break;
+                    case HYBRID:
+                        reorder.toGreedyHybridOrder(ts, 2);
+                        break;
+                }
+
+                // end time
+                long time_end = System.currentTimeMillis() ;
+
+                if( !ts.isValidOrder(null))
+                    System.err.println( item.orders[i].toString() + " error" ) ;
+
+                // save
+                item.Alg_Cost[i][rep] = time_end - time_start ;
+
+            }
+
+            // multi objective order
+            long time_start_m = System.currentTimeMillis() ;
+
+            ArrayList<Sequence> mo_solution = new ArrayList<>();
+            reorder.toMultiObjective(ts, mo_solution);
+
+            long time_end_m = System.currentTimeMillis() ;
+
+            item.Alg_Cost[order_length-1][rep] = time_end_m - time_start_m ;
+
+        } // end for each iteration
+
+        return size_average / (double)N ;
+
+    }
+
+
 }

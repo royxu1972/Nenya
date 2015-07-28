@@ -55,6 +55,9 @@ public class DataItem {
     // testing indicator
     public double[][] Ft_measure ;
 
+    // algorithm cost
+    public long[][] Alg_Cost ;
+
     public DataItem() {}
     public DataItem( ORDER[] l, int p, int v, int t, int tau, int type, double r, int repeat) {
         this.P = p ;
@@ -70,6 +73,7 @@ public class DataItem {
         this.EPSILON = new double[l.length][repeat];
         this.IGD = new double[l.length][repeat];
         this.Ft_measure = new double[l.length][repeat];
+        this.Alg_Cost = new long[l.length][repeat];
     }
 
     @Override
@@ -108,11 +112,10 @@ public class DataItem {
         return P + " " + V + " " + T + " " + Tau + " " + Type + " " + R ;
     }
 
-
     // write all data to a single file
     public void writeFile( String filename ) {
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename ));
+            BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename));
 
             // write name as the first line
             bw.write( this.toString() + "\n\n");
@@ -141,6 +144,29 @@ public class DataItem {
             bw.write( "Ft-measure\n");
             for( int i = 0 ; i < orders.length; i++ )
                 bw.write( orders[i].toString() + ": " + Arrays.toString(Ft_measure[i]) + "\n" );
+
+            bw.close();
+
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+    }
+
+    public void writeFileCost( String filename, double size ) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("resources//" + filename, true));
+
+            // write name as the first line
+            bw.write( size + " " );
+
+            // write average values
+            for( int i = 0 ; i < orders.length; i++ ) {
+                long ave = 0 ;
+                for( int j = 0 ; j < Alg_Cost[i].length ; j++ )
+                    ave += Alg_Cost[i][j] ;
+                bw.write( (double)ave / (double)Alg_Cost[0].length + " " );
+            }
+            bw.write("\n");
 
             bw.close();
 
