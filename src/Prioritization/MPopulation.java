@@ -64,7 +64,13 @@ public class MPopulation {
                 flag[pos] = 1 ;
             }
 
-            Sequence seq = new Sequence(order, TS.getTotalCost(order), TS.getRFD(order), 0, 0.0) ;
+            // optimizing goals: total switching cost & RFD
+            Sequence seq = new Sequence(
+                    order,
+                    TS.getTotalSwitchingCost(order),
+                    TS.getRFD(order, TS.system.tway),
+                    0,
+                    0) ;
             population.add(seq) ;
         }
 
@@ -72,7 +78,12 @@ public class MPopulation {
         int[] o = new int[LENGTH] ;
         for( int k=0 ; k<LENGTH ; k++ )
             o[k] = k ;
-        Sequence seq = new Sequence(o, TS.getTotalCost(o), TS.getRFD(o), 0, 0.0) ;
+        Sequence seq = new Sequence(
+                o,
+                TS.getTotalSwitchingCost(o),
+                TS.getRFD(o, TS.system.tway),
+                0,
+                0) ;
         population.add(seq) ;
 
     }
@@ -177,14 +188,14 @@ public class MPopulation {
         // value distance, >
         //
         Collections.sort(II, new Sequence.valueSort());
-        long l_min = II.get(0).value ;
-        long l_max = II.get(l-1).value ;
+        double l_min = II.get(0).value ;
+        double l_max = II.get(l-1).value ;
 
         II.get(0).UpdateCrowd(Integer.MAX_VALUE);   // boundary points
         II.get(l-1).UpdateCrowd(Integer.MAX_VALUE);
         for( int i=1 ; i<l-1 ; i++ ) {
             Sequence si = II.get(i) ;
-            double tp = (double)(II.get(i+1).value-II.get(i-1).value) / (double)(l_max-l_min) ;
+            double tp = (II.get(i+1).value-II.get(i-1).value) / (l_max-l_min) ;
             si.UpdateCrowd( si.crowd + tp ) ;
         }
 
