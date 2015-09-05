@@ -38,8 +38,8 @@ public class MIndicator {
     public void normalize( ArrayList<Sequence> x, ArrayList<Sequence> y, double[][] d1, double[][] d2 ) {
         double max_cost = 0.0 ;
         double min_cost = Double.MAX_VALUE ;
-        long max_value = 0 ;
-        long min_value = Long.MAX_VALUE ;
+        double max_value = 0 ;
+        double min_value = Long.MAX_VALUE ;
 
         for( Sequence each : x ) {
             if( each.cost > max_cost )
@@ -68,12 +68,12 @@ public class MIndicator {
         for( int i = 0 ; i < x.size() ; i++ ) {
             Sequence each = x.get(i) ;
             d1[i][0] = (each.cost-min_cost) / (max_cost-min_cost) ;
-            d1[i][1] = (double)(each.value-min_value) / (double)(max_value-min_value) ;
+            d1[i][1] = (each.value-min_value) / (max_value-min_value) ;
         }
         for( int i = 0 ; i < y.size() ; i++ ) {
             Sequence each = y.get(i) ;
             d2[i][0] = (each.cost-min_cost) / (max_cost-min_cost) ;
-            d2[i][1] = (double)(each.value-min_value) / (double)(max_value-min_value) ;
+            d2[i][1] = (each.value-min_value) / (max_value-min_value) ;
         }
     }
 

@@ -3,10 +3,10 @@ package prioritization;
 import Basic.Rand;
 import Basic.TestSuite;
 import Generation.AETG;
+import Prioritization.MIndicator;
 import Prioritization.MPopulation;
 import Prioritization.ReorderArray;
 import Prioritization.Sequence;
-import Prioritization.MIndicator;
 import prioritization.DataItem.ORDER;
 
 import java.io.*;
@@ -56,7 +56,6 @@ public class Simulation {
             ORDER.LKH,
             ORDER.HYBRID,
             ORDER.MO};
-    public static ORDER[] order_2 = new ORDER[]{ORDER.LKH};
 
     /*
      *  initialize subjects and save it to file
@@ -157,9 +156,9 @@ public class Simulation {
 
 
     /*
-     *  exp for order_1
+     *  MAIN exp, the index of SUT is from n1 to n2
      */
-    public void exp1( int n1 , int n2) {
+    public void exp1( int n1 , int n2 ) {
         // repeat 30 times, testing 100 schemas for each
         int repeat = 30 ;
         int valid = 100 ;
@@ -170,7 +169,7 @@ public class Simulation {
 
             System.out.print("evaluating " + i + "-th CA(" + item.T + ", " + item.P + ", " + item.V +
                     ") with type " + item.Type + " and ratio " + item.R + " ");
-            evaluate( item, repeat , valid );
+            evaluate( item, repeat, valid );
             System.out.print("\n");
 
             item.writeFile(i + ".txt");
@@ -180,6 +179,7 @@ public class Simulation {
 
     /*
      *  evaluate each SUT, repeat N times * S tau-way failure schemas
+     *  order_1 = random coverage switch-greedy switch-GA hybrid NSGA-II
      */
     private void evaluate( DataItem item, int N, int S ) {
         int p = item.P ;
@@ -210,6 +210,7 @@ public class Simulation {
         int valid_num = S ;     // # of failure schemas
 
         for( int rep = 0 ; rep < repeat_num ; rep++ ) {
+
             // 1. generate a covering array
             System.out.print(".");
             gen.Generation(ts);
@@ -226,15 +227,12 @@ public class Simulation {
                 ss.add(s);
             } while (ss.size() < valid_num);
 
-            // 3. get different orders
-            // single and multi objective orders
+            // 3. get different orders, and evaluate their basic indicators
+            // the data structure to represent single and multi objective orders
             Sequence[] so_solutions = new Sequence[order_length-1];
             ArrayList<Sequence> mo_solution = new ArrayList<>();
-            // used to construct reference front and evaluation
+            // the data structure to represent candidate reference front
             MPopulation ref_candidate = new MPopulation(0, length, ts);
-
-            // for each order
-            // order_1 = random coverage switch-greedy switch-GA hybrid NSGA-II
 
             // for each single objective order
             for (int i = 0 ; i < order_length - 1 ; i++ ) {
@@ -260,11 +258,11 @@ public class Simulation {
                 }
 
                 if( !ts.isValidOrder(null))
-                    System.err.println( item.orders[i].toString() + " error");
+                    System.err.println( item.orders[i].toString() + " error, Invalid Order!");
 
-                // evaluate basic indicators
-                double c = ts.getTotalCost(null);
-                long r = ts.getRFD(null);
+                // evaluate basic indicators, RFD and total switching cost
+                double c = ts.getTotalSwitchingCost(null);
+                double r = ts.getRFD(null, 2);
                 so_solutions[i] = new Sequence(ts.order, c, r, 0, 0.0 );
                 ref_candidate.append(so_solutions[i]);
 
@@ -273,22 +271,22 @@ public class Simulation {
                 item.RFD[i][rep] = r ;
             }
 
-            // multi objective order
+            // for multi objective order
             reorder.toMultiObjective(ts, mo_solution);
             ref_candidate.unionSet(mo_solution);
 
+            // evaluate basic indicators, RFD and total switching cost
             double cc = 0.0 ;
-            long rr = 0 ;
+            double rr = 0 ;
             for( Sequence seq : mo_solution ) {
-                cc += ts.getTotalCost(seq.order);
-                rr += ts.getRFD(seq.order);
+                cc += ts.getTotalSwitchingCost(seq.order);
+                rr += ts.getRFD(seq.order, 2);
             }
             item.Cost[order_length-1][rep] = cc / (double)mo_solution.size() ;
-            item.RFD[order_length-1][rep] = rr / mo_solution.size() ;
+            item.RFD[order_length-1][rep] = rr / (double)mo_solution.size() ;
 
-            //
-            // 4. evaluate optimization and testing indicator
-            //
+
+            // 4. evaluate multi objective optimization indicator
             // get reference pareto front
             ArrayList<Sequence> reference = new ArrayList<>();
             ref_candidate.NonDominatedSort();
@@ -299,7 +297,7 @@ public class Simulation {
             //    each.printSequence();
             //System.out.println("size: " + reference.size());
 
-            // EPSILON and IGD
+            // compute EPSILON and IGD for each order
             for( int a = 0 ; a < order_length-1 ; a++ ) {
                 MIndicator mid = new MIndicator(so_solutions[a], reference);
                 item.EPSILON[a][rep] = mid.EPSILON();
@@ -311,10 +309,9 @@ public class Simulation {
             item.IGD[order_length-1][rep] = mid.IGD();
 
 
-            // Ft-measure
+            // 5. evaluate the ability of early fault detection
+            // compute Ft-measure for single objective orders
             for( int a = 0 ; a < order_length-1 ; a++ ) {
-                //if( !ts.isValidOrder(so_solutions[a]) )
-                //    System.err.println("invalid order in single objective");
                 double ft = 0.0 ;
                 for (int[] s : ss) {
                     ft += ts.getFt(tau, s, so_solutions[a].order);
@@ -328,16 +325,13 @@ public class Simulation {
             for( Sequence mo : mo_solution ) {
                 for( Sequence ref : reference ) {
                     if( mo.isEqualOrder(ref) ) {    // if contribute
-                        int[] tp = mo.order.clone() ;
-                        mo_solution_used.add(tp);
+                        mo_solution_used.add(mo.order.clone());
                     }
                 }
             }
 
             double ft_ave = 0.0 ;
             for( int[] mo : mo_solution_used ) {
-                //if( !ts.isValidOrder(mo) )
-                //    System.err.println("invalid order in multi objective");
                 double ft = 0.0 ;
                 for (int[] s : ss) {
                     ft += ts.getFt(tau, s, mo);
@@ -346,11 +340,29 @@ public class Simulation {
             }
             item.Ft_measure[order_length-1][rep] = ft_ave / (double)mo_solution_used.size() ;
 
+            // compute RFDc value
+            // firstly, get the maxTime of all obtained orders
+            double maxTime = 0 ;
+            for( Sequence seq : so_solutions) {
+                if( seq.cost > maxTime )
+                    maxTime = seq.cost ;
+            }
+            for( Sequence seq : mo_solution ) {
+                if( seq.cost > maxTime )
+                    maxTime = seq.cost ;
+            }
 
-            //System.out.print( rep + " - ");
-            //for( int k = 0 ; k < aveFinal.length ; k++ )
-            //    System.out.print( aveFinal[k] + " " );
-            //System.out.print("\n");
+            // compute values for single objective orders
+            for( int a = 0 ; a < order_length-1 ; a++ ) {
+                item.RFDc[a][rep] = ts.getRFDc(so_solutions[a].order, 2, maxTime);
+            }
+            // compute values for multi objective orders (mo_solution_used)
+            double rfdc_ave = 0 ;
+            for( int[] mo : mo_solution_used ) {
+                rfdc_ave += ts.getRFDc(mo, 2, maxTime);
+            }
+            item.RFDc[order_length-1][rep] = rfdc_ave / (double)mo_solution_used.size() ;
+
 
         } // end for each iteration
 

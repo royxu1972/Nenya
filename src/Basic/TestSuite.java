@@ -1,7 +1,5 @@
 package Basic;
 
-import java.util.ArrayList;
-
 /**
  * The basic data structure and evaluations for a test suite
  */
@@ -58,6 +56,10 @@ public class TestSuite {
      *  but if m = 0, then set execution cost = 0 for all
      */
     public void setExecutionCost( double m, double s ) {
+        if( executionCost == null )
+            executionCost = new double[tests.length];
+
+        // assign values
         if( m == 0.0 ) {
             for( int k = 0; k < executionCost.length; k++ )
                 executionCost[k] = 0.0 ;
@@ -120,7 +122,7 @@ public class TestSuite {
     }
 
     /*
-     *  get the total switching cost of the test suite with order[]
+     *  get the total switching cost of the test suite with the order od[]
      *  no setting up cost
      */
     public double getTotalSwitchingCost( int[] od ) {
@@ -136,6 +138,7 @@ public class TestSuite {
 
     /*
      *  get the switching cost between adjacent test cases
+     *  no setting up cost, so len(ad) = tests.length - 1
      */
     public double[] getAdjacentSwitchingCost( int[] od ) {
         if( od == null )
@@ -148,13 +151,18 @@ public class TestSuite {
     }
 
     /*
-     *  get the total testing cost, i.e. switching cost + execution cost
+     *  get the total testing cost
+     *  i.e. setting-up cost + switching cost + execution cost
      */
     public double getTotalCost( int[] od ) {
         if( od == null )
             od = this.order ;
 
-        double sum = executionCost[od[0]] ;
+        double sum = 0 ;
+        for( int i=0 ; i<weight.length ; i++ )
+            sum += weight[i] ;
+
+        sum += executionCost[od[0]] ;
         for( int i=0 ; i<od.length-1 ; i++ ) {
             sum += distance(od[i], od[i+1]) ;
             sum += executionCost[od[i+1]] ;
@@ -201,49 +209,8 @@ public class TestSuite {
     }
 
     /*
-     *  get the t-RFD value: the rate of t-way combination coverage based on test cases
-     */
-    public long getRFD( int[] od, int t ) {
-        if( od == null )
-            od = this.order ;
-
-        long rfd = 0;
-        long pre = 0;
-
-        SUT s = new SUT(system.parameter, system.value, t);
-        s.GenerateS();
-
-        for( int k=0 ; k<tests.length ; k++ ) {
-            int cov = s.FitnessValue(tests[od[k]], 1);
-            pre += cov;
-            rfd += pre;
-        }
-        return rfd;
-    }
-
-    public long getRFD( int[] od ) {
-        return getRFD(od, 2) ;
-    }
-
-    /*
-     *  get the number of covered 2-way combinations till each test case
-     */
-    public long[] getRFDeach( int[] od ) {
-        if( od == null )
-            od =this.order ;
-        long[] rfds = new long[tests.length];
-        long pre = 0;
-        system.GenerateS();
-        for( int k=0 ; k<tests.length ; k++ ) {
-            int cov = system.FitnessValue(tests[od[k]], 1);
-            pre += cov;
-            rfds[k] = pre;
-        }
-        return rfds ;
-    }
-
-    /*
-     *  get F(t)-measure: the required time unit to detect specified t-way failure schema with order od[]
+     *  get F(t)-measure:
+     *  the required time unit to detect specified t-way failure schema with order od[]
      */
     public double getFt(int tway, final int[] schema, int[] od) {
         if( od == null )
@@ -271,47 +238,79 @@ public class TestSuite {
     }
 
     /*
-     *  testing ...
-     *
-     *  data[0]: get F(t)-measures: the required time unit to detect the first failure schema
-     *  data[1]: get NAPFD(c): the rate of t-way failure detection over testing time
-     *                  CF1 + CF2 + ... + CFm    p
-     *  NAPFD(c) = p - ---------------------- + --
-     *                         m * n            2n
-     *  where m = number of faults
-     *        n = number of time units
-     *        CF(i) = the time required to detect fault i
-     *        p = number of detected faults / number of all faults
+     *  get the t-RFD value:
+     *  the rate of t-way combination coverage based on test cases
      */
-    public void getNAPFDC(double[] data, int tway, final ArrayList<int[]> schemas, int[] od) {
-        double[] CF = new double[schemas.size()];
-        double CF_sum = 0.0 ;
-        int index = 0 ;
-        for( int[] each : schemas ) {
-            CF[index] = this.getFt(tway, each, od);
-            CF_sum += CF[index];
-            index++;
+    public double getRFD( int[] od, int t ) {
+        if( od == null )
+            od = this.order ;
+        int len = tests.length ;
+
+        SUT s = new SUT(system.parameter, system.value, t);
+        s.GenerateS();
+
+        long cur = 0, pre = 0 ;
+        for( int k=0 ; k<len-1 ; k++ ) {
+            int cov = s.FitnessValue(tests[od[k]], 1);
+            pre += cov ;
+            cur += pre ;
         }
+        long totalCover = pre + s.FitnessValue(tests[od[len-1]], 1);
 
-        System.out.print("CF: ");
-        for( int k=0 ; k<CF.length ; k++ )
-            System.out.print(CF[k] + " ");
-        System.out.print("\n");
-        System.out.println("total cost: " + this.getTotalCost(od));
+        return (double)cur / ((double)len * (double)totalCover);
+    }
 
-        double min = Double.MAX_VALUE ;
-        for( int k=0 ; k<CF.length ; k++ )
-            if( CF[k] < min )
-                min = CF[k] ;
+    /*
+     *  get the number of covered t-way combinations till each test case
+     */
+    public long[] getCoverEach( int[] od, int t ) {
+        if( od == null )
+            od =this.order ;
+        long[] cover = new long[tests.length];
 
-        double max = 0 ;
-        for( int k=0 ; k<CF.length ; k++ )
-            if( CF[k] > max )
-                max = CF[k] ;
+        SUT s = new SUT(system.parameter, system.value, t);
+        s.GenerateS();
 
-        data[0] = min ;
-        data[1] = 1 - CF_sum / (schemas.size() * this.getTotalCost(od)) + 1 / (2 * this.getTotalCost(od)) ;
-        data[2] = max ;
+        long pre = 0;
+        for( int k=0 ; k<tests.length ; k++ ) {
+            int cov = s.FitnessValue(tests[od[k]], 1);
+            pre += cov;
+            cover[k] = pre;
+        }
+        return cover ;
+    }
+
+    /*
+     *  compute the relative t-RFDc value:
+     *  the rate of t-way combination coverage based on time cost
+     */
+    public double getRFDc(int[] od, int t, double maxTime) {
+        if( od == null )
+            od = this.order ;
+        int len = tests.length ;
+
+        SUT s = new SUT(system.parameter, system.value, t);
+        s.GenerateS();
+
+        // the switching cost between test cases, len = tests.length - 1
+        double[] cost = getAdjacentSwitchingCost(od);
+        double totalTime = getTotalCost(od);
+
+        // the number of t-way covered combinations, len = tests.length
+        long[] cover = getCoverEach(od, t);
+
+        // numerator
+        double numerator = 0 ;
+        for( int i=0 ; i<len-1 ; i++ ) {
+            double tp = ( cost[i] + executionCost[i+1] ) * (double)cover[i] ;
+            numerator += tp ;
+        }
+        numerator += ( maxTime - totalTime ) * (double)cover[len-1] ;
+
+        // denominator
+        double denominator = maxTime * (double)cover[len-1] ;
+
+        return numerator / denominator ;
     }
 
 

@@ -14,10 +14,10 @@ public class Sequence {
     public double crowd ;
 
     // fitness value
-    public long value ;     // efd value
+    public double value ;   // cover value
     public double cost ;    // testing cost
 
-    public Sequence( int[] seq, double cost, long value, int level, double crowd ) {
+    public Sequence( int[] seq, double cost, double value, int level, double crowd ) {
         this.order = seq.clone() ;
         this.level = level ;
         this.crowd = crowd ;
@@ -37,7 +37,7 @@ public class Sequence {
         this.order = seq.clone() ;
     }
 
-    public void UpdateFitness( int value, double cost ) {
+    public void UpdateFitness( double value, double cost ) {
         this.cost = cost ;
         this.value = value ;
     }
@@ -110,7 +110,6 @@ public class Sequence {
                 return 1 ;
         }
     }
-
 
     /*
      *  determine weather two orders are equal

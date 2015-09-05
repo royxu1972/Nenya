@@ -13,12 +13,12 @@ public class DataItem {
     public enum ORDER {
         RANDOM("random"),
         // single objectives
-        COVERAGE("coverage"),   // 2-cov, default
+        COVERAGE("coverage"),
         GREEDY("switch-greedy"),
         GA("switch-GA"),
         LKH("switch-LKH"),
         // multi objectives
-        HYBRID("hybrid"),     // 2-cov / cost
+        HYBRID("hybrid"),
         MO("NSGA-II");
 
         private final String text;
@@ -48,11 +48,12 @@ public class DataItem {
     // # of orders * repeated times
     // basic indicator
     public double[][] Cost ;
-    public long[][] RFD ;
+    public double[][] RFD ;
     // optimization indicator
     public double[][] EPSILON ;
     public double[][] IGD ;
-    // testing indicator
+    // testing indicator, ability of early fault detection
+    public double[][] RFDc ;
     public double[][] Ft_measure ;
 
     // algorithm cost
@@ -69,10 +70,12 @@ public class DataItem {
         this.orders = l.clone() ;
 
         this.Cost = new double[l.length][repeat];
-        this.RFD = new long[l.length][repeat];
+        this.RFD = new double[l.length][repeat];
         this.EPSILON = new double[l.length][repeat];
         this.IGD = new double[l.length][repeat];
+        this.RFDc = new double[l.length][repeat];
         this.Ft_measure = new double[l.length][repeat];
+
         this.Alg_Cost = new long[l.length][repeat];
     }
 
@@ -144,6 +147,11 @@ public class DataItem {
             bw.write( "Ft-measure\n");
             for( int i = 0 ; i < orders.length; i++ )
                 bw.write( orders[i].toString() + ": " + Arrays.toString(Ft_measure[i]) + "\n" );
+            bw.write("\n");
+
+            bw.write( "RFDc\n");
+            for( int i = 0 ; i < orders.length; i++ )
+                bw.write( orders[i].toString() + ": " + Arrays.toString(RFDc[i]) + "\n" );
 
             bw.close();
 
@@ -174,6 +182,5 @@ public class DataItem {
             System.err.println(e);
         }
     }
-
 
 }

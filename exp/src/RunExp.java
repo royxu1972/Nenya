@@ -15,8 +15,8 @@ public class RunExp {
         Simulation s = new Simulation();
         //s.initSubjects(1000);
         //System.out.println(s.getDataItem(6, s.order_1, 30).toString());
-        //s.exp1(59,100);
+        s.exp1(0,99);
 
-        s.exp2cost("alg.txt");
+        //s.exp2cost("alg.txt");
     }
 }
