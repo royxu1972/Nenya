@@ -18,7 +18,7 @@ public class Rand {
     }
 
     /*
-     *  generate a random vale ~ N(m, s)
+     *  generate a random value ~ N(m, s)
      */
     public double Gaussian( double m, double s ) {
         return Math.sqrt(s)*rand.nextGaussian() + m ;

@@ -23,7 +23,7 @@ public class IOFiles {
      *  line 4-n:  covering array
      *  line n+1:  end
      */
-    public void ReadFromFile(String fileName) throws IOException {
+    public void readFromFile(String fileName) throws IOException {
         Random rd = new Random();
         File file = new File(fileName);
         try {

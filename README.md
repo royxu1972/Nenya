@@ -2,17 +2,23 @@
 
 Combination Design provides some algorithms for combinatorial testing.
 
-## generation
+## Test Suite Generation
 
 Generate a covering array with as few test cases as possible.
 
 * AETG
 
-## prioritization
+Generate a random test suite.
+
+* RT
+* ART-FSCS
+
+## Test Suite Prioritization
 
 Reordering existing test suite to maximize combination coverage or minimize switching cost.
 
 * Combination coverage based prioritization
+    * Greedy Algorithm
 
 * Switching cost based prioritization
 	* Greedy Algorithm
@@ -20,6 +26,9 @@ Reordering existing test suite to maximize combination coverage or minimize swit
 	* Genetic Algorithm
 	* LKH Solver for TSP (Windows only)
 
-* Multi Objective Optimization
-	* Hybrid Based Greedy Algorithm
+* Hybrid based prioritization (combination coverage + testing cost)
+    * Greedy Algorithm
+
+* Multi-objective optimization (combination coverage + testing cost)
+	* NSGA-II
 

@@ -98,12 +98,7 @@ public class MEvolution {
                     mutation_EX( child ) ;
 
                 // add to Q
-                Sequence q = new Sequence(
-                        child,
-                        ts.getTotalSwitchingCost(child),
-                        ts.getRFD(child, ts.system.tway),
-                        0,
-                        0 );
+                Sequence q = new Sequence(child, ts.getTotalTestingCost(child), ts.getRFD(child, ts.system.tway), 0, 0 );
                 Q.add(q) ;
             }
 

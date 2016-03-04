@@ -36,9 +36,9 @@ public class orderMobile {
 
     @Test
     public void testPaperCase() {
-        // test getAverageSwitches()
+        // test getAverageNumberOfSwitches()
         System.out.println("--------------------------");
-        System.out.println("GET average switches = " + ts.getAverageSwitches(null));
+        System.out.println("GET average switches = " + ts.getAverageNumberOfSwitches(null));
 
         // test RFD and RFDc
         double maxTime = 0 ;
@@ -59,16 +59,16 @@ public class orderMobile {
         for ( int i=0 ; i<a.length ; i++ )
             System.out.print( a[i] + " ");
         System.out.print("]\n");
-        if( ts.getTotalCost(Po) > maxTime )
-            maxTime = ts.getTotalCost(Po) ;
+        if( ts.getTotalTestingCost(Po) > maxTime )
+            maxTime = ts.getTotalTestingCost(Po) ;
 
         System.out.print("hybrid total switching cost = " + ts.getTotalSwitchingCost(Ph) + ", switchCost = [");
         a = ts.getAdjacentSwitchingCost(Ph);
         for ( int i=0 ; i<a.length ; i++ )
             System.out.print( a[i] + " ");
         System.out.print("]\n");
-        if( ts.getTotalCost(Ph) > maxTime )
-            maxTime = ts.getTotalCost(Ph);
+        if( ts.getTotalTestingCost(Ph) > maxTime )
+            maxTime = ts.getTotalTestingCost(Ph);
 
 
         // rfd

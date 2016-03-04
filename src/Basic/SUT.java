@@ -9,11 +9,15 @@ public class SUT {
     public int[] value;
     public int tway;
 
+    // BETA: constraint as forbidden tuple, one constraint each row (m * parameter)
+    public int[][] constraints;
+
     // the combinations to be covered
     private int SCountAll;  // 总的待覆盖组合数
     private int SCount;     // 未覆盖组合数
     private int coverMain;          // 记录Main行数，C(parameter,tway)
     private int testcaseCoverMax;   // 一个测试用例最多能覆盖组合数
+
     // 所有需要覆盖的组合，按bit计算
     private int[][] AllS;
 
@@ -26,6 +30,15 @@ public class SUT {
         tway = t;
         coverMain = ALG.cal_combine(p, tway);
         testcaseCoverMax = coverMain;
+        constraints = null ;
+    }
+
+    // set constraint
+    public void setConstraints( int[][] c ) {
+        constraints = new int[c.length][parameter];
+        for( int i = 0 ; i < c.length ; i++ ) {
+            System.arraycopy(c[i], 0, constraints[i], 0, parameter);
+        }
     }
 
     // SCountAll
@@ -109,6 +122,27 @@ public class SUT {
         }
         // 记录总的待覆盖组合数
         SCountAll = SCount;
+
+        // BETA: 约束处理，仅支持约束参数个数 = t-way 的情况
+        if( constraints != null ) {
+            //System.out.println("before SCount = " + SCount);
+            // make constraint be covered
+            for( int[] c : constraints ) {
+                int[] pos = new int[tway];
+                int[] sch = new int[tway];
+                int index = 0 ;
+                for( int k = 0 ; k < c.length ; k++ ) {
+                    if( c[k] != -1 ) {
+                        pos[index] = k ;
+                        sch[index] = c[k] ;
+                        index++ ;
+                    }
+                }
+                Covered(pos, sch, 1);
+            }
+            //System.out.println("after SCount = " + SCount);
+            //printAllS();
+        }
     }
 
     // ----------------------------------------------------------------------------

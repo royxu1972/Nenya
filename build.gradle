@@ -44,13 +44,20 @@ dependencies {
     testCompile 'junit:junit:4.+'
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'idea'
-    apply plugin: 'eclipse'
-    version = '1.0'
-
-    dependencies {
-        compile project(':')
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'archives'
+        }
     }
 }
+
+//subprojects {
+//    apply plugin: 'java'
+//    apply plugin: 'idea'
+//    apply plugin: 'eclipse'
+//    version = '1.0'
+//    dependencies {
+//        compile project(':')
+//    }
+//}

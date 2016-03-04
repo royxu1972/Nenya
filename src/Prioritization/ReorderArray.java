@@ -18,7 +18,7 @@ public class ReorderArray {
     }
 
     /*
-     *  default order, from 0 to n-1
+     *  Default order, from 0 to n-1
      */
     public void toDefaultOrder( TestSuite test ) {
         for( int i=0 ; i<test.order.length ; i++ )
@@ -26,7 +26,7 @@ public class ReorderArray {
     }
 
     /*
-     *  random order
+     *  Random order
      */
     public void toRandomOrder( TestSuite test ) {
         int size = test.order.length ;
@@ -44,8 +44,8 @@ public class ReorderArray {
     }
 
     /*
-     *  greedy prioritization by t-way coverage only
-     *  randomly select the first one
+     *  t-way coverage based oder by greedy algorithm.
+     *  Randomly select the first one.
      */
     public void toGreedyCoverageOrder( TestSuite test, int t ) {
         int size = test.order.length ;
@@ -93,8 +93,8 @@ public class ReorderArray {
     }
 
     /*
-     *  greedy prioritization by switching cost only
-     *  randomly select the first one
+     *  Switching cost based order by greedy algorithm.
+     *  Randomly select the first one.
      */
     public void toGreedySwitchOrder( TestSuite test ) {
         int size = test.order.length ;
@@ -136,10 +136,8 @@ public class ReorderArray {
     }
 
     /*
-     *  greedy prioritization by hybridising combination coverage and switching cost
-     *            coverage
-     *  metric = ---------- when selecting each test case
-     *              cost
+     *  Hybrid based order by greedy algorithm. When determining the next test case to run,
+     *  metric = (t-way combination coverage) / (execution + switching cost)
      */
     public void toGreedyHybridOrder( TestSuite test, int t ) {
         // coverage measurement
@@ -193,7 +191,7 @@ public class ReorderArray {
     }
 
     /*
-     *  GA
+     *  Switching cost based order by GA
      */
     public void toGASwitchOrder( TestSuite test ) {
         SEvolution se = new SEvolution(30, 1000, 0.9, 1.0/(double)test.getTestSuiteSize(), test);
@@ -202,7 +200,7 @@ public class ReorderArray {
     }
 
     /*
-     *  DP for TSP
+     *  Switching cost based order by GA by DP for TSP
      */
     public void toDPSwitchOrder( TestSuite test ) {
         ReorderArrayTSP tsp = new ReorderArrayTSP();
@@ -211,7 +209,7 @@ public class ReorderArray {
     }
 
     /*
-     *  LKH solver for TSP
+     *  Switching cost based order by GA LKH solver for TSP
      */
     public void toLKHSwitchOrder( TestSuite test ) {
         ReorderArrayTSP tsp = new ReorderArrayTSP();
@@ -221,20 +219,17 @@ public class ReorderArray {
         if( best.length == test.order.length )
             System.arraycopy(best, 0, test.order, 0, best.length);
         else
-            System.err.println("solver is not run correctly");
+            System.err.println("solver does not run correctly");
     }
 
     /*
-     *  Multi-Objective Optimization to balance combination coverage and switching cost
-     *  NSGA-II will return a set of near optimal non-dominated solutions, which will be
-     *  saved in ArrayList<int[]> data
+     *  Multi-objective optimization based order by NSGA-II, whose aim is to balance
+     *  combination coverage and testing cost. NSGA-II will return a set of near optimal
+     *  non-dominated solutions, which will be saved in ArrayList<int[]> data.
      */
     public void toMultiObjective( TestSuite test, ArrayList<Sequence> data ) {
         MEvolution me = new MEvolution(30, 1000, 0.9, 1.0/(double)test.getTestSuiteSize(), test);
         me.evolve();
-        //System.out.println("-------------------");
-        //me.printPool();
-        //System.out.println("-------------------");
         me.assignBestFront(data);
     }
 

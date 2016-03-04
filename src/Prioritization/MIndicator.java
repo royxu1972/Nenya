@@ -3,7 +3,7 @@ package Prioritization;
 import java.util.ArrayList;
 
 /**
- *  particular designed for quality evaluation of multi-objective (cost and RFD)
+ *  particular designed for quality evaluation of multi-objective
  *  solutions for prioritization problem
  */
 public class MIndicator {
@@ -29,13 +29,13 @@ public class MIndicator {
         fitB = new double[ref.size()][2] ;
 
         // normalize
-        normalize(a, ref, fitA, fitB);
+        normalization(a, ref, fitA, fitB);
     }
 
     /*
      *  normalize cost and rfd value
      */
-    public void normalize( ArrayList<Sequence> x, ArrayList<Sequence> y, double[][] d1, double[][] d2 ) {
+    public void normalization( ArrayList<Sequence> x, ArrayList<Sequence> y, double[][] d1, double[][] d2 ) {
         double max_cost = 0.0 ;
         double min_cost = Double.MAX_VALUE ;
         double max_value = 0 ;
@@ -64,7 +64,7 @@ public class MIndicator {
                 min_value = each.value ;
         }
 
-        // normalize value
+        // normalized value
         for( int i = 0 ; i < x.size() ; i++ ) {
             Sequence each = x.get(i) ;
             d1[i][0] = (each.cost-min_cost) / (max_cost-min_cost) ;
@@ -79,10 +79,9 @@ public class MIndicator {
 
     /*
      *  return EPSILON(A, REF) :
-     *  the shorest distance that is required to transform every solution
-     *  in A so that it dominates the reference front REF
-     *
-     *  a maximumminimum-maximum measurement
+     *  The shortest distance that is required to transform every solution
+     *  in A so that it dominates the reference front REF. It is a
+     *  maximum-minimum-maximum measurement.
      */
     public double EPSILON() {
 
@@ -91,7 +90,6 @@ public class MIndicator {
 
         // for each point in reference front
         for( i = 0 ; i < fitB.length ; i++ ) {
-
             // for each point in front A
             for( j = 0 ; j < fitA.length ; j++ ) {
                 // for each objective
@@ -119,7 +117,7 @@ public class MIndicator {
 
     /*
      *  return EPSILON(A, REF) :
-     *  the average distance from solutions in REF to the closet
+     *  The average distance from solutions in REF to the closet
      *  solution in A
      */
     public double IGD() {
@@ -129,7 +127,7 @@ public class MIndicator {
         for( int i = 0 ; i < fitB.length ; i++ ) {
             double min = Double.MAX_VALUE ;
 
-            // find the closet distance to point in A
+            // find the closet euclidean distance to point in A
             for( int j = 0 ; j < fitA.length ; j++ ) {
                 double distTemp = Math.pow(fitB[i][0]-fitA[j][0], 2.0) + Math.pow(fitB[i][1]-fitA[j][1], 2.0);
                 distTemp = Math.sqrt(distTemp) ;

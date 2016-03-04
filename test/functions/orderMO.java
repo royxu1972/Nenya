@@ -33,12 +33,12 @@ public class orderMO {
 
         // switching greedy
         re.toGreedySwitchOrder(ts);
-        System.out.println("greedy switch order, cost = " + ts.getTotalCost(null) +
+        System.out.println("greedy switch order, cost = " + ts.getTotalTestingCost(null) +
                 ", 2-RFD = " + ts.getRFD(null, 2));
 
         // hybrid greedy
         re.toGreedyHybridOrder(ts);
-        double hy_cost = ts.getTotalCost(null);
+        double hy_cost = ts.getTotalTestingCost(null);
         double hy_rfd = ts.getRFD(null, ts.system.tway);
         System.out.println("greedy hybrid order, cost = " + hy_cost +
                 ", 2-RFD = " + hy_rfd);
@@ -51,7 +51,7 @@ public class orderMO {
         double sum_cost = 0.0 ;
         long sum_RFD = 0 ;
         for( int[] seq : d ) {
-            sum_cost += ts.getTotalCost(seq);
+            sum_cost += ts.getTotalTestingCost(seq);
             sum_RFD += ts.getRFD(seq);
         }
         System.out.println("MO order, average, cost = " + sum_cost/(double)d.size() +
@@ -59,7 +59,7 @@ public class orderMO {
 
         // find dominated solution
         for( int[] seq : d ) {
-            double cc = ts.getTotalCost(seq) ;
+            double cc = ts.getTotalTestingCost(seq) ;
             long rr = ts.getRFD(seq) ;
 
             if ( cc <= hy_cost && rr >= hy_rfd ) {

@@ -1,5 +1,6 @@
 package Generation;
 
+import Basic.Rand;
 import Basic.SUT;
 import Basic.TestSuite;
 import Basic.ALG;
@@ -7,7 +8,9 @@ import Basic.ALG;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.jar.Attributes;
 
 /**
  *  Basic AETG generator
@@ -16,7 +19,8 @@ public class AETG {
 
     private SUT sut ;
     private ArrayList<int[]> CoverArray ;
-    private int[][] firstWeight;  // 记录各参数各取值在未覆盖对中出现次数
+    // the occurrence number of each parameter value in all uncovered combinations
+    private int[][] firstWeight;
     private Random random ;
 
     public AETG() {
@@ -54,8 +58,58 @@ public class AETG {
         str += "end\n" ;
         fileWriter.write(str);
         fileWriter.close();
-
     }
+
+    /*
+     *  BETA: determine whether a test case satisfies constraints
+     */
+    public boolean isConstraintSatisfied( final int[] test ) {
+        if( sut.constraints == null )
+            return true ;
+        else {
+            // for each constraint
+            for( int[] c : sut.constraints ) {
+                int count = 0 ;
+                for( int k = 0 ; k < test.length ; k++ ) {
+                    if( c[k] != -1 && c[k] == test[k] )
+                        count++ ;
+                }
+                if( count == sut.tway )
+                    return false ;
+            }
+            return true ;
+        }
+    }
+
+    public void constraintMutation( int[] test ) {
+        if( sut.constraints == null )
+            return ;
+        else {
+            //  System.out.println("before " + Arrays.toString(test));
+            //  for each constraint
+            for( int[] c : sut.constraints ) {
+                int count = 0 ;
+                for( int k = 0 ; k < test.length ; k++ ) {
+                    if( c[k] != -1 && c[k] == test[k] )
+                        count++ ;
+                }
+                if( count == sut.tway ) {
+                    // do mutation
+                    for( int k = 0 ; k < test.length ; k++ ) {
+                        if( c[k] != -1 && c[k] == test[k] ) {
+                            int new_val = random.nextInt(sut.value[k]);
+                            while ( new_val == test[k] )
+                                new_val = random.nextInt(sut.value[k]);
+                            test[k] = new_val ;
+                            //System.out.println("after " + Arrays.toString(test));
+                            return ;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     /*
      *  AETG
@@ -72,12 +126,18 @@ public class AETG {
 
         while( sut.getSCount() != 0 ) {
             // the first candidate
-            int[] best = GenerateTestCaseEnhanced() ;
+            int[] best = GenerateTestCaseEnhanced();
+            while( !isConstraintSatisfied(best) )
+                constraintMutation(best);
+
             int bestcov = sut.FitnessValue(best, 0) ;
 
             // generate another N-1 candidates
             for( int x=1 ; x<N ; x++ ) {
                 int[] temp = GenerateTestCaseEnhanced();
+                while( !isConstraintSatisfied(temp) )
+                    constraintMutation(temp);
+
                 int tempcov = sut.FitnessValue(temp, 0);
 
                 // the best fitness
@@ -95,6 +155,8 @@ public class AETG {
             // add the best candidate into CoverArray, and then update uncovered combinations
             CoverArray.add(best);
             UpdateFirstWeight(best);
+
+            //System.out.println("add " + Arrays.toString(best) + ", uncovered = " + sut.getSCount() );
 
         } // end while
 
@@ -167,12 +229,35 @@ public class AETG {
             }
             already++;
         }
+
+        // BETA: constraint
+        if( sut.constraints != null ) {
+            for( int[] c : sut.constraints ) {
+                int[] pos = new int[sut.tway];
+                int[] sch = new int[sut.tway];
+                int index = 0 ;
+                for( int k = 0 ; k < c.length ; k++ ) {
+                    if( c[k] != -1 ) {
+                        pos[index] = k ;
+                        sch[index] = c[k] ;
+                        index++ ;
+                    }
+                }
+                for( int ii=0 ; ii<sut.tway ; ii++ ) {
+                    int p = pos[ii];
+                    int v = sch[ii];
+                    firstWeight[p][v+1]--;
+                    firstWeight[p][0]--;
+                    //System.out.println(p + ", " + (v + 1));
+                }
+            }
+        }
     }
 
     /*
      *  update firstWeight, 并将新组合置为已覆盖
      */
-    private void UpdateFirstWeight( final int[] test) {
+    private void UpdateFirstWeight( final int[] test ) {
         // 按序生成所有参数间的组合情况
         int[] temp = new int[sut.tway];      // 迭代记录
         int[] temp_max = new int[sut.tway];   // 各自最大值
@@ -190,7 +275,7 @@ public class AETG {
             for( int k=0 ; k<sut.tway ; k++ )
                 sch[k] = test[temp[k]] ;
 
-            if( !sut.Covered(temp, sch, 1)) {
+            if( !sut.Covered(temp, sch, 1) ) {
                 for( int i=0 ; i<sut.tway ; i++ ) {
                     int p = temp[i];
                     int v = sch[i];
@@ -355,7 +440,7 @@ public class AETG {
         // temp
         int p_number ;
         int v_number ;
-        ArrayList<Integer> order = new ArrayList<Integer>();  // ties break
+        ArrayList<Integer> order = new ArrayList<>();  // ties break
 
         // 最终选择结果
         int maxp = 0 ;
@@ -479,6 +564,10 @@ public class AETG {
 
         } // end while
 
+
+        //for( int k=0 ; k<tc.length ; k++ )
+        //    System.out.print(tc[k]+" ");
+        //System.out.print("\n");
         return tc ;
     }
 

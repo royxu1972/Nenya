@@ -64,13 +64,8 @@ public class MPopulation {
                 flag[pos] = 1 ;
             }
 
-            // optimizing goals: total switching cost & RFD
-            Sequence seq = new Sequence(
-                    order,
-                    TS.getTotalSwitchingCost(order),
-                    TS.getRFD(order, TS.system.tway),
-                    0,
-                    0) ;
+            // optimizing goals: total testing cost & RFD
+            Sequence seq = new Sequence(order, TS.getTotalTestingCost(order), TS.getRFD(order, TS.system.tway), 0, 0) ;
             population.add(seq) ;
         }
 
@@ -78,12 +73,7 @@ public class MPopulation {
         int[] o = new int[LENGTH] ;
         for( int k=0 ; k<LENGTH ; k++ )
             o[k] = k ;
-        Sequence seq = new Sequence(
-                o,
-                TS.getTotalSwitchingCost(o),
-                TS.getRFD(o, TS.system.tway),
-                0,
-                0) ;
+        Sequence seq = new Sequence(o, TS.getTotalTestingCost(o), TS.getRFD(o, TS.system.tway), 0, 0) ;
         population.add(seq) ;
 
     }
@@ -209,7 +199,7 @@ public class MPopulation {
      */
     public void CandidateSort( int N ) {
         // sort, ascending order
-        Collections.sort(this.population, new Sequence.allSort());
+       Collections.sort(this.population, new Sequence.allSort());
 
         // select
         if( this.population.size() == N )
