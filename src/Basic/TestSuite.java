@@ -9,15 +9,7 @@ public class TestSuite {
     public int[][] tests;           // the test suite
     public int[] order;             // the test sequence
     public double[] executionCost;  // the execution cost of each test, default = null
-    public double[] weight;         // the switching weight of each parameter. default = 1
-
-    public TestSuite(int p, int[] v, int t, double[] w) {
-        this.system = new SUT(p, v, t);
-        this.tests = null;
-        this.order = null;
-        this.executionCost = null;
-        this.weight = w.clone();
-    }
+    public double[] weight;         // the switching weight of each parameter, default = 1.0
 
     public TestSuite(int p, int[] v, int t) {
         this.system = new SUT(p, v, t);
@@ -25,15 +17,40 @@ public class TestSuite {
         this.weight = new double[p];
         this.executionCost = null;
         for (int k = 0; k < p; k++)
-            this.weight[k] = 1.0;  // default weight = 1
+            this.weight[k] = 1.0;
     }
 
-    public String getSystemName() {
-        return "CA(" + system.tway + "," + system.parameter + "," + system.value[0] + ")";
+    public int[] getOrderInt() {
+        return order.clone();
     }
 
     public int getTestSuiteSize() {
         return this.tests.length;
+    }
+
+    /*
+     *  determine whether order is valid
+     */
+    public boolean isValidTestingOrder(int[] od) {
+        if (od == null)
+            od = this.order;
+
+        int[] bit = new int[od.length];
+        int assigned = 0;
+        for (int k = 0; k < od.length; k++) {
+            if (bit[od[k]] == 0) {
+                bit[od[k]] = 1;
+                assigned++;
+            }
+        }
+        return (assigned == od.length);
+    }
+
+    /*
+     *  set hard constraint
+     */
+    public void setConstraint( final int[][] constraint ) {
+        system.setConstraint(constraint);
     }
 
     /*
@@ -71,7 +88,8 @@ public class TestSuite {
     }
 
     /*
-     *  measure the distance between two test cases, where i, j are indexes of default order
+     *  measure the distance between two test cases,
+     *  where i, j are indexes of default order
      */
     public double distance(int i, int j) {
         if (i > tests.length || j > tests.length) {
@@ -83,38 +101,6 @@ public class TestSuite {
                 dis += weight[k];
         }
         return dis;
-    }
-
-    /*
-     *  get current testing order
-     */
-    public int[] getOrderInt() {
-        return order.clone();
-    }
-
-    public String getOrderString() {
-        String str = "";
-        for (int i = 0; i < order.length; i++)
-            str += String.valueOf(order[i]) + " ";
-        return str;
-    }
-
-    /*
-     *  testing whether order is valid
-     */
-    public boolean isValidOrder(int[] od) {
-        if (od == null)
-            od = this.order;
-
-        int[] bit = new int[od.length];
-        int assigned = 0;
-        for (int k = 0; k < od.length; k++) {
-            if (bit[od[k]] == 0) {
-                bit[od[k]] = 1;
-                assigned++;
-            }
-        }
-        return (assigned == od.length);
     }
 
     /*
@@ -130,6 +116,20 @@ public class TestSuite {
             sum += distance(od[i], od[i + 1]);
         }
         return sum;
+    }
+
+    /*
+     *  get the average switching cost between any two test cases
+     */
+    public double getAverageSwitchingCost() {
+        double sum = 0;
+        for (int i = 0; i < order.length; i++) {
+            for (int j = i + 1; j < order.length; j++) {
+                sum += distance(i, j);
+            }
+        }
+        int all = order.length * (order.length - 1) / 2;
+        return sum / (double) all;
     }
 
     /*
@@ -155,8 +155,8 @@ public class TestSuite {
             od = this.order;
 
         double sum = 0;
-        for (int i = 0; i < weight.length; i++)
-            sum += weight[i];
+        for (double i : weight )
+            sum += i;
 
         sum += executionCost[od[0]];
         for (int i = 0; i < od.length - 1; i++) {
@@ -164,20 +164,6 @@ public class TestSuite {
             sum += executionCost[od[i + 1]];
         }
         return sum;
-    }
-
-    /*
-     *  get the average switching cost between any two test cases
-     */
-    public double getAverageSwitchingCost() {
-        double sum = 0;
-        for (int i = 0; i < order.length; i++) {
-            for (int j = i + 1; j < order.length; j++) {
-                sum += distance(i, j);
-            }
-        }
-        int all = order.length * (order.length - 1) / 2;
-        return sum / (double) all;
     }
 
     /*
@@ -243,7 +229,7 @@ public class TestSuite {
         int len = tests.length;
 
         SUT s = new SUT(system.parameter, system.value, t);
-        s.GenerateS();
+        s.initialization();
 
         long cur = 0, pre = 0;
         for (int k = 0; k < len - 1; k++) {
@@ -265,7 +251,7 @@ public class TestSuite {
         long[] cover = new long[tests.length];
 
         SUT s = new SUT(system.parameter, system.value, t);
-        s.GenerateS();
+        s.initialization();
 
         long pre = 0;
         for (int k = 0; k < tests.length; k++) {
@@ -286,7 +272,7 @@ public class TestSuite {
         int len = tests.length;
 
         SUT s = new SUT(system.parameter, system.value, t);
-        s.GenerateS();
+        s.initialization();
 
         // the switching cost between test cases, len = tests.length - 1
         double[] cost = getAdjacentSwitchingCost(od);

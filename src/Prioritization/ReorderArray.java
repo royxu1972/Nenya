@@ -53,7 +53,7 @@ public class ReorderArray {
 
         // coverage measurement
         SUT s = new SUT(test.system.parameter, test.system.value, t) ;
-        s.GenerateS();
+        s.initialization();
 
         // randomly select the first one
         int pc = rand.nextInt(size) ;
@@ -142,7 +142,7 @@ public class ReorderArray {
     public void toGreedyHybridOrder( TestSuite test, int t ) {
         // coverage measurement
         SUT s = new SUT(test.system.parameter, test.system.value, t) ;
-        s.GenerateS();
+        s.initialization();
 
         int size = test.order.length ;
         int[] already = new int[size];  // this test case has been added, default = 0

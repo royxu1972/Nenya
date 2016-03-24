@@ -34,14 +34,13 @@ repositories {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Combination Design',
-                'Implementation-Version': 1.0
+        attributes 'Implementation-Title': 'CTlib', 'Implementation-Version': 1.0
     }
 }
 
 dependencies {
-    //testCompile fileTree(dir: 'lib', include: '*.jar')
-    testCompile 'junit:junit:4.+'
+    compile group: 'org.ow2.sat4j', name: 'org.ow2.sat4j.core', version: '2.3.4'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
 uploadArchives {

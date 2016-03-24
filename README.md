@@ -1,12 +1,12 @@
-# Combination Design
+# C(ombinatorial) T(esting) lib
 
-Combination Design provides some algorithms for combinatorial testing.
+CTlib provides some algorithms for combinatorial testing.
 
 ## Test Suite Generation
 
 Generate a covering array with as few test cases as possible.
 
-* AETG
+* AETG (with support for constraint)
 
 Generate a random test suite.
 

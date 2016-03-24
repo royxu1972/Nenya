@@ -9,7 +9,7 @@ public class orderMobile {
 
     private TestSuite ts ;
     private ReorderArray re = new ReorderArray() ;
-
+/*
     @Before
     public void init() {
         ts = new TestSuite(
@@ -97,5 +97,5 @@ public class orderMobile {
         System.out.println("optimized S = " + ts.getRFDc(Po, 2, maxTime));
         System.out.println("hybrid S = " + ts.getRFDc(Ph, 2, maxTime));
 
-    }
+    }*/
 }

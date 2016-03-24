@@ -65,7 +65,7 @@ public class MPopulation {
             }
 
             // optimizing goals: total testing cost & RFD
-            Sequence seq = new Sequence(order, TS.getTotalTestingCost(order), TS.getRFD(order, TS.system.tway), 0, 0) ;
+            Sequence seq = new Sequence(order, TS.getTotalTestingCost(order), TS.getRFD(order, TS.system.t_way), 0, 0) ;
             population.add(seq) ;
         }
 
@@ -73,7 +73,7 @@ public class MPopulation {
         int[] o = new int[LENGTH] ;
         for( int k=0 ; k<LENGTH ; k++ )
             o[k] = k ;
-        Sequence seq = new Sequence(o, TS.getTotalTestingCost(o), TS.getRFD(o, TS.system.tway), 0, 0) ;
+        Sequence seq = new Sequence(o, TS.getTotalTestingCost(o), TS.getRFD(o, TS.system.t_way), 0, 0) ;
         population.add(seq) ;
 
     }

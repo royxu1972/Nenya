@@ -39,7 +39,7 @@ public class orderMO {
         // hybrid greedy
         re.toGreedyHybridOrder(ts);
         double hy_cost = ts.getTotalTestingCost(null);
-        double hy_rfd = ts.getRFD(null, ts.system.tway);
+        double hy_rfd = ts.getRFD(null, ts.system.t_way);
         System.out.println("greedy hybrid order, cost = " + hy_cost +
                 ", 2-RFD = " + hy_rfd);
 
