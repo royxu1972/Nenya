@@ -17,7 +17,6 @@ public class basicGeneration {
         ts.system.initialization();
 
         AETG gen = new AETG();
-        gen.sut = ts.system ;
 
         int[] tc1 = {-1, -1, -1, -1, 0};
         int f1 = gen.coveredSchemaNumber(tc1, 1, 2);

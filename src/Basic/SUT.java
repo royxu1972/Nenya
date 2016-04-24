@@ -298,7 +298,6 @@ public class SUT {
         return ret;
     }
 
-
     /*
      *  Print testing information
      */

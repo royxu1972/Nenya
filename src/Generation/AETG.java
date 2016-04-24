@@ -12,13 +12,17 @@ import java.util.stream.Collectors;
 /**
  *  An AETG-like covering array generator
  *  with support for constraint solving (beta version)
+ *
+ *  Myra B. Cohen, Matthew B. Dwyer, Jiangfan Shi, Constructing Interaction Test
+ *  Suites for Highly-Configurable Systems in the Presence of Constraints: A Greedy
+ *  Approach, IEEE Transactions on Software Engineering (TSE), 34(5): 633-650, 2008
  */
 public class AETG {
 
     /**
      *  index-number pair
      *
-     *  particular, index represents a candidate parameter or value, and
+     *  particularly, index represents a candidate parameter or value, and
      *  number represents the number of uncovered combinations that involves
      *  this parameter or value
      */
@@ -55,7 +59,7 @@ public class AETG {
         }
     }
 
-    public SUT sut ;
+    private SUT sut ;
     private ArrayList<int[]> coveringArray ;
     private Random random ;
 
@@ -101,11 +105,11 @@ public class AETG {
      *  The main AETG generation framework
      *  N = the number of candidates (default = 10)
      */
-    public void Generation( TestSuite test ) {
-        Generation( test, 10 );
+    public void Generation( TestSuite ts ) {
+        Generation( ts, 10 );
     }
-    public void Generation( TestSuite test, int N ) {
-        this.sut = test.system ;
+    public void Generation( TestSuite ts, int N ) {
+        this.sut = ts.system ;
         sut.initialization();
         initializeFirstWeight();
 
@@ -143,14 +147,14 @@ public class AETG {
 
         // save the final covering array in test.tests[][]
         // and set default testing order and default execution cost
-        test.tests = new int[coveringArray.size()][sut.parameter] ;
-        test.order = new int[coveringArray.size()] ;
-        test.executionCost = new double[coveringArray.size()] ;
+        ts.tests = new int[coveringArray.size()][sut.parameter] ;
+        ts.order = new int[coveringArray.size()] ;
+        ts.executionCost = new double[coveringArray.size()] ;
         int x = 0 ;
         for( int[] t : coveringArray ) {
-            System.arraycopy(t, 0, test.tests[x], 0, sut.parameter);
-            test.order[x] = x ;             // set default order
-            test.executionCost[x] = 0.0 ;   // set default execution cost = 0.0
+            System.arraycopy(t, 0, ts.tests[x], 0, sut.parameter);
+            ts.order[x] = x ;             // set default order
+            ts.executionCost[x] = 0.0 ;   // set default execution cost = 0.0
             x++ ;
         }
     }
@@ -435,7 +439,7 @@ public class AETG {
                     // construct a temp t-way combination
                     int[] position = new int[sut.t_way];
                     int[] schema = new int[sut.t_way];
-                    ALG.insertPSArray(candidate_par, candidate_val, p_row, v_row, position, schema);
+                    ALG.combineArray(candidate_par, candidate_val, p_row, v_row, position, schema);
                     //System.out.println("check: " + Arrays.toString(position) + " - " + Arrays.toString(schema));
 
                     // determine whether this t-way combination is covered or not
@@ -486,7 +490,7 @@ public class AETG {
                 // construct a temp t-way combination
                 int[] position = new int[sut.t_way];
                 int[] schema = new int[sut.t_way];
-                ALG.insertPSArray(p_row, r_row, pp, vv, position, schema);
+                ALG.combineArray(p_row, r_row, pp, vv, position, schema);
                 //System.out.println("check: " + Arrays.toString(position) + " - " + Arrays.toString(schema));
 
                 // determine whether this t-way combination is covered or not

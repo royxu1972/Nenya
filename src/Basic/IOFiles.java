@@ -2,6 +2,7 @@ package Basic;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -11,44 +12,47 @@ import java.util.Scanner;
  */
 public class IOFiles {
 
-    public int parameter ;
-    public int[] value ;
-    public ArrayList<int[]> CA ;
-
     /*
-     *  read CA from file
+     *  Read a covering array from file, and use it to initialize ts
      *  line 1:    parameter 4
      *  line 2:    value 3 3 3 3
+     *  line 3:    t-way 2
      *  line 3:    begin
      *  line 4-n:  covering array
      *  line n+1:  end
      */
-    public void readFromFile(String fileName) throws IOException {
+    public static TestSuite readCoveringArrayFromFile(String fileName) {
         Random rd = new Random();
         File file = new File(fileName);
+        TestSuite ts = null ;
+
         try {
-            BufferedReader reader = null ;
-            reader = new BufferedReader(new FileReader(file));
+            BufferedReader reader = new BufferedReader(new FileReader(file));
 
             // line 1 : parameter 4
-            String line1 = reader.readLine();
-            line1 = line1.trim();
-            parameter = Integer.valueOf(line1.substring(10));
+            String line = reader.readLine();
+            line = line.trim();
+            int parameter = Integer.valueOf(line.substring(10));
 
             // line 2 : value 3 3 3 3
-            String line2 = reader.readLine();
-            line2 = line2.trim() ;
-            line2 = line2.substring(6);
-            String[] tmp = line2.split("\\s");
-            value = new int[parameter];
+            line = reader.readLine();
+            line = line.trim();
+            line = line.substring(6);
+            String[] tmp = line.split("\\s");
+            int[] value = new int[parameter];
             for (int k = 0; k < tmp.length; k++)
                 value[k] = Integer.valueOf(tmp[k]);
 
-            // CA
-            CA = new ArrayList<int[]>();
-            String str = reader.readLine() ;
+            // line 3 : t-way 2
+            line = reader.readLine();
+            line = line.trim();
+            int t_way = Integer.valueOf(line.substring(6));
+
+            // test suite
+            List<int[]> ca = new ArrayList<>();
+            String str = reader.readLine();
             str = str.trim();
-            if( str.equals("begin")) {
+            if (str.equals("begin")) {
                 while ((str = reader.readLine()) != null) {
                     str = str.trim();
                     if (str.equals("end")) {
@@ -58,17 +62,44 @@ public class IOFiles {
                     int[] row = new int[parameter];
                     for (int k = 0; k < tmp.length; k++) {
                         int val = Integer.valueOf(tmp[k]);
-                        if( val == -1 )
-                            val = rd.nextInt(value[k]) ;
-                        row[k] = val ;
+                        if (val == -1)
+                            val = rd.nextInt(value[k]);
+                        row[k] = val;
                     }
-                    CA.add(row);
+                    ca.add(row);
                 }
             }
             // close
             reader.close();
-        } catch (FileNotFoundException ex) {
-            System.err.println(ex);
+
+            // update ts
+            ts = new TestSuite(parameter, value, t_way);
+            transferTestSuite(ca, ts);
+
+        } catch (FileNotFoundException e) {
+            System.err.println(e);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+
+        return ts ;
+    }
+
+    /*
+     *  Transfer an List<int[]> ca to test.int[][], ca[].length should
+     *  be equal to test.system.parameter.
+     *  Set default order and set default execution cost = 0.0
+     */
+    public static void transferTestSuite( List<int[]> ca , TestSuite test ) {
+        test.tests = new int[ca.size()][test.system.parameter];
+        test.order = new int[ca.size()];
+        test.executionCost = new double[ca.size()] ;
+        int index = 0;
+        for (int[] row : ca) {
+            System.arraycopy(row, 0, test.tests[index], 0, row.length);
+            test.order[index] = index ;
+            test.executionCost[index] = 0.0 ;
+            index += 1;
         }
     }
 

@@ -29,6 +29,50 @@ public class TestSuite {
     }
 
     /*
+     *  Compute k-way combination coverage of a given test suite.
+     *  The input tests[][] must be a test suite of this.system.
+     */
+    public double getCombinationCoverage( int strength ) {
+        return getCombinationCoverage(strength, this.tests);
+    }
+    public double getCombinationCoverage( int strength, final int[][] tests ) {
+
+        if( tests[0].length != system.parameter )
+            return -1 ;
+
+        int total = 0 ;
+        int total_uncovered = 0 ;
+
+        // for each parameter combination
+        int[][] pComb = ALG.cal_allC(system.parameter, strength);
+        for( int[] pos : pComb ) {
+
+            int uncovered = ALG.cal_combineValue(pos, system.value);
+            total = total + uncovered ;
+
+            // the number of covered value combinations
+            int[] cover = new int[uncovered];
+            for( int i=0 ; i<uncovered ; i++ )
+                cover[i] = 0 ;
+
+            // for each row in tests
+            int[] sch = new int[strength];
+            for( int[] row : tests ) {
+                for( int k=0 ; k<strength ; k++ )
+                    sch[k] = row[pos[k]];
+                int index = ALG.cal_val2num(pos, sch, strength, system.value);
+
+                if( cover[index] == 0 ) {
+                    cover[index] = 1 ;
+                    uncovered -= 1 ;
+                }
+            }
+            total_uncovered = total_uncovered + uncovered ;
+        }
+        return (double)(total - total_uncovered) / (double)total ;
+    }
+
+    /*
      *  determine whether order is valid
      */
     public boolean isValidTestingOrder(int[] od) {

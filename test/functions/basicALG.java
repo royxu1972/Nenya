@@ -36,7 +36,7 @@ public class basicALG {
         int[] pos = new int[p1.length+p2.length];
         int[] sch = new int[v1.length+v2.length];
 
-        ALG.insertPSArray(p1, v1, p2, v2, pos, sch);
+        ALG.combineArray(p1, v1, p2, v2, pos, sch);
         System.out.println(Arrays.toString(pos));
         System.out.println(Arrays.toString(sch));
     }

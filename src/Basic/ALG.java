@@ -4,7 +4,6 @@ package Basic;
  *  some useful functions
  */
 public class ALG {
-    public ALG() {}
 
     /*
      *  C(n. m)
@@ -17,6 +16,16 @@ public class ALG {
             ret = ret / x;
         }
         return ret;
+    }
+
+    /*
+     *  the number of possible value combinations among par[]
+     */
+    public static int cal_combineValue(final int[] par, final int[] value) {
+        int comb = 1 ;
+        for( int k=0 ; k<par.length ; k++ )
+            comb = comb * value[par[k]] ;
+        return comb ;
     }
 
     /*
@@ -192,7 +201,7 @@ public class ALG {
      *  Given two sorted arrays p1 (v1) and p2 (v2), combine them into a new
      *  sorted array pos (val).
      */
-    public static void insertPSArray( int[] p1, int[] v1, int[] p2, int[] v2, int[] pos, int[] sch ) {
+    public static void combineArray(int[] p1, int[] v1, int[] p2, int[] v2, int[] pos, int[] sch) {
         int i ; // index of p1
         int j ; // index of p2
         int k ; // index of pos
@@ -226,7 +235,7 @@ public class ALG {
 
 
     // quick sort array a, ascending order
-    public static void cal_sortArray(int[] a, int left, int right) {
+    public static void sortArray(int[] a, int left, int right) {
         int i, j, temp;
         if (left < right) {
             i = left;
@@ -249,8 +258,8 @@ public class ALG {
                 }
             }
             a[i] = temp;
-            cal_sortArray(a, left, i - 1);
-            cal_sortArray(a, i + 1, right);
+            sortArray(a, left, i - 1);
+            sortArray(a, i + 1, right);
         }
     }
 
@@ -260,11 +269,10 @@ public class ALG {
      *  version = 0: ascending order
      *  version = 1: descending order
      */
-    public static void sort_Array2(int[] a, int[] b, int version) {
-        sort_QuickSort(a, b, 0, a.length - 1, version);
+    public static void sortArray(int[] a, int[] b, int version) {
+        sortArray(a, b, 0, a.length - 1, version);
     }
-
-    public static void sort_QuickSort(int[] a, int[] b, int left, int right, int version) {
+    public static void sortArray(int[] a, int[] b, int left, int right, int version) {
         int i, j;
         int temp, temp_1;
         if (version == 0 && left < right) {
@@ -292,8 +300,8 @@ public class ALG {
             }
             a[i] = temp;
             b[i] = temp_1;
-            sort_QuickSort(a, b, left, i - 1, version);
-            sort_QuickSort(a, b, i + 1, right, version);
+            sortArray(a, b, left, i - 1, version);
+            sortArray(a, b, i + 1, right, version);
         }
 
         if (version == 1 && left < right) {
@@ -321,8 +329,60 @@ public class ALG {
             }
             a[i] = temp;
             b[i] = temp_1;
-            sort_QuickSort(a, b, left, i - 1, version);
-            sort_QuickSort(a, b, i + 1, right, version);
+            sortArray(a, b, left, i - 1, version);
+            sortArray(a, b, i + 1, right, version);
+        }
+    }
+
+
+    /*
+     *  particularly designed for reduction
+     *  quick sort an array and swap corresponding elements in 2D-array simultaneously
+     */
+    public static void sortArray2D( int[] a, int[][] b ) {
+        sortArray2D(a, b, 0, a.length - 1);
+    }
+    public static void sortArray2D( int[] a, int[][] b, int left, int right )
+    {
+        int i, j ;
+        int temp ;
+        int len = b[0].length ;
+        if( left < right )
+        {
+            i = left ;
+            j = right ;
+            temp = a[i] ;
+            int[] tpc = new int[len];
+            for( int k=0 ; k<len ; k++ )
+                tpc[k] = b[i][k];
+
+            while( i != j )
+            {
+                while( a[j] > temp && i < j )
+                    j-- ;
+                if( i < j )
+                {
+                    a[i] = a[j] ;
+                    for( int k=0 ; k<len ; k++ )
+                        b[i][k] = b[j][k] ;
+                    i++ ;
+                }
+                while( a[i] < temp && i < j )
+                    i++ ;
+                if( i < j )
+                {
+                    a[j] = a[i] ;
+                    for( int k=0 ; k<len ; k++ )
+                        b[j][k] = b[i][k] ;
+                    j-- ;
+                }
+            }
+            a[i] = temp ;
+            for( int k=0 ; k<len ; k++ )
+                b[i][k] = tpc[k];
+
+            sortArray2D(a, b, left, i - 1);
+            sortArray2D(a, b, i+1 , right);
         }
     }
 
