@@ -1,17 +1,24 @@
-# C(ombinatorial) T(esting) lib
+# Nenya
 
-CTlib provides some algorithms for combinatorial testing.
+The project Nenya aims to provide advanced algorithms for various 
+applications of combinatorial testing, including test suite generation,
+reduction and prioritization.
 
 ## Test Suite Generation
 
 Generate a covering array with as few test cases as possible.
 
-* AETG (with support for constraint)
+* AETG (a greedy one-test-at-a-time generation algorithm with constraint support)
 
 Generate a random test suite.
 
 * RT
 * ART-FSCS
+
+## Test Suite Reduction
+
+Reduce the size of a given test suite while maintaining its combination coverage.
+An refined randomized post-optimization algorithm is applied.
 
 ## Test Suite Prioritization
 

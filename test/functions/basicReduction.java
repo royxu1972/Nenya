@@ -5,9 +5,6 @@ import Basic.TestSuite;
 import Reduction.PostRandomized;
 import org.junit.Test;
 
-/**
- * Created by Huayao on 2016/4/22.
- */
 public class basicReduction {
 
     @Test
