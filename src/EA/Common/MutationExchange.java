@@ -1,6 +1,4 @@
-package EA.GA;
-
-import EA.Common.OperatorMutation;
+package EA.Common;
 
 import java.util.Random;
 

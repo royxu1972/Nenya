@@ -1,12 +1,9 @@
 package EA.NSGA;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- *  NSSolution2D is used to do two-objective optimization.
- *  The two objectives are represented as value and cost,
- *  where the aim is to maximize value while minimizing cost.
+ *  NSGA-II for test suite prioritization.
  */
 public class NSSolution2D {
 
@@ -35,8 +32,7 @@ public class NSSolution2D {
 
     @Override
     public String toString() {
-        String str = Arrays.toString(solution);
-        return str + ", cost=" + cost + ", value=" + value +
+        return "cost=" + cost + ", value=" + value +
                 ", level=" + level + ", crowd=" + crowd ;
     }
 
@@ -45,10 +41,10 @@ public class NSSolution2D {
         this.value = value ;
     }
 
-    public void UpdateLevel( int level ) {
+    public void updateLevel(int level) {
         this.level = level ;
     }
-    public void UpdateCrowd( double crowd ) {
+    public void updateCrowd(double crowd) {
         this.crowd = crowd ;
     }
 
@@ -68,7 +64,6 @@ public class NSSolution2D {
         else
             return false ;
     }
-
 
     /*
      *  A is less than (negative integer), equal (zero) or

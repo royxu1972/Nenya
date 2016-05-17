@@ -2,7 +2,6 @@ package Prioritization;
 
 import Basic.TestSuite;
 import EA.Common.FitnessFunction;
-import EA.Common.Genetic;
 import EA.Common.Initializer;
 import EA.GA.GeneticAlgorithm;
 
@@ -53,10 +52,7 @@ public class SEvolution {
 
     public SEvolution(TestSuite t) {
         ts = t ;
-        GA = new GeneticAlgorithm() ;
-
-        int len = ts.tests.length ;
-        GA.setLENGTH(len);
+        GA = new GeneticAlgorithm(ts.tests.length) ;
     }
 
     public void run() {

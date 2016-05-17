@@ -1,7 +1,7 @@
 package evolutionary;
 
-import EA.GA.CrossoverPMX;
-import EA.GA.MutationExchange;
+import EA.Common.CrossoverPMX;
+import EA.Common.MutationExchange;
 import org.junit.Test;
 
 import java.util.Arrays;

@@ -237,11 +237,6 @@ public class ReorderArray {
      *          reference - the reference pareto front
      *          best      - the best solution, which will be saved in test.order
      */
-    public void toMultiObjective( TestSuite test, ArrayList<int[]> data) {
-        MEvolution me = new MEvolution(test);
-        me.run();
-        me.getSolutions(data);
-    }
     public void toMultiObjective( TestSuite test, ArrayList<NSSolution2D> data, ArrayList<NSSolution2D> other,
                                   ArrayList<NSSolution2D> reference, double idealCost, double idealRFD ) {
         data.clear();
@@ -250,19 +245,21 @@ public class ReorderArray {
         MEvolution me = new MEvolution(test);
         me.run();
 
-        // get final solutions
-        data = me.NSGA.getFinalFront();
+        // the final solution set: data = me.result
+        me.result.stream().forEach( p -> data.add(p.clone()));
 
-        // get the reference pareto front
+        // the reference pareto front
         if( other != null )
             reference.addAll(me.NSGA.getReferenceFront(other));
         else
             reference.addAll(data);
 
         // identify the best solution
-        ArrayList<NSSolution2D> K = me.NSGA.getContributedSolutions(data, reference);
-        NSSolution2D best = me.NSGA.getBestSolution2D(idealRFD, idealCost, K);
-        System.arraycopy(best.solution, 0, test.order, 0, best.solution.length);
+        if( idealCost != -1 && idealRFD != -1 ) {
+            ArrayList<NSSolution2D> K = me.NSGA.getContributedSolutions(data, reference);
+            NSSolution2D best = me.NSGA.getBestSolution2D(idealRFD, idealCost, K);
+            System.arraycopy(best.solution, 0, test.order, 0, best.solution.length);
+        }
     }
 
 }

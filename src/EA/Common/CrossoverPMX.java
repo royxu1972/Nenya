@@ -1,6 +1,4 @@
-package EA.GA;
-
-import EA.Common.OperatorCrossover;
+package EA.Common;
 
 import java.util.*;
 

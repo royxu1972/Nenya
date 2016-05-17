@@ -1,4 +1,8 @@
-package EA.Common;
+package EA.GA;
+
+import EA.Common.OperatorCrossover;
+import EA.Common.OperatorMutation;
+import EA.Common.OperatorSelection;
 
 import java.util.Random;
 

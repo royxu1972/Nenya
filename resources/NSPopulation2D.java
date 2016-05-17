@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 /**
- *  Population for Multi-Objective Optimization
+ *  NSGA-II for test suite prioritization.
  */
 public class NSPopulation2D {
 
@@ -111,7 +111,7 @@ public class NSPopulation2D {
 
             // if p belongs to the first front
             if( dominateCount[p_index] == 0 ) {
-                p.UpdateLevel(1) ;
+                p.updateLevel(1) ;
                 F.add(p_index) ;
             }
             p_index += 1 ;
@@ -128,7 +128,7 @@ public class NSPopulation2D {
                     dominateCount[y]-- ;
                     // if q belongs to the next front
                     if( dominateCount[y] == 0 ) {
-                        population.get(y).UpdateLevel( level + 1 );
+                        population.get(y).updateLevel(level + 1);
                         Q.add(y);
                     }
                 }
@@ -156,7 +156,7 @@ public class NSPopulation2D {
             II.add(population.get(i)) ;
         int l = II.size() ;
         for( int i=0 ; i<l ; i++ )
-            II.get(i).UpdateCrowd(0);
+            II.get(i).updateCrowd(0);
 
         //
         // cost distance, <
@@ -165,12 +165,12 @@ public class NSPopulation2D {
         double f_min = II.get(0).cost ;
         double f_max = II.get(l-1).cost ;
 
-        II.get(0).UpdateCrowd(Integer.MAX_VALUE);   // boundary points
-        II.get(l-1).UpdateCrowd(Integer.MAX_VALUE);
+        II.get(0).updateCrowd(Integer.MAX_VALUE);   // boundary points
+        II.get(l-1).updateCrowd(Integer.MAX_VALUE);
         for( int i=1 ; i<l-1 ; i++ ) {
             NSSolution2D si = II.get(i) ;
             double tp = (II.get(i+1).cost-II.get(i-1).cost) / (f_max-f_min) ;
-            si.UpdateCrowd( si.crowd + tp ) ;
+            si.updateCrowd(si.crowd + tp) ;
         }
 
         //
@@ -180,12 +180,12 @@ public class NSPopulation2D {
         double l_min = II.get(0).value ;
         double l_max = II.get(l-1).value ;
 
-        II.get(0).UpdateCrowd(Integer.MAX_VALUE);   // boundary points
-        II.get(l-1).UpdateCrowd(Integer.MAX_VALUE);
+        II.get(0).updateCrowd(Integer.MAX_VALUE);   // boundary points
+        II.get(l-1).updateCrowd(Integer.MAX_VALUE);
         for( int i=1 ; i<l-1 ; i++ ) {
             NSSolution2D si = II.get(i) ;
             double tp = (II.get(i+1).value-II.get(i-1).value) / (l_max-l_min) ;
-            si.UpdateCrowd( si.crowd + tp ) ;
+            si.updateCrowd(si.crowd + tp) ;
         }
 
         II.clear();

@@ -1,7 +1,7 @@
-package EA.GA;
+package EA.Common;
 
-import EA.Common.OperatorSelection;
-import EA.NSGA.NSGeneticAlgorithm;
+import EA.GA.GeneticAlgorithm;
+import EA.NSGA.NSGeneticAlgorithmII;
 
 /**
  *  Binary Tournament Selection
@@ -32,14 +32,14 @@ public class SelectionBinaryTournament implements OperatorSelection {
 
     // multi-objective
     @Override
-    public int selection(NSGeneticAlgorithm NSGA) {
+    public int selection(NSGeneticAlgorithmII NSGA) {
         int a = NSGA.random.nextInt(NSGA.N);
         int b = NSGA.random.nextInt(NSGA.N);
         while( a == b )
             b = NSGA.random.nextInt(NSGA.N);
 
-        int fit_a = NSGA.pool.population.get(a).level ;
-        int fit_b = NSGA.pool.population.get(b).level ;
+        int fit_a = NSGA.population.get(a).level ;
+        int fit_b = NSGA.population.get(b).level ;
         if( fit_a < fit_b )
             return a ;
         else if ( fit_a == fit_b ) {

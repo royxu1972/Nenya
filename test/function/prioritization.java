@@ -4,10 +4,13 @@ import Basic.TestSuite;
 import EA.NSGA.NSSolution2D;
 import Generation.AETG;
 import Prioritization.ReorderArray;
+import Prioritization.SEvolution;
+import Prioritization.MEvolution;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class prioritization {
 
@@ -30,9 +33,7 @@ public class prioritization {
 
 
     @Test
-    public void testPrioritization() {
-        System.out.println("----------------------------");
-
+    public void testSOBasedPrioritization() {
         re.toRandomOrder(ts);
         System.out.println("random,  cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
 
@@ -50,11 +51,6 @@ public class prioritization {
 
         re.toGreedyHybridOrder(ts);
         System.out.println("hybrid,  cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
-
-        ArrayList<int[]> mo_solution = new ArrayList<>();
-        re.toMultiObjective(ts, mo_solution);
-
-        System.out.println("----------------------------");
     }
 
     public enum ORDER {
@@ -160,25 +156,25 @@ public class prioritization {
         for( int i=0 ; i<orders.length ; i++ ) {
             System.out.println(orders[i] + " " + solutions[i]);
         }
-
     }
 
 
     @Test
-    public void testGA() {
-        System.out.println("Single-Objective Optimization: GA");
-
-        re.toGASwitchOrder(ts);
-        System.out.println("GA, cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
+    public void testSEvolution() {
+        SEvolution se = new SEvolution(ts);
+        se.run();
+        System.out.println(Arrays.toString(se.solution));
+        System.out.println("cost = " + ts.getTotalSwitchingCost(se.solution));
+        System.out.println("RFD  = " + ts.getRFD(se.solution, 2));
     }
 
 
     @Test
-    public void testNSGA() {
-        System.out.println("Multi-Objective Optimization: NSGA-II");
-
-        ArrayList<int[]> data = new ArrayList<>();
-        re.toMultiObjective(ts, data);
+    public void testMEvolution() {
+        MEvolution me = new MEvolution(ts);
+        me.run();
+        System.out.println("final front");
+        me.NSGA.printPopulation(me.NSGA.finalFront);
     }
 
 }

@@ -1,18 +1,18 @@
 package EA.NSGA;
 
 import Basic.TestSuite;
-import EA.Common.Genetic;
-import EA.GA.CrossoverPMX;
-import EA.GA.MutationExchange;
-import EA.GA.SelectionBinaryTournament;
+import EA.GA.Genetic;
+import EA.Common.CrossoverPMX;
+import EA.Common.MutationExchange;
+import EA.Common.SelectionBinaryTournament;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Multi-Objective Optimization, NSGA-II
- *  designed specifically for test suite prioritization according to
- *  two goals: testing cost (execution + switching) and 2-way combination coverage
+ *  NSGA-II for test suite prioritization.
+ *  Two goals: testing cost (execution + switching) and
+ *  2-way combination coverage.
  */
 public class NSGeneticAlgorithm extends Genetic {
 
@@ -61,7 +61,7 @@ public class NSGeneticAlgorithm extends Genetic {
     }
 
     /*
-     *  Get the front solutions that contribute to the reference pareto front.
+     *  Get the solutions in front that contribute to the reference pareto front.
      */
     public ArrayList<NSSolution2D> getContributedSolutions(ArrayList<NSSolution2D> front, ArrayList<NSSolution2D> reference) {
         ArrayList<NSSolution2D> data = new ArrayList<>();
@@ -94,6 +94,7 @@ public class NSGeneticAlgorithm extends Genetic {
 
     @Override
     public void evolve() {
+        /*
         // initialize
         pool.initialization();
 
@@ -103,7 +104,7 @@ public class NSGeneticAlgorithm extends Genetic {
             // fast-non-dominated-sort (identify level and crowd)
             pool.NonDominatedSort();
 
-            // select the first N candidates as the new pool
+            // select the first N candidates as the new population
             pool.CandidateSort(N);
 
             // make new population
@@ -151,7 +152,8 @@ public class NSGeneticAlgorithm extends Genetic {
         pool.CandidateSort(N);
 
         //System.out.println("final:");
-        //pool.printPopulation();
+        //population.printPopulation();
+        */
     }
 
     public void printCurrentPopulation() {

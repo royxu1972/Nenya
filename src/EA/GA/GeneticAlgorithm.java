@@ -27,8 +27,13 @@ public class GeneticAlgorithm extends Genetic {
     public double best_fitness;
     public int[]  best_candidate;
 
-    public GeneticAlgorithm() {
+    public GeneticAlgorithm( int len ) {
         pool = new ArrayList<>();
+        LENGTH = len ;
+
+        // a smaller fitness value indicates a better solution
+        best_candidate = new int[len];
+        best_fitness = Double.MAX_VALUE ;
 
         // default algorithm settings
         N = 30 ;
@@ -39,16 +44,6 @@ public class GeneticAlgorithm extends Genetic {
         op_selection = new SelectionBinaryTournament();
         op_crossover = new CrossoverPMX();
         op_mutation = new MutationExchange();
-    }
-
-    /*
-     *  Set LENGTH and initialize best_candidate, best_fitness.
-     *  A smaller fitness value indicates a better solution.
-     */
-    public void setLENGTH( int len ) {
-        LENGTH = len ;
-        best_candidate = new int[len];
-        best_fitness = Double.MAX_VALUE ;
     }
 
     /*
