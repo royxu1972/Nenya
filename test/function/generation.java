@@ -1,10 +1,10 @@
-package functions;
+package function;
 
 import Basic.TestSuite;
 import Generation.AETG;
 import org.junit.Test;
 
-public class basicGeneration {
+public class generation {
 
     @Test
     public void test_coveredSchemaNumber() {

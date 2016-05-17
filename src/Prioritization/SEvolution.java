@@ -1,187 +1,71 @@
 package Prioritization;
 
 import Basic.TestSuite;
+import EA.Common.FitnessFunction;
+import EA.Common.Genetic;
+import EA.Common.Initializer;
+import EA.GA.GeneticAlgorithm;
 
-import java.util.*;
 
 /**
- *  switching cost based prioritization by GA
+ *  Switching cost based prioritization by GA
  */
 public class SEvolution {
 
-    private ArrayList<int[]> pool ;     // candidate population
-    private TestSuite ts ;
-    private int LENGTH ;
-    private Random random ;
-
-    // parameter setting
-    private int N ;
-    private int ITE ;
-    private double CROSS_PRO ;
-    private double MUTATION_PRO ;
-
-    // result
-    public double opt_cost;
-    public int[] opt_sequence;  // opt_sequence
-
-    public SEvolution(  int size, int iteration, double cross, double mutation, TestSuite ts ) {
-        this.N = size ;
-        this.ITE = iteration ;
-        this.CROSS_PRO = cross ;
-        this.MUTATION_PRO = mutation ;
-        this.ts = ts ;
-        this.LENGTH = ts.getTestSuiteSize();
-
-        pool = new ArrayList<>();
-        this.random = new Random() ;
-
-        this.opt_cost = Double.MAX_VALUE ;
-        this.opt_sequence = new int[LENGTH] ;
-    }
-
-
-    /*
-     * genetic algorithm (GA)
-     * Reference:
-     * [1] Larranaga, Pedro, et al. "Genetic algorithms for the travelling salesman problem:
-     * A review of representations and operators." Artificial Intelligence Review 13.2 (1999)
+    /**
+     *  Initialize a set of testing orders
      */
-    public void GA() {
-        pool.clear();
+    public class testingOrderInitializer implements Initializer {
+        @Override
+        public void initialization(GeneticAlgorithm GA, int size) {
+            for (int i = 0 ; i < size ; i++) {
+                int[] can = new int[GA.LENGTH];
+                int[] assigned = new int[GA.LENGTH];
 
-        // initialize candidate randomly
-        for (int i = 0 ; i < N ; i++) {
-            int[] can = new int[this.LENGTH];
-            int[] assigned = new int[this.LENGTH];
-
-            for (int k = 0; k < this.LENGTH; k++) {
-                int p ;
-                do {
-                    p = random.nextInt(this.LENGTH);
-                } while (assigned[p] == 1);
-                can[k] = p;
-                assigned[p] = 1;
-            }
-            pool.add(can);
-        }
-
-        // evolution
-        int it = 1;
-        double[] fitness_all = new double[N];
-        while ( it < ITE ) {
-            // compute fitness value
-            // the best one is assigned to this.opt_sequence[]
-            for( int k = 0 ; k < N ; k++ ) {
-                fitness_all[k] = this.GA_fitness( pool.get(k) );
-                if (fitness_all[k] < this.opt_cost) {
-                    this.opt_cost = fitness_all[k];
-                    System.arraycopy(pool.get(k), 0, this.opt_sequence, 0, this.LENGTH);
+                for (int k = 0; k < GA.LENGTH; k++) {
+                    int p ;
+                    do {
+                        p = GA.random.nextInt(GA.LENGTH);
+                    } while (assigned[p] == 1);
+                    can[k] = p;
+                    assigned[p] = 1;
                 }
+                GA.pool.add(can);
             }
-
-            // regenerate candidate
-            ArrayList<int[]> next = new ArrayList<>();
-            while ( next.size() < N ) {
-                // selection
-                int par1 = this.GA_selection_BT();
-                int par2 = this.GA_selection_BT();
-                int[] child ;
-
-                // crossover
-                double alpha = random.nextDouble() ;
-                if( alpha < CROSS_PRO )
-                    child = GA_crossover_PMX(pool.get(par1), pool.get(par2)) ;
-                else {
-                    child = pool.get(par1).clone() ;
-                }
-
-                // mutation
-                double beta = random.nextDouble() ;
-                if( beta < MUTATION_PRO )
-                    GA_mutation_EX(child) ;
-
-                // add
-                next.add(child);
-            } // end for
-
-            // cory candidate
-            pool.clear();
-            pool.addAll(next);
-            next.clear();
-
-            // next iteration
-            it++;
-
-        } // end while
+        }
     }
 
-    // fitness: return the length of sequence seq[]
-    private double GA_fitness(final int[] seq) {
-        return ts.getTotalSwitchingCost(seq);
+    /**
+     *  The fitness function of a testing solution
+     */
+    public class testingOrderFitness implements FitnessFunction {
+        @Override
+        public double value(final int[] c) {
+            return ts.getTotalSwitchingCost(c);
+        }
     }
 
-    // binary tournament selection
-    private int GA_selection_BT() {
-        int a = random.nextInt(N);
-        int b = random.nextInt(N);
-        while( a == b )
-            b = random.nextInt(N);
+    private TestSuite ts ;
+    public GeneticAlgorithm GA ;
 
-        double fit_a = GA_fitness(pool.get(a)) ;
-        double fit_b = GA_fitness(pool.get(b)) ;
-        if( fit_a < fit_b )
-            return a ;
-        else
-            return b ;
+    public int[]  solution ;
+    public double solution_fitness ;
+
+    public SEvolution(TestSuite t) {
+        ts = t ;
+        GA = new GeneticAlgorithm() ;
+
+        int len = ts.tests.length ;
+        GA.setLENGTH(len);
     }
 
-    // partially matched crossover (PMX)
-    public int[] GA_crossover_PMX( final int[] p1, final int[] p2 ) {
-        int LEN = p1.length ;
-        int[] child = new int[LEN] ;
+    public void run() {
+        GA.setInitializer(new testingOrderInitializer());
+        GA.setFitnessFunction(new testingOrderFitness());
+        GA.evolve();
 
-        // generate two cut points
-        Random random = new Random();
-        int cut1 = random.nextInt(LEN);
-        int cut2 = cut1 + random.nextInt(LEN - cut1);
-
-        // the mapping part
-        Map<Integer, Integer> mapping = new HashMap<>(); // (p1, p2)
-        for( int k = cut1 ; k <= cut2 ; k++ ) {
-            child[k] = p1[k] ;
-            mapping.put(p1[k], p2[k]);
-        }
-
-        // the remain part
-        for( int k = 0 ; k < cut1 ; k++ ) {
-            int tp = p2[k] ;
-            while( mapping.containsKey(tp) ) {
-                tp = mapping.get(tp);
-            }
-            child[k] = tp ;
-
-        }
-        for( int k = cut2 + 1 ; k < LEN ; k++ ) {
-            int tp = p2[k] ;
-            while( mapping.containsKey(tp) ) {
-                tp = mapping.get(tp);
-            }
-            child[k] = tp ;
-        }
-
-        return child ;
-    }
-
-    // swap mutation
-    private void GA_mutation_EX( int[] a ) {
-        int pos1 = random.nextInt(a.length) ;
-        int pos2 = random.nextInt(a.length) ;
-
-        if( pos1 != pos2 ) {
-            int tp = a[pos1] ;
-            a[pos1] = a[pos2] ;
-            a[pos2] = tp ;
-        }
+        solution = GA.best_candidate.clone() ;
+        solution_fitness = GA.best_fitness ;
     }
 
     /*

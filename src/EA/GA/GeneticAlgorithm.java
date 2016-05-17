@@ -1,0 +1,134 @@
+package EA.GA;
+
+import EA.Common.*;
+
+import java.util.*;
+
+/**
+ *  A basic genetic algorithm for combinatorial testing.
+ *      Representation: string (an integer array)
+ *      Fitness Function: f(x) -> double
+ *  Initializer, Fitness Function and Operators should be implemented
+ *  according to particular problem.
+ *
+ *  Reference:
+ *      Larranaga, Pedro, et al. "Genetic algorithms for the travelling salesman problem:
+ *      A review of representations and operators." Artificial Intelligence Review 13.2 (1999)
+ */
+public class GeneticAlgorithm extends Genetic {
+
+    public ArrayList<int[]> pool ;
+    public int LENGTH ;
+
+    public Initializer init ;
+    public FitnessFunction fitness ;
+
+    // the best result
+    public double best_fitness;
+    public int[]  best_candidate;
+
+    public GeneticAlgorithm() {
+        pool = new ArrayList<>();
+
+        // default algorithm settings
+        N = 30 ;
+        ITE = 1000 ;
+        CROSSOVER_PRO = 0.7 ;
+        MUTATION_PRO = 0.3 ;
+
+        op_selection = new SelectionBinaryTournament();
+        op_crossover = new CrossoverPMX();
+        op_mutation = new MutationExchange();
+    }
+
+    /*
+     *  Set LENGTH and initialize best_candidate, best_fitness.
+     *  A smaller fitness value indicates a better solution.
+     */
+    public void setLENGTH( int len ) {
+        LENGTH = len ;
+        best_candidate = new int[len];
+        best_fitness = Double.MAX_VALUE ;
+    }
+
+    /*
+     *  Assign initializer and fitness function
+     */
+    public void setInitializer( Initializer i ) {
+        init = i ;
+    }
+    public void setFitnessFunction( FitnessFunction f ) {
+        fitness = f ;
+    }
+
+    @Override
+    public void evolve() {
+        pool.clear();
+
+        // initialize candidates
+        init.initialization(this, N);
+        double[] fit = new double[N];
+
+        // evolution
+        int it = 1;
+        while ( it < ITE ) {
+            // evaluate each candidate solution
+            // the best one is stored in best_candidate
+            for( int k = 0 ; k < N ; k++ ) {
+                fit[k] = fitness.value(pool.get(k));
+                if (fit[k] < best_fitness) {
+                    best_fitness = fit[k];
+                    System.arraycopy(pool.get(k), 0, best_candidate, 0, LENGTH);
+                }
+            }
+
+            // produce the next generation
+            ArrayList<int[]> next = new ArrayList<>();
+            while ( next.size() < N ) {
+                // selection
+                int par1 = op_selection.selection(this);
+                int par2 = op_selection.selection(this);
+
+                // crossover
+                List<int[]> children ;
+                int[] p1 = pool.get(par1);
+                int[] p2 = pool.get(par2);
+
+                double alpha = random.nextDouble() ;
+                if( alpha < CROSSOVER_PRO )
+                    children = op_crossover.crossover(p1, p2, random);
+                else {
+                    children = new ArrayList<>();
+                    children.add(p1.clone());
+                    children.add(p2.clone());
+                }
+
+                // mutation
+                for( int[] each : children ) {
+                    double beta = random.nextDouble() ;
+                    if( beta < MUTATION_PRO )
+                        op_mutation.mutation(each, random);
+                }
+
+                // add to the next generation
+                next.addAll(children);
+            }
+
+            // pool = next
+            pool.clear();
+            pool.addAll(next);
+            next.clear();
+
+            // next iteration
+            it++;
+
+        } // end while
+
+    }
+
+    public void printCurrentPopulation() {
+        for( int[] each : pool ) {
+            System.out.println(Arrays.toString(each));
+        }
+    }
+}

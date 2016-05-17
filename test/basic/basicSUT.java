@@ -1,4 +1,4 @@
-package functions;
+package basic;
 
 import Basic.SUT;
 import org.junit.Test;

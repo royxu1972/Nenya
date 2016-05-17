@@ -2,13 +2,14 @@ package Prioritization;
 
 import Basic.SUT;
 import Basic.TestSuite;
+import EA.NSGA.NSSolution2D;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 /**
  *  Test Suite Prioritization
- *  Using toSomeOrder() function to change TestSuite.order[]
+ *  Using toSomeOrder() function to change TestSuite.solution[]
  */
 public class ReorderArray {
 
@@ -18,7 +19,7 @@ public class ReorderArray {
     }
 
     /*
-     *  Default order, from 0 to n-1
+     *  Default solution, from 0 to n-1
      */
     public void toDefaultOrder( TestSuite test ) {
         for( int i=0 ; i<test.order.length ; i++ )
@@ -26,7 +27,7 @@ public class ReorderArray {
     }
 
     /*
-     *  Random order
+     *  Random solution
      */
     public void toRandomOrder( TestSuite test ) {
         int size = test.order.length ;
@@ -93,7 +94,7 @@ public class ReorderArray {
     }
 
     /*
-     *  Switching cost based order by greedy algorithm.
+     *  Switching cost based solution by greedy algorithm.
      *  Randomly select the first one.
      */
     public void toGreedySwitchOrder( TestSuite test ) {
@@ -136,7 +137,7 @@ public class ReorderArray {
     }
 
     /*
-     *  Hybrid based order by greedy algorithm. When determining the next test case to run,
+     *  Hybrid based solution by greedy algorithm. When determining the next test case to run,
      *  metric = (t-way combination coverage) / (execution + switching cost)
      */
     public void toGreedyHybridOrder( TestSuite test, int t ) {
@@ -191,16 +192,16 @@ public class ReorderArray {
     }
 
     /*
-     *  Switching cost based order by GA
+     *  Switching cost based solution by GA
      */
     public void toGASwitchOrder( TestSuite test ) {
-        SEvolution se = new SEvolution(30, 1000, 0.9, 1.0/(double)test.getTestSuiteSize(), test);
-        se.GA();
-        System.arraycopy(se.opt_sequence, 0, test.order, 0, se.opt_sequence.length);
+        SEvolution se = new SEvolution(test);
+        se.run();
+        System.arraycopy(se.solution, 0, test.order, 0, se.solution.length);
     }
 
     /*
-     *  Switching cost based order by GA by DP for TSP
+     *  Switching cost based solution by GA by DP for TSP
      */
     public void toDPSwitchOrder( TestSuite test ) {
         ReorderArrayTSP tsp = new ReorderArrayTSP();
@@ -209,7 +210,7 @@ public class ReorderArray {
     }
 
     /*
-     *  Switching cost based order by GA LKH solver for TSP
+     *  Switching cost based solution by GA LKH solver for TSP
      */
     public void toLKHSwitchOrder( TestSuite test ) {
         ReorderArrayTSP tsp = new ReorderArrayTSP();
@@ -223,14 +224,45 @@ public class ReorderArray {
     }
 
     /*
-     *  Multi-objective optimization based order by NSGA-II, whose aim is to balance
+     *  Multi-objective optimization based solution by NSGA-II, whose aim is to balance
      *  combination coverage and testing cost. NSGA-II will return a set of near optimal
-     *  non-dominated solutions, which will be saved in ArrayList<int[]> data.
+     *  non-dominated solutions, which will be saved in data.
+     *
+     *  Advanced Options
+     *  INPUT:  test      - test suite
+     *          other     - solutions that are produced by other approaches
+     *          idealCost - the minimum cost value
+     *          idealRFD  - the maximum RFD value
+     *  OUTPUT: data      - final front
+     *          reference - the reference pareto front
+     *          best      - the best solution, which will be saved in test.order
      */
-    public void toMultiObjective( TestSuite test, ArrayList<Sequence> data ) {
-        MEvolution me = new MEvolution(30, 1000, 0.9, 1.0/(double)test.getTestSuiteSize(), test);
-        me.evolve();
-        me.assignBestFront(data);
+    public void toMultiObjective( TestSuite test, ArrayList<int[]> data) {
+        MEvolution me = new MEvolution(test);
+        me.run();
+        me.getSolutions(data);
+    }
+    public void toMultiObjective( TestSuite test, ArrayList<NSSolution2D> data, ArrayList<NSSolution2D> other,
+                                  ArrayList<NSSolution2D> reference, double idealCost, double idealRFD ) {
+        data.clear();
+        reference.clear();
+
+        MEvolution me = new MEvolution(test);
+        me.run();
+
+        // get final solutions
+        data = me.NSGA.getFinalFront();
+
+        // get the reference pareto front
+        if( other != null )
+            reference.addAll(me.NSGA.getReferenceFront(other));
+        else
+            reference.addAll(data);
+
+        // identify the best solution
+        ArrayList<NSSolution2D> K = me.NSGA.getContributedSolutions(data, reference);
+        NSSolution2D best = me.NSGA.getBestSolution2D(idealRFD, idealCost, K);
+        System.arraycopy(best.solution, 0, test.order, 0, best.solution.length);
     }
 
 }

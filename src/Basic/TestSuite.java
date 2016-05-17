@@ -73,7 +73,7 @@ public class TestSuite {
     }
 
     /*
-     *  determine whether order is valid
+     *  determine whether solution is valid
      */
     public boolean isValidTestingOrder(int[] od) {
         if (od == null)
@@ -133,7 +133,7 @@ public class TestSuite {
 
     /*
      *  measure the distance between two test cases,
-     *  where i, j are indexes of default order
+     *  where i, j are indexes of default solution
      */
     public double distance(int i, int j) {
         if (i > tests.length || j > tests.length) {
@@ -148,7 +148,7 @@ public class TestSuite {
     }
 
     /*
-     *  get the total switching cost of the test suite with the order od[]
+     *  get the total switching cost of the test suite with the solution od[]
      *  no setting up cost
      */
     public double getTotalSwitchingCost(int[] od) {
@@ -236,7 +236,7 @@ public class TestSuite {
 
     /*
      *  get F(t)-measure:
-     *  the required time unit to detect specified t-way failure schema with order od[]
+     *  the required time unit to detect specified t-way failure schema with solution od[]
      */
     public double getFt(int tway, final int[] schema, int[] od) {
         if (od == null)
@@ -386,7 +386,7 @@ public class TestSuite {
             if( testing_results[k] == 0 )
                 m += 1 ;
 
-        //System.out.println(">> order = " + Arrays.toString(od));
+        //System.out.println(">> solution = " + Arrays.toString(od));
         //System.out.println(">> testing results = " + Arrays.toString(testing_results));
         //System.out.println(">> m = " + m);
 

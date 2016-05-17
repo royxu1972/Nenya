@@ -1,11 +1,11 @@
-package functions;
+package function;
 
 import Basic.IOFiles;
 import Basic.TestSuite;
 import Reduction.PostRandomized;
 import org.junit.Test;
 
-public class basicReduction {
+public class reduction {
 
     @Test
     public void test_Reduction() {

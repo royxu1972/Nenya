@@ -1,4 +1,4 @@
-package functions;
+package basic;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;

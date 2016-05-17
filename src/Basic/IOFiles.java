@@ -88,7 +88,7 @@ public class IOFiles {
     /*
      *  Transfer an List<int[]> ca to test.int[][], ca[].length should
      *  be equal to test.system.parameter.
-     *  Set default order and set default execution cost = 0.0
+     *  Set default solution and set default execution cost = 0.0
      */
     public static void transferTestSuite( List<int[]> ca , TestSuite test ) {
         test.tests = new int[ca.size()][test.system.parameter];

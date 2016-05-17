@@ -234,7 +234,7 @@ public class ALG {
     }
 
 
-    // quick sort array a, ascending order
+    // quick sort array a, ascending solution
     public static void sortArray(int[] a, int left, int right) {
         int i, j, temp;
         if (left < right) {
@@ -266,8 +266,8 @@ public class ALG {
 
     /*
      *  quick sort an array a and swap corresponding elements in b simultaneously
-     *  version = 0: ascending order
-     *  version = 1: descending order
+     *  version = 0: ascending solution
+     *  version = 1: descending solution
      */
     public static void sortArray(int[] a, int[] b, int version) {
         sortArray(a, b, 0, a.length - 1, version);

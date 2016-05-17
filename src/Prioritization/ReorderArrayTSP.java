@@ -251,9 +251,7 @@ public class ReorderArrayTSP {
             //while((line=input.readLine ()) != null)
             //    System.out.println("sto " + line);
             proc.waitFor();
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        } catch ( InterruptedException e ) {
+        } catch ( IOException | InterruptedException e ) {
             e.printStackTrace();
         }
 

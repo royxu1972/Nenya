@@ -40,7 +40,7 @@ public class AETG {
          *  less than other, > 0 if this is supposed to be greater than
          *  other and 0 if they are supposed to be equal
          *
-         *  do a descending order via collection.sort (less to greater),
+         *  do a descending solution via collection.sort (less to greater),
          *  and sorting is only based on the value of number
          */
         @Override
@@ -141,19 +141,17 @@ public class AETG {
             coveringArray.add(best);
             updateTestCaseAndFirstWeight(best);
 
-            System.out.println(Arrays.toString(best) + ", uncovered = " + sut.getSCount() );
-
         } // end while
 
         // save the final covering array in test.tests[][]
-        // and set default testing order and default execution cost
+        // and set default testing solution and default execution cost
         ts.tests = new int[coveringArray.size()][sut.parameter] ;
         ts.order = new int[coveringArray.size()] ;
         ts.executionCost = new double[coveringArray.size()] ;
         int x = 0 ;
         for( int[] t : coveringArray ) {
             System.arraycopy(t, 0, ts.tests[x], 0, sut.parameter);
-            ts.order[x] = x ;             // set default order
+            ts.order[x] = x ;             // set default solution
             ts.executionCost[x] = 0.0 ;   // set default execution cost = 0.0
             x++ ;
         }

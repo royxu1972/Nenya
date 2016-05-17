@@ -18,7 +18,7 @@ Generate a random test suite.
 ## Test Suite Reduction
 
 Reduce the size of a given test suite while maintaining its combination coverage.
-An refined randomized post-optimization algorithm is applied.
+A refined randomized post-optimization algorithm is applied.
 
 ## Test Suite Prioritization
 

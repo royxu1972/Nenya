@@ -1,16 +1,15 @@
-package functions;
+package basic;
 
-import Basic.ALG;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-public class basicALG {
+public class basicFunction {
 
     @Test
     public void ALG_allC() {
         int n = 3 , m = 1 ;
-        int[][] data = ALG.cal_allC(n, m);
+        int[][] data = Basic.ALG.cal_allC(n, m);
         for( int[] line : data )
             System.out.println(Arrays.toString(line));
     }
@@ -20,7 +19,7 @@ public class basicALG {
         int[] v = {3, 4, 2, 3, 3};
         int[] pos = {1, 2};
 
-        int[][] data = ALG.cal_allV(pos, 2, v);
+        int[][] data = Basic.ALG.cal_allV(pos, 2, v);
         for( int[] line : data )
             System.out.println(Arrays.toString(line));
     }
@@ -36,7 +35,7 @@ public class basicALG {
         int[] pos = new int[p1.length+p2.length];
         int[] sch = new int[v1.length+v2.length];
 
-        ALG.combineArray(p1, v1, p2, v2, pos, sch);
+        Basic.ALG.combineArray(p1, v1, p2, v2, pos, sch);
         System.out.println(Arrays.toString(pos));
         System.out.println(Arrays.toString(sch));
     }

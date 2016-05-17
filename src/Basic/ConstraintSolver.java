@@ -50,9 +50,4 @@ public class ConstraintSolver {
             return false;
         }
     }
-
-
-
-
-
 }

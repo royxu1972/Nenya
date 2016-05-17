@@ -1,144 +1,43 @@
 package Prioritization;
 
 import Basic.TestSuite;
+import EA.NSGA.NSSolution2D;
+import EA.NSGA.NSGeneticAlgorithm;
 
-import java.util.*;
+import java.util.ArrayList;
+
 
 /**
- *  Multi-Objective Optimization, NSGA-II
- *  designed specifically for test suite prioritization according to
- *  two goals: testing cost (execution + switching) and 2-way combination coverage
+ *  Multi-objective based prioritization (combination coverage
+ *  and switching cost) by NSGA-II
  */
 public class MEvolution {
 
-    private MPopulation pool;
     private TestSuite ts ;
-    private Random random ;
+    public NSGeneticAlgorithm NSGA ;
 
-    // parameter setting
-    private int N ;
-    private int ITE ;
-    private double CROSS_PRO ;
-    private double MUTATION_PRO ;
-
-    public MEvolution( int size, int iteration, double cross, double mutation, TestSuite ts ) {
-        this.N = size ;
-        this.ITE = iteration ;
-        this.CROSS_PRO = cross ;
-        this.MUTATION_PRO = mutation ;
-        this.ts = ts ;
-
-        pool = new MPopulation(N, ts.tests.length, ts);
-        this.random = new Random() ;
+    public MEvolution(TestSuite t) {
+        ts = t ;
+        NSGA = new NSGeneticAlgorithm(t);
     }
 
     /*
-     *  print current pool
+     *  Get the final set of candidate solutions.
      */
-    public void printPool() {
-        System.out.println("the population pool: ");
-        pool.printPopulation();
+    public void getSolutions( ArrayList<int[]> data ) {
+        ArrayList<NSSolution2D> tp = NSGA.getFinalFront();
+        for( NSSolution2D each : tp )
+            data.add(each.solution.clone());
     }
 
-    /*
-     *  get current population pool
-     */
-    public ArrayList<Sequence> getPopulation() {
-        return pool.population ;
-    }
-
-    /*
-     *  copy best_front (i.e. final population)
-     */
-    public void assignBestFront( ArrayList<Sequence> data ) {
-        data.clear();
-        if( pool.population.size() == 0 )
-            return ;
-        pool.getFirstLevelFront(data);
-    }
-
-    /*
-     *  run NSGA-II
-     */
-    public void evolve() {
-
-        // initialize
-        pool.initialization();
-
-        // main loop
-        for( int it=0 ; it<ITE ; it++ ) {
-
-            // fast-non-dominated-sort (identify level and crowd)
-            pool.NonDominatedSort();
-
-            // select the first N candidates as the new pool
-            pool.CandidateSort(N);
-
-            // make new population
-            ArrayList<Sequence> Q = new ArrayList<>();
-            for( int i=0 ; i<N ; i++ ) {
-                // selection
-                int x1 = selection_BT() ;
-                int x2 = selection_BT() ;
-                Sequence p1 = pool.population.get(x1) ;
-                Sequence p2 = pool.population.get(x2) ;
-                int[] child ;
-
-                // crossover
-                double alpha = random.nextDouble() ;
-                if( alpha < CROSS_PRO )
-                    child = crossover_PMX(p1.order, p2.order) ;
-                else {
-                    child = p1.order.clone() ;
-                }
-
-                // mutation
-                double beta = random.nextDouble() ;
-                if( beta < MUTATION_PRO )
-                    mutation_EX( child ) ;
-
-                // add to Q
-                Sequence q = new Sequence(child, ts.getTotalTestingCost(child), ts.getRFD(child, ts.system.t_way), 0, 0 );
-                Q.add(q) ;
-            }
-
-            // union two population set
-            pool.unionSet(Q);
-
-        } // end main loop
-
-        // the result front, only save the first N candidates
-        pool.NonDominatedSort();
-        pool.CandidateSort(N);
-
-        //System.out.println("final:");
-        //pool.print();
-    }
-
-
-    /*
-     *  binary tournament selection
-     *  output: an integer representing the indexes selected from two parents
-     */
-    private int selection_BT() {
-
-        int a = random.nextInt(N);
-        int b = random.nextInt(N);
-        while( a == b )
-            b = random.nextInt(N);
-
-        int fit_a = pool.population.get(a).level ;
-        int fit_b = pool.population.get(b).level ;
-        if( fit_a < fit_b )
-            return a ;
-        else
-            return b ;
+    public void run() {
+        NSGA.evolve();
     }
 
     /*
      *  partially matched crossover (PMX)
      *  build an offspring by choosing a sub-sequence of a tour from one parent
-     *  preserving the order and position of as many positions as possible from
+     *  preserving the solution and position of as many positions as possible from
      *  the other parent
      *
      *  p1 : 1 5 | 2 8 7 | 4 3 6
@@ -146,7 +45,7 @@ public class MEvolution {
      *  mapping: 2-5, 8-8, 7-1
      *  o  : 4 [2] | 2 8 7 | 3 6 [7]
      *  ==>  4  5  | 2 8 7 | 3 6  1
-     */
+
     public int[] crossover_PMX( final int[] p1, final int[] p2 ) {
         int LEN = p1.length ;
         int[] child = new int[LEN] ;
@@ -182,12 +81,12 @@ public class MEvolution {
 
         return child ;
     }
-
+*/
 
     /*
      *  genetic edge recombination crossover
      *  output: a new sequence by combining p1 and p2
-     */
+
     private int[] crossover_ER( final int[] p1, final int[] p2 ) {
         int len = p1.length ;
         int[] child = new int[len];
@@ -292,11 +191,11 @@ public class MEvolution {
 
         return child;
     }
-
+*/
     /*
      *  swap mutation
      *  randomly pick two positions and swap their values
-     */
+
     private void mutation_EX( int[] a ) {
         int pos1 = random.nextInt(a.length) ;
         int pos2 = random.nextInt(a.length) ;
@@ -307,5 +206,5 @@ public class MEvolution {
             a[pos2] = tp ;
         }
     }
-
+*/
 }
