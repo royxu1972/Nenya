@@ -255,6 +255,7 @@ public class ReorderArray {
             // the solutions that contribute to the reference front
             ArrayList<NSSolution2D> K = new ArrayList<>();
             me.NSGA.assignContributedSolutions(front, reference, K);
+
             // identify the best solution
             NSSolution2D best = me.NSGA.getBestSolution2D(cost, RFD, K);
             System.arraycopy(best.solution, 0, test.order, 0, best.solution.length);

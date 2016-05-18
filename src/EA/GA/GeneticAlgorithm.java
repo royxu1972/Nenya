@@ -36,7 +36,6 @@ public class GeneticAlgorithm extends Genetic {
         // a smaller fitness value indicates a better solution
         best_candidate = new int[len];
         best_fitness = Double.MAX_VALUE ;
-        fit = new double[N];
 
         // default algorithm settings
         N = 30 ;
@@ -62,6 +61,7 @@ public class GeneticAlgorithm extends Genetic {
     @Override
     public void evolve() {
         population.clear();
+        fit = new double[N];
 
         // initialize candidates
         init.initialization(this, N);

@@ -3,10 +3,7 @@ package EA.NSGA;
 import EA.Common.*;
 import EA.GA.Genetic;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  *  NSGA-II for test suite prioritization.
@@ -243,23 +240,41 @@ public class NSGeneticAlgorithmII extends Genetic {
     /*
      *  Get the solution in front K that is the closest to the ideal point,
      *  where normalized best cost = 0 and normalized best value = 1
+     *  The variable crowd of returned object is set to the shortest distance.
      *
      *  INPUT:
      *  cost[]  - [0]: best (min), [1] worst (max)
      *  value[] - [0]: best (max), [1] worst (min)
      */
     public NSSolution2D getBestSolution2D( double[] cost,  double[] value, ArrayList<NSSolution2D> K) {
+        double cost_best = cost[0], cost_worst = cost[1] ;
+        double value_best = value[0], value_worst = value[1];
+
+        // check the best and worst value of cost and value
+        for( NSSolution2D each : K ) {
+            if( each.cost < cost_best )
+                cost_best = each.cost ;
+            else if( each.cost > cost_worst )
+                cost_worst = each.cost ;
+
+            if( each.value > value_best )
+                value_best = each.value ;
+            else if( each.value < value_worst )
+                value_worst = each.value ;
+        }
+
         NSSolution2D best = null ;
         double shortest = Double.MAX_VALUE ;
         for( NSSolution2D each : K ) {
             // normalization
-            double c = (each.cost-cost[0]) / (cost[1]-cost[0]);
-            double v = (each.value-value[1]) / (value[0]-value[1]);
+            double c = (each.cost-cost_best) / (cost_worst-cost_best);
+            double v = (each.value-value_worst) / (value_best-value_worst);
             double d = Math.sqrt((c*c)+(1.0-v)*(1.0-v) );
             if ( d < shortest ) {
                 shortest = d ;
                 best = each.clone();
-                System.out.println("find a better one with d = " + d + ", " + each);
+                best.updateCrowd(d);
+                //System.out.println("find a better one with d = " + d + ", " + each);
             }
         }
         return best ;
@@ -326,7 +341,7 @@ public class NSGeneticAlgorithmII extends Genetic {
 
         // the final front
         assignFirstLevelFront(population, finalFront);
-        printPopulation(finalFront);
+        //printPopulation(finalFront);
     }
 
     public void printPopulation( ArrayList<NSSolution2D> pool) {

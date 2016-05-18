@@ -65,7 +65,7 @@ public class MEvolution {
     public NSGeneticAlgorithmII NSGA ;
 
     // final front
-    ArrayList<NSSolution2D> result ;
+    public ArrayList<NSSolution2D> result ;
 
     public MEvolution(TestSuite t) {
         ts = t ;
