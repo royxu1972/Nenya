@@ -5,7 +5,7 @@ import java.util.Comparator;
 /**
  *  NSGA-II for test suite prioritization.
  */
-public class NSSolution2D {
+public class NSSolution2D implements Cloneable {
 
     public int[] solution;
 
@@ -27,7 +27,7 @@ public class NSSolution2D {
 
     @Override
     public NSSolution2D clone() {
-        return new NSSolution2D(solution, cost, value, level, crowd);
+        return new NSSolution2D(solution.clone(), cost, value, level, crowd);
     }
 
     @Override

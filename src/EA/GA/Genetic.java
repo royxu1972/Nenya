@@ -13,6 +13,9 @@ public abstract class Genetic {
 
     public Random random ;
 
+    // the length of each candidate solution
+    public int    LENGTH ;
+
     // parameter
     public int    N ;
     public int    ITE ;
@@ -28,9 +31,7 @@ public abstract class Genetic {
         random = new Random();
     }
 
-    /*
-     *  Assign control parameter.
-     */
+    // assign control parameter
     public void setParameter( int n, int ite, double crossover, double mutation ) {
         N = n ;
         ITE = ite ;
@@ -38,21 +39,15 @@ public abstract class Genetic {
         MUTATION_PRO = mutation ;
     }
 
-    /*
-     *  Assign selection and variation operators.
-     */
-    public void setOperator( OperatorSelection selection,
-                             OperatorCrossover crossover,
+    // assign selection and variation operators
+    public void setOperator( OperatorSelection selection, OperatorCrossover crossover,
                              OperatorMutation mutation ) {
         op_selection = selection ;
         op_crossover = crossover ;
         op_mutation = mutation ;
     }
 
-    /*
-     *  Main algorithm procedure
-     */
+    // the algorithm
     public abstract void evolve();
-
 
 }

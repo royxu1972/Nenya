@@ -22,8 +22,8 @@ public class SelectionBinaryTournament implements OperatorSelection {
         while( a == b )
             b = GA.random.nextInt(GA.N);
 
-        double fit_a = GA.fitness.value(GA.pool.get(a));
-        double fit_b = GA.fitness.value(GA.pool.get(b));
+        double fit_a = GA.fitness.value(GA.population.get(a));
+        double fit_b = GA.fitness.value(GA.population.get(b));
         if( fit_a < fit_b )
             return a ;
         else

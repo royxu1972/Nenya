@@ -231,33 +231,32 @@ public class ReorderArray {
      *  Advanced Options
      *  INPUT:  test      - test suite
      *          other     - solutions that are produced by other approaches
-     *          idealCost - the minimum cost value
-     *          idealRFD  - the maximum RFD value
+     *          cost[]    - the minimum & maximum cost
+     *          RFD[]     - the maximum & minimum RFD
      *  OUTPUT: data      - final front
      *          reference - the reference pareto front
      *          best      - the best solution, which will be saved in test.order
      */
-    public void toMultiObjective( TestSuite test, ArrayList<NSSolution2D> data, ArrayList<NSSolution2D> other,
-                                  ArrayList<NSSolution2D> reference, double idealCost, double idealRFD ) {
-        data.clear();
+    public void toMultiObjective( TestSuite test, ArrayList<NSSolution2D> front, ArrayList<NSSolution2D> other,
+                                  ArrayList<NSSolution2D> reference, double[] cost, double[] RFD) {
+        front.clear();
         reference.clear();
 
         MEvolution me = new MEvolution(test);
         me.run();
 
         // the final solution set: data = me.result
-        me.result.stream().forEach( p -> data.add(p.clone()));
+        me.result.stream().forEach( p -> front.add(p.clone()) );
 
         // the reference pareto front
-        if( other != null )
-            reference.addAll(me.NSGA.getReferenceFront(other));
-        else
-            reference.addAll(data);
+        me.NSGA.assignReferenceFront(other, reference);
 
-        // identify the best solution
-        if( idealCost != -1 && idealRFD != -1 ) {
-            ArrayList<NSSolution2D> K = me.NSGA.getContributedSolutions(data, reference);
-            NSSolution2D best = me.NSGA.getBestSolution2D(idealRFD, idealCost, K);
+        if( cost != null && RFD != null ) {
+            // the solutions that contribute to the reference front
+            ArrayList<NSSolution2D> K = new ArrayList<>();
+            me.NSGA.assignContributedSolutions(front, reference, K);
+            // identify the best solution
+            NSSolution2D best = me.NSGA.getBestSolution2D(cost, RFD, K);
             System.arraycopy(best.solution, 0, test.order, 0, best.solution.length);
         }
     }

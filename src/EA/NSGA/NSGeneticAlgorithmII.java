@@ -15,15 +15,18 @@ import java.util.List;
 public class NSGeneticAlgorithmII extends Genetic {
 
     public ArrayList<NSSolution2D> population;
-    public ArrayList<NSSolution2D> finalFront;
-    public int LENGTH ;
 
     public InitializerND     init ;
     public FitnessFunction2D fitness ;
 
+    // the best result
+    public ArrayList<NSSolution2D> finalFront;
+
     public NSGeneticAlgorithmII( int len ) {
         population = new ArrayList<>();
         LENGTH = len ;
+
+        finalFront = new ArrayList<>();
 
         // default algorithm settings
         N = 30 ;
@@ -194,44 +197,39 @@ public class NSGeneticAlgorithmII extends Genetic {
     }
 
     /*
-     *  Add one solution to the current population.
-     *  This is used for constructing reference front
-     */
-    public void append( NSSolution2D a ) {
-        int[] nt = a.solution.clone() ;
-        NSSolution2D nq = new NSSolution2D(nt, a.cost, a.value, 0, 0.0);
-        population.add(nq);
-    }
-
-    /*
      *  Get the first level front of pool (level = 1)
      */
-    public ArrayList<NSSolution2D> getFirstLevelFront( ArrayList<NSSolution2D> pool ) {
-        ArrayList<NSSolution2D> data = new ArrayList<>();
+    public void assignFirstLevelFront( ArrayList<NSSolution2D> pool, ArrayList<NSSolution2D> data ) {
+        data.clear();
         pool.stream().forEach( each -> {
             if( each.level == 1 ) {
                 NSSolution2D nq = each.clone();
                 data.add(nq);
             }
         });
-        return data ;
     }
 
     /*
      *  Get the reference pareto front
      *  i.e. the first level front of (finalFront + other)
      */
-    public ArrayList<NSSolution2D> getReferenceFront(ArrayList<NSSolution2D> other) {
-        other.stream().forEach( each -> finalFront.add(each.clone()) );
-        nonDominatedSort(finalFront);
-        return getFirstLevelFront(finalFront);
+    public void assignReferenceFront(ArrayList<NSSolution2D> other, ArrayList<NSSolution2D> data ) {
+        if( other.size() == 0 ) {
+            finalFront.stream().forEach(each -> data.add(each.clone()));
+        }
+        else {
+            other.stream().forEach(each -> finalFront.add(each.clone()));
+            nonDominatedSort(finalFront);
+            assignFirstLevelFront(finalFront, data);
+        }
     }
 
     /*
      *  Get the solutions in front that contribute to the reference pareto front.
      */
-    public ArrayList<NSSolution2D> getContributedSolutions(ArrayList<NSSolution2D> front, ArrayList<NSSolution2D> reference) {
-        ArrayList<NSSolution2D> data = new ArrayList<>();
+    public void assignContributedSolutions(ArrayList<NSSolution2D> front, ArrayList<NSSolution2D> reference,
+                                           ArrayList<NSSolution2D> data) {
+        data.clear();
         for( NSSolution2D f : front ) {
             for( NSSolution2D ref : reference ) {
                 if( f.isEqual(ref) ) {    // if contribute
@@ -240,21 +238,29 @@ public class NSGeneticAlgorithmII extends Genetic {
                 }
             }
         }
-        return data ;
     }
 
     /*
-     *  Get the solution in front K that is the closest to the ideal point
+     *  Get the solution in front K that is the closest to the ideal point,
+     *  where normalized best cost = 0 and normalized best value = 1
+     *
+     *  INPUT:
+     *  cost[]  - [0]: best (min), [1] worst (max)
+     *  value[] - [0]: best (max), [1] worst (min)
      */
-    public NSSolution2D getBestSolution2D( double value, double cost, ArrayList<NSSolution2D> K) {
+    public NSSolution2D getBestSolution2D( double[] cost,  double[] value, ArrayList<NSSolution2D> K) {
         NSSolution2D best = null ;
         double shortest = Double.MAX_VALUE ;
         for( NSSolution2D each : K ) {
-            double c = each.cost ;
-            double v = each.value ;
-            double d = Math.sqrt((c-cost)*(c-cost)+(v-value)*(v-value));
-            if ( d < shortest )
+            // normalization
+            double c = (each.cost-cost[0]) / (cost[1]-cost[0]);
+            double v = (each.value-value[1]) / (value[0]-value[1]);
+            double d = Math.sqrt((c*c)+(1.0-v)*(1.0-v) );
+            if ( d < shortest ) {
+                shortest = d ;
                 best = each.clone();
+                System.out.println("find a better one with d = " + d + ", " + each);
+            }
         }
         return best ;
     }
@@ -303,7 +309,7 @@ public class NSGeneticAlgorithmII extends Genetic {
 
                 // add children to Q
                 for( int[] each : children ) {
-                    double[] fit = fitness.value(each);
+                    double[] fit = fitness.value(each);     // cost, value
                     NSSolution2D q = new NSSolution2D(each, fit[0], fit[1], 0, 0 );
                     Q.add(q) ;
                 }
@@ -319,7 +325,8 @@ public class NSGeneticAlgorithmII extends Genetic {
         candidateSort(population, N);
 
         // the final front
-        finalFront = getFirstLevelFront(population);
+        assignFirstLevelFront(population, finalFront);
+        printPopulation(finalFront);
     }
 
     public void printPopulation( ArrayList<NSSolution2D> pool) {

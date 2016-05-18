@@ -17,8 +17,7 @@ import java.util.*;
  */
 public class GeneticAlgorithm extends Genetic {
 
-    public ArrayList<int[]> pool ;
-    public int LENGTH ;
+    public ArrayList<int[]> population;
 
     public Initializer init ;
     public FitnessFunction fitness ;
@@ -27,13 +26,17 @@ public class GeneticAlgorithm extends Genetic {
     public double best_fitness;
     public int[]  best_candidate;
 
+    // the fitness of each candidate
+    public double[] fit;
+
     public GeneticAlgorithm( int len ) {
-        pool = new ArrayList<>();
+        population = new ArrayList<>();
         LENGTH = len ;
 
         // a smaller fitness value indicates a better solution
         best_candidate = new int[len];
         best_fitness = Double.MAX_VALUE ;
+        fit = new double[N];
 
         // default algorithm settings
         N = 30 ;
@@ -58,11 +61,10 @@ public class GeneticAlgorithm extends Genetic {
 
     @Override
     public void evolve() {
-        pool.clear();
+        population.clear();
 
         // initialize candidates
         init.initialization(this, N);
-        double[] fit = new double[N];
 
         // evolution
         int it = 1;
@@ -70,10 +72,10 @@ public class GeneticAlgorithm extends Genetic {
             // evaluate each candidate solution
             // the best one is stored in best_candidate
             for( int k = 0 ; k < N ; k++ ) {
-                fit[k] = fitness.value(pool.get(k));
+                fit[k] = fitness.value(population.get(k));
                 if (fit[k] < best_fitness) {
                     best_fitness = fit[k];
-                    System.arraycopy(pool.get(k), 0, best_candidate, 0, LENGTH);
+                    System.arraycopy(population.get(k), 0, best_candidate, 0, LENGTH);
                 }
             }
 
@@ -86,8 +88,8 @@ public class GeneticAlgorithm extends Genetic {
 
                 // crossover
                 List<int[]> children ;
-                int[] p1 = pool.get(par1);
-                int[] p2 = pool.get(par2);
+                int[] p1 = population.get(par1);
+                int[] p2 = population.get(par2);
 
                 double alpha = random.nextDouble() ;
                 if( alpha < CROSSOVER_PRO )
@@ -109,9 +111,9 @@ public class GeneticAlgorithm extends Genetic {
                 next.addAll(children);
             }
 
-            // pool = next
-            pool.clear();
-            pool.addAll(next);
+            // population = next
+            population.clear();
+            population.addAll(next);
             next.clear();
 
             // next iteration
@@ -122,7 +124,7 @@ public class GeneticAlgorithm extends Genetic {
     }
 
     public void printCurrentPopulation() {
-        for( int[] each : pool ) {
+        for( int[] each : population) {
             System.out.println(Arrays.toString(each));
         }
     }

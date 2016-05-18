@@ -3,7 +3,7 @@ package EA.Common;
 import java.util.*;
 
 /**
- *  Partially-Mapped Crossover (PMX)
+ *  Partially Matched Crossover (PMX)
  *  A portion of one parent's string is mapped onto a portion of the
  *  other parent's string, and the remaining information is exchanged.
  */
@@ -14,6 +14,19 @@ public class CrossoverPMX implements OperatorCrossover {
         return "PMX";
     }
 
+    /*
+     *  Example
+     *  p1 : 1 5 | 2 8 7 | 4 3 6
+     *  p2 : 4 2 | 5 8 1 | 3 6 7
+     *  --------------------------
+     *  mapping: 2-5, 8-8, 7-1
+     *  --------------------------
+     *  o1 : 4 2' | 2 8 7 | 3 6 7'
+     *  ==>  4 5  | 2 8 7 | 3 6 1
+     *
+     *  o2 : 1' 5' | 5 8 1 | 4 3 6
+     *  ==>  7  2  | 5 8 1 | 4 3 6
+     */
     @Override
     public List<int[]> crossover(int[] a, int[] b, Random r) {
         int LEN = a.length ;

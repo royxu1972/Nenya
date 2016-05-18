@@ -1,6 +1,7 @@
 package evolutionary;
 
 import EA.Common.CrossoverPMX;
+import EA.Common.MutationDisplacement;
 import EA.Common.MutationExchange;
 import org.junit.Test;
 
@@ -28,11 +29,21 @@ public class common {
     @Test
     public void mutationOperators() {
         int[] c = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] tp ;
         Random r = new Random();
 
         // Exchange Mutation (EM)
+        tp = c.clone();
         MutationExchange EM = new MutationExchange();
-        EM.mutation(c, r);
-        System.out.println(Arrays.toString(c));
+        EM.mutation(tp, r);
+        System.out.println(Arrays.toString(tp));
+
+        // Displacement Mutation (DM)
+        tp = c.clone();
+        MutationDisplacement DM = new MutationDisplacement();
+        DM.mutation(tp, r);
+        System.out.println(Arrays.toString(tp));
+
+
     }
 }

@@ -15,7 +15,6 @@ import java.util.Arrays;
 public class prioritization {
 
     private TestSuite ts ;
-    private AETG gen ;
     private ReorderArray re ;
 
     @Before
@@ -26,7 +25,7 @@ public class prioritization {
             v[k] = 5 ;
         int t = 2 ;
         ts = new TestSuite(p, v, t);
-        gen = new AETG();
+        AETG gen = new AETG();
         gen.Generation(ts);
         re = new ReorderArray();
     }
@@ -95,13 +94,9 @@ public class prioritization {
         // which will be used to determine the reference pareto front
         ArrayList<NSSolution2D> other = new ArrayList<>() ;
 
-        // the output of NSGA-II optimization
-        ArrayList<NSSolution2D> front = new ArrayList<>() ;     // the final front
-        ArrayList<NSSolution2D> reference = new ArrayList<>() ; // the reference front
-
-        // the best solution for cost and RFD, which is used to calculate reference (ideal) point
-        double idealCost = Double.MAX_VALUE ;
-        double idealRFD = Double.MIN_VALUE ;
+        // the best and worst value of cost and RFD, which is used to calculate reference (ideal) point
+        double[] cost = {Double.MAX_VALUE, Double.MIN_VALUE};
+        double[] RFD  = {Double.MIN_VALUE, Double.MAX_VALUE};
 
         // do prioritization for each single-objective order
         for (int i = 0 ; i < orders.length - 1 ; i++ ) {
@@ -130,25 +125,32 @@ public class prioritization {
                 System.err.println( orders[i].toString() + " error, Invalid Order!");
 
             // evaluate basic indicators, RFD and total switching cost
-            double c = ts.getTotalSwitchingCost(null);
+            double tc = ts.getTotalTestingCost(null);
             double r = ts.getRFD(null, 2);
 
             // update ideal point
-            if( c < idealCost )
-                idealCost = c ;
-            if( r > idealRFD )
-                idealRFD = r ;
+            if( tc < cost[0] )
+                cost[0] = tc ;
+            if( tc > cost[1] )
+                cost[1] = tc ;
+
+            if( r > RFD[0] )
+                RFD[0] = r ;
+            if( r < RFD[1] )
+                RFD[1] = r ;
 
             // save single solution
-            double ttc = ts.getTotalTestingCost(null); // total cost is used in reference candidate set
-            solutions[i] = new NSSolution2D(ts.order, ttc, r, 0, 0.0 );
+            solutions[i] = new NSSolution2D(ts.order, tc, r, 0, 0.0 );
 
             // add single solution to reference front
             other.add(solutions[i]);
         }
 
         // 3.2 do prioritization for multi-objective order
-        re.toMultiObjective(ts, front, other, reference, idealCost, idealRFD);
+        ArrayList<NSSolution2D> front = new ArrayList<>() ;     // the final front
+        ArrayList<NSSolution2D> reference = new ArrayList<>() ; // the reference front
+
+        re.toMultiObjective(ts, front, other, reference, cost, RFD);
         solutions[orders.length-1] = new NSSolution2D(
                 ts.order, ts.getTotalTestingCost(null), ts.getRFD(null, 2), 0, 0.0);
 

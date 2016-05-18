@@ -3,7 +3,7 @@ package EA.Common;
 import java.util.Random;
 
 /**
- *  Exchange Mutation (EM)
+ *  Exchange Mutation (EM) / Swap Mutation
  *  Select two positions randomly and then exchange them.
  */
 public class MutationExchange implements OperatorMutation {

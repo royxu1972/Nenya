@@ -17,7 +17,6 @@ public class reduction {
         PostRandomized pr = new PostRandomized(ts);
         pr.execution(100, 1);
         System.out.println("new size = " + ts.getTestSuiteSize());
-
     }
 
 }
