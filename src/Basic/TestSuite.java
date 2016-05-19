@@ -131,6 +131,14 @@ public class TestSuite {
         }
     }
 
+    public void setExecutionCost(double ex) {
+        if (executionCost == null)
+            executionCost = new double[tests.length];
+
+        for( int i=0 ; i<executionCost.length ; i++ )
+            executionCost[i] = ex ;
+    }
+
     /*
      *  measure the distance between two test cases,
      *  where i, j are indexes of default solution

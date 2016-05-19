@@ -36,6 +36,9 @@ repositories {
 }
 
 jar {
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
     manifest {
         attributes 'Implementation-Title': 'Nenya', 'Implementation-Version': 1.0
     }
