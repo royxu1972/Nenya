@@ -1,6 +1,7 @@
 package EA.NSGA;
 
 import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
 
 /**
  *  NSGA-II for test suite prioritization.
@@ -57,9 +58,9 @@ public class NSSolution2D implements Cloneable {
     public boolean isDominate( NSSolution2D B ) {
         // low cost is better
         // high value is better
-        if( cost < B.cost && value >= B.value )
+        if( this.cost < B.cost && this.value >= B.value )
             return true ;
-        else if( cost <= B.cost && value > B.value )
+        else if( this.cost <= B.cost && this.value > B.value )
             return true ;
         else
             return false ;
@@ -67,10 +68,19 @@ public class NSSolution2D implements Cloneable {
 
     /*
      *  A is less than (negative integer), equal (zero) or
-     *  greater than (positive integer) specified sequence B
+     *  greater than (positive integer) specified solution B
      */
-    static class allSort implements Comparator<NSSolution2D> {
+    public static class allSort implements Comparator<NSSolution2D> {
         public int compare(NSSolution2D A, NSSolution2D B ) {
+            if( A.level != B.level ) {
+                // the smaller the better
+                return Integer.compare(A.level, B.level);
+            }
+            else {
+                // the larger the better
+                return -Double.compare(A.crowd, B.crowd);
+            }
+            /*
             if( A.level < B.level )
                 return -1 ;      // A is better
             else if( A.level == B.level ) {
@@ -83,28 +93,35 @@ public class NSSolution2D implements Cloneable {
             }
             else
                 return 1 ;
+            */
         }
     }
 
-    static class costSort implements Comparator<NSSolution2D> {
+    public static class costSort implements Comparator<NSSolution2D> {
         public int compare(NSSolution2D A, NSSolution2D B ) {
+            return Double.compare(A.cost, B.cost);
+            /*
             if( A.cost < B.cost )
                 return -1 ;      // A is better
             else if( A.cost == B.cost )
                 return 0 ;
             else
                 return 1 ;
+             */
         }
     }
 
-    static class valueSort implements Comparator<NSSolution2D> {
+    public static class valueSort implements Comparator<NSSolution2D> {
         public int compare(NSSolution2D A, NSSolution2D B ) {
+            return -Double.compare(A.value, B.value);
+            /*
             if( A.value > B.value )
                 return -1 ;      // A is better
             else if( A.value == B.value )
                 return 0 ;
             else
                 return 1 ;
+            */
         }
     }
 
@@ -112,7 +129,7 @@ public class NSSolution2D implements Cloneable {
      *  Determine weather two solutions are equal.
      */
     public boolean isEqual( NSSolution2D B ) {
-        for(int i = 0; i < solution.length ; i++ ) {
+        for(int i = 0; i < this.solution.length ; i++ ) {
             if( this.solution[i] != B.solution[i] ) {
                 return false ;
             }
