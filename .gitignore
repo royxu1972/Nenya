@@ -28,4 +28,3 @@ proguard/
 .gradle
 build/
 local.properties
-archives/

@@ -26,10 +26,10 @@ public class NSGeneticAlgorithmII extends Genetic {
         finalFront = new ArrayList<>();
 
         // default algorithm settings
-        N = 30 ;
-        ITE = 1000 ;
-        CROSSOVER_PRO = 0.7 ;
-        MUTATION_PRO = 0.3 ;
+        N             = 60 ;
+        ITE           = 600 ;
+        CROSSOVER_PRO = 0.9 ;
+        MUTATION_PRO  = 0.7 ;
 
         op_selection = new SelectionBinaryTournament();
         op_crossover = new CrossoverPMX();

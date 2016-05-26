@@ -197,6 +197,10 @@ public class ReorderArray {
     public void toGASwitchOrder( TestSuite test ) {
         SEvolution se = new SEvolution(test);
         se.run();
+
+        // the recommended setting
+        se.GA.setParameter(100, 360, 0.9, 0.7);
+
         System.arraycopy(se.solution, 0, test.order, 0, se.solution.length);
     }
 
@@ -243,6 +247,10 @@ public class ReorderArray {
         reference.clear();
 
         MEvolution me = new MEvolution(test);
+
+        // the recommended setting
+        me.NSGA.setParameter(60, 600, 0.9, 0.7);
+
         me.run();
 
         // the final solution set: data = me.result

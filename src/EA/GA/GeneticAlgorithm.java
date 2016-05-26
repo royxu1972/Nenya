@@ -38,10 +38,10 @@ public class GeneticAlgorithm extends Genetic {
         best_fitness = Double.MAX_VALUE ;
 
         // default algorithm settings
-        N = 30 ;
-        ITE = 1000 ;
-        CROSSOVER_PRO = 0.7 ;
-        MUTATION_PRO = 0.3 ;
+        N             = 100 ;
+        ITE           = 360 ;
+        CROSSOVER_PRO = 0.9 ;
+        MUTATION_PRO  = 0.7 ;
 
         op_selection = new SelectionBinaryTournament();
         op_crossover = new CrossoverPMX();
