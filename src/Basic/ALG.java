@@ -1,9 +1,10 @@
 package Basic;
 
-/**
- *  some useful functions
- */
-public class ALG {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+public class Alg {
 
     /*
      *  C(n. m)
@@ -201,7 +202,7 @@ public class ALG {
      *  Given two sorted arrays p1 (v1) and p2 (v2), combine them into a new
      *  sorted array pos (val).
      */
-    public static void combineArray(int[] p1, int[] v1, int[] p2, int[] v2, int[] pos, int[] sch) {
+    public static void combineSortedArray(int[] p1, int[] v1, int[] p2, int[] v2, int[] pos, int[] sch) {
         int i ; // index of p1
         int j ; // index of p2
         int k ; // index of pos
@@ -233,8 +234,63 @@ public class ALG {
         }
     }
 
+    /*
+     *  Get t!
+     */
+    public static int cal_factorial( int t ) {
+        int n = 1 ;
+        for( int i=2 ; i<=t ; i++ )
+            n = n * i ;
+        return n ;
+    }
 
-    // quick sort array a, ascending solution
+    /*
+     *  Get permutations of t variables {0, 1, 2, ..., t-1}
+     *
+     *  The Countdown QuickPerm Algorithm
+     *  http://www.quickperm.org/
+     */
+    public static HashMap<ArrayList<Integer>, Integer> cal_permutation(int t ) {
+        HashMap<ArrayList<Integer>, Integer> permutation = new HashMap<>();
+        int count = 0 ;
+
+        Integer[] v = new Integer[t] ;
+        int[] p = new int[t+1] ;
+        for( int i = 1 ; i < t+1 ; i ++ ) {
+            v[i-1] = i-1 ;
+            p[i] = i ;
+        }
+
+        permutation.put(new ArrayList<>(Arrays.asList(v)), count);
+        count = count + 1 ;
+
+        int i = 1 ;
+        while( i < t ) {
+            p[i] = p[i] - 1 ;
+            int j = i % 2 * p[i];   // if i is odd then j = p[i] otherwise j = 0
+            Integer temp = v[i] ;       // swap(arr[i], arr[j])
+            v[i] = v[j] ;
+            v[j] = temp ;
+
+            // display new sequence
+            permutation.put(new ArrayList<>(Arrays.asList(v)), count);
+            count = count + 1 ;
+
+            i = 1 ;
+            while( p[i] == 0 ) {
+                p[i] = i ;
+                i = i + 1 ;
+            }
+        }
+        return permutation;
+    }
+
+    /*
+     *  quick sort, ascending solution
+     */
+    public static void sortArray(int[] a) {
+        sortArray(a, 0, a.length-1);
+    }
     public static void sortArray(int[] a, int left, int right) {
         int i, j, temp;
         if (left < right) {

@@ -1,8 +1,8 @@
 package Generation;
 
-import Basic.ALG;
-import Basic.SUT;
-import Basic.TestSuite;
+import Basic.Alg;
+import Model.SUT;
+import Model.TestSuite;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -114,7 +114,7 @@ public class AETG {
         initializeFirstWeight();
 
         coveringArray.clear();
-        while( sut.getSCount() != 0 ) {
+        while( sut.getCombUncovered() != 0 ) {
 
             int[] best = generateTestCase();
             int covBest = sut.FitnessValue(best, 0) ;
@@ -252,9 +252,9 @@ public class AETG {
 
         // for each t-way combination
         // which is represented by par_row[] and val_row[]
-        int[][] par = ALG.cal_allC(sut.parameter, sut.t_way);
+        int[][] par = Alg.cal_allC(sut.parameter, sut.t_way);
         for( int[] par_row : par ) {
-            int[][] val = ALG.cal_allV(par_row, sut.t_way, sut.value);
+            int[][] val = Alg.cal_allV(par_row, sut.t_way, sut.value);
             for (int[] val_row : val) {
                 // determine each combination is valid or not
                 if( !sut.Covered(par_row, val_row, 0) ) {
@@ -279,7 +279,7 @@ public class AETG {
      */
     public void updateTestCaseAndFirstWeight( final int[] test ) {
         // iterate all t-way parameter value combinations
-        int[][] data = ALG.cal_allC(sut.parameter, sut.t_way);
+        int[][] data = Alg.cal_allC(sut.parameter, sut.t_way);
         for( int i=0 ; i<data.length ; i++ ) {
             // get position and schema
             int[] position = data[i];
@@ -424,20 +424,20 @@ public class AETG {
             }
 
             // for each possible r-way parameter combinations among unassigned_vector[]
-            int[][] pComb = ALG.cal_allC(unassigned, required);
+            int[][] pComb = Alg.cal_allC(unassigned, required);
             for (int[] p : pComb) {
                 int[] p_row = new int[required];
                 for( int k=0 ; k<required ; k++ )
                     p_row[k] = unassigned_vector[p[k]];
 
                 // for each possible r-way value combinations among p_row
-                int[][] vComb = ALG.cal_allV(p_row, required, sut.value);
+                int[][] vComb = Alg.cal_allV(p_row, required, sut.value);
                 for (int[] v_row : vComb) {
 
                     // construct a temp t-way combination
                     int[] position = new int[sut.t_way];
                     int[] schema = new int[sut.t_way];
-                    ALG.combineArray(candidate_par, candidate_val, p_row, v_row, position, schema);
+                    Alg.combineSortedArray(candidate_par, candidate_val, p_row, v_row, position, schema);
                     //System.out.println("check: " + Arrays.toString(position) + " - " + Arrays.toString(schema));
 
                     // determine whether this t-way combination is covered or not
@@ -476,7 +476,7 @@ public class AETG {
             vv[0] = val ;
 
             // for each possible r-way parameter combinations among assigned_par[]
-            int[][] pComb = ALG.cal_allC(assigned, required);
+            int[][] pComb = Alg.cal_allC(assigned, required);
             for (int[] p : pComb) {
                 int[] p_row = new int[required];
                 int[] r_row = new int[required];
@@ -488,7 +488,7 @@ public class AETG {
                 // construct a temp t-way combination
                 int[] position = new int[sut.t_way];
                 int[] schema = new int[sut.t_way];
-                ALG.combineArray(p_row, r_row, pp, vv, position, schema);
+                Alg.combineSortedArray(p_row, r_row, pp, vv, position, schema);
                 //System.out.println("check: " + Arrays.toString(position) + " - " + Arrays.toString(schema));
 
                 // determine whether this t-way combination is covered or not

@@ -1,7 +1,9 @@
-package Basic;
+package Model;
+
+import Basic.Rand;
 
 /**
- *  The basic data structure and evaluations for a test suite
+ *  Basic data structure and evaluations for classic test suite
  */
 public class TestSuite {
 
@@ -20,21 +22,13 @@ public class TestSuite {
             this.weight[k] = 1.0;
     }
 
-    public int[] getOrderInt() {
-        return order.clone();
-    }
-
     public int getTestSuiteSize() {
         return this.tests.length;
     }
 
     /*
      *  Compute k-way combination coverage of a given test suite.
-     *  The input tests[][] must be a test suite of this.system.
-     */
-    public double getCombinationCoverage( int strength ) {
-        return getCombinationCoverage(strength, this.tests);
-    }
+     *  - Assume no constraint. (to be modified)
     public double getCombinationCoverage( int strength, final int[][] tests ) {
 
         if( tests[0].length != system.parameter )
@@ -44,10 +38,9 @@ public class TestSuite {
         int total_uncovered = 0 ;
 
         // for each parameter combination
-        int[][] pComb = ALG.cal_allC(system.parameter, strength);
+        int[][] pComb = Alg.cal_allC(system.parameter, strength);
         for( int[] pos : pComb ) {
-
-            int uncovered = ALG.cal_combineValue(pos, system.value);
+            int uncovered = Alg.cal_combineValue(pos, system.value);
             total = total + uncovered ;
 
             // the number of covered value combinations
@@ -60,7 +53,7 @@ public class TestSuite {
             for( int[] row : tests ) {
                 for( int k=0 ; k<strength ; k++ )
                     sch[k] = row[pos[k]];
-                int index = ALG.cal_val2num(pos, sch, strength, system.value);
+                int index = Alg.cal_val2num(pos, sch, strength, system.value);
 
                 if( cover[index] == 0 ) {
                     cover[index] = 1 ;
@@ -71,6 +64,7 @@ public class TestSuite {
         }
         return (double)(total - total_uncovered) / (double)total ;
     }
+    */
 
     /*
      *  determine whether solution is valid

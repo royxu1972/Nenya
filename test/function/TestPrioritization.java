@@ -1,6 +1,6 @@
 package function;
 
-import Basic.TestSuite;
+import Model.TestSuite;
 import EA.NSGA.NSSolution2D;
 import Generation.AETG;
 import Prioritization.ReorderArray;
@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class prioritization {
+public class TestPrioritization {
 
     private TestSuite ts ;
     private ReorderArray re ;

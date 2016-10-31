@@ -1,17 +1,20 @@
 package Reduction;
 
-import Basic.ALG;
-import Basic.SUT;
-import Basic.TestSuite;
+import Basic.Alg;
+import Model.SUT;
+import Model.TestSuite;
 
 import java.util.*;
 
 /**
- *  Post-randomized Covering Array Reduction
+ *  Post-randomized Test Suite Reduction: this method will reduce
+ *  the size of a given test suite while still maintaining its
+ *  combination t-way coverage.
  *
- *  Xiaohua Li, Zhao Dong, Huayao Wu, Changhai Nie, Kai-Yuan Cai,
- *  Refining a Randomized Post-optimization Method for Covering Arrays,
- *  3rd International Workshop on Combinatorial Testing (IWCT), pp.143-152, 2014
+ *  Reference:
+ *  [1] Xiaohua Li, Zhao Dong, Huayao Wu, Changhai Nie, Kai-Yuan Cai,
+ *      Refining a Randomized Post-optimization Method for Covering Arrays,
+ *      3rd International Workshop on Combinatorial Testing (IWCT), pp.143-152, 2014
  */
 public class PostRandomized {
 
@@ -33,12 +36,8 @@ public class PostRandomized {
 
     /*
      *	Main algorithm framework
-     *
-     *  INPUT:
-     *  mode = 1, safe mode, check t-way coverage at each iteration
-     *  mode = 0, fast mode, do not run checking method
 	 */
-    public void execution( int max_iteration, int mode ) {
+    public void execution( int max_iteration ) {
 
         sut.initialization();
         int iteration = 0 ;
@@ -46,14 +45,6 @@ public class PostRandomized {
         while (iteration < max_iteration) {
             randomReplacement(identifyRelativeFreePosition());
             eliminateReplacement(identifyFreePosition());
-
-            if( mode == 1 ) {
-                double cov = test.getCombinationCoverage(sut.t_way, coveringArray);
-                if( cov != 1.0 ) {
-                    System.err.println("ERROR in iteration " + iteration + " with coverage " + cov);
-                    return ;
-                }
-            }
             iteration += 1 ;
         }
 
@@ -86,11 +77,11 @@ public class PostRandomized {
                 tempCA[i][j] = -1 ;
 
         // for each t-way parameter combination
-        int[][] p_Comb = ALG.cal_allC(column, sut.t_way);
+        int[][] p_Comb = Alg.cal_allC(column, sut.t_way);
         for( int[] pos : p_Comb ) {
 
             // the number of all possible value combinations
-            int num = ALG.cal_combineValue(pos, sut.value);
+            int num = Alg.cal_combineValue(pos, sut.value);
             // the number of appearances of each value combinations
             int[] cover = new int[num] ;
             // the index of the first appearances
@@ -107,7 +98,7 @@ public class PostRandomized {
                     sch[k] = coveringArray[j][pos[k]];
 
                 // compute the index value of pos-sch
-                int index = ALG.cal_val2num(pos, sch, sut.t_way, sut.value);
+                int index = Alg.cal_val2num(pos, sch, sut.t_way, sut.value);
 
                 cover[index]++ ;
                 if( cover[index] == 1 )
@@ -143,8 +134,8 @@ public class PostRandomized {
         int[] count1 = count.clone();
 
         // reorder
-        ALG.sortArray2D(count, relative);
-        ALG.sortArray2D(count1, coveringArray);
+        Alg.sortArray2D(count, relative);
+        Alg.sortArray2D(count1, coveringArray);
 
         // find the first row which has *
         int begin_star = 0 ;
@@ -166,7 +157,7 @@ public class PostRandomized {
         if( count[row-1] != column && count[row-1] != 0 ) {
 
             // for each t-way parameter combination of the last row
-            int[][] pComb = ALG.cal_allC(sut.parameter, sut.t_way);
+            int[][] pComb = Alg.cal_allC(sut.parameter, sut.t_way);
             for( int[] p_row : pComb ) {
 
                 // determine whether it is a fixed combination
@@ -258,11 +249,11 @@ public class PostRandomized {
                 tempCA[i][j] = -1 ;
 
         // for each t-way parameter combination
-        int[][] p_Comb = ALG.cal_allC(column, sut.t_way);
+        int[][] p_Comb = Alg.cal_allC(column, sut.t_way);
         for( int[] pos : p_Comb ) {
 
             // the number of all possible value combinations
-            int num = ALG.cal_combineValue(pos, sut.value);
+            int num = Alg.cal_combineValue(pos, sut.value);
             // the appearances of each value combinations
             int[] cover = new int[num] ;
             for( int k=0 ; k<num ; k++ )
@@ -275,7 +266,7 @@ public class PostRandomized {
                     sch[k] = coveringArray[j][pos[k]];
 
                 // compute the index value of pos-sch
-                int index = ALG.cal_val2num(pos, sch, sut.t_way, sut.value);
+                int index = Alg.cal_val2num(pos, sch, sut.t_way, sut.value);
 
                 // the first appearance will be set to original values
                 if( cover[index] == 0 ) {

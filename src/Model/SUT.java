@@ -1,5 +1,8 @@
-package Basic;
+package Model;
 
+import Basic.Alg;
+import Basic.Constraint;
+import Basic.ConstraintSolver;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
@@ -22,16 +25,16 @@ public class SUT {
     public int[][] variables;                   // the mapping between parameter value and variable in CNF
     public Vector<Constraint> hardConstraint;   // hard constraint
     public Vector<Constraint> basicConstraint;  // at-least and at-most constraint
-    public ConstraintSolver constraintSolver ;
+    public ConstraintSolver constraintSolver;
 
     // combinations to be covered
-    private int[][] AllS;           // all the combinations, each of which is represented by a bit
-    private int SCountAll;          // the total number of combinations to be covered
-    private int SCount;             // the number of uncovered combinations
-    private int uniformRow;         // C(parameter, t_way), the number of uniform covering strength rows in AllS
-    private int testCaseCoverMax;   // the maximum number of combinations that can be covered by a test case
+    private int[][] comb;         // all the combinations, each of which is represented by a bit
+    private int combAll;          // the total number of combinations to be covered
+    private int combUncovered;    // the number of uncovered combinations
+    private int uniformRow;       // C(parameter, t_way), the number of uniform covering strength rows in comb
+    private int testCaseCoverMax; // the maximum number of combinations that can be covered by a test case
 
-
+    public SUT() {}
     public SUT(int p, int[] v, int t) {
         parameter = p;
         value = new int[p];
@@ -42,16 +45,16 @@ public class SUT {
         basicConstraint = null;
         constraintSolver = null ;
 
-        uniformRow = ALG.cal_combine(p, t_way);
+        uniformRow = Alg.cal_combine(p, t_way);
         testCaseCoverMax = uniformRow;
     }
 
 
-    // get SCountAll
-    public int getSCountAll() { return SCountAll; }
+    // get combAll
+    public int getCombAll() { return combAll; }
 
-    // get SCount
-    public int getSCount() { return SCount; }
+    // get combUncovered
+    public int getCombUncovered() { return combUncovered; }
 
     // get CoverMain
     public int getUniformRow() { return uniformRow; }
@@ -60,12 +63,12 @@ public class SUT {
     public int getTestCaseCoverMax() { return testCaseCoverMax; }
 
     // get current coverage
-    public double getCoverage() { return (double) (SCountAll - SCount) / (double) (SCountAll); }
+    public double getCoverage() { return (double) (combAll - combUncovered) / (double) (combAll); }
 
     /*
      *  Determine whether a k-tuple is invalid or not.
-     *  INPUT-1: k-tuple representation, which indicate parameter and values, respectively
-     *  INPUT-2: test case representation, which use -1 to indicate unfixed values
+     *  INPUT: k-tuple representation,
+     *         which indicate parameters and values, respectively.
      */
     public boolean isValid(final int[] position, final int[] schema) {
         if( hardConstraint == null )
@@ -86,6 +89,11 @@ public class SUT {
         return satisfiable ;
     }
 
+    /*
+     *  Determine whether a k-tuple is invalid or not.
+     *  INPUT: test case representation,
+     *         which use -1 to indicate unfixed values.
+     */
     public boolean isValid(final int[] test) {
         if( hardConstraint == null )
             return true ;
@@ -137,7 +145,7 @@ public class SUT {
 
         // set at-most constraint
         for( int i=0 ; i<parameter ; i++ ) {
-            int[][] data = ALG.cal_allC(value[i], 2);
+            int[][] data = Alg.cal_allC(value[i], 2);
             for( int[] row : data ) {
                 int[] tp = new int[2];
                 tp[0] = 0 - variables[i][row[0]];
@@ -151,7 +159,9 @@ public class SUT {
             hardConstraint.add(new Constraint(k, variables));
 
         // initialize solver
-        constraintSolver = new ConstraintSolver(max_var,basicConstraint.size()+hardConstraint.size());
+        constraintSolver = new ConstraintSolver(
+                max_var,
+                basicConstraint.size() + hardConstraint.size());
         try {
             constraintSolver.addClauses(basicConstraint);
             constraintSolver.addClauses(hardConstraint);
@@ -161,19 +171,18 @@ public class SUT {
         }
     }
 
-
     /*
      *  Pre-processing when solving constraint. Check every k-way combination
      *  to determine whether it is valid or not. Each invalid combination is
      *  either explicit or implicit constraint. All these invalid combinations
-     *  will be removed from AllS.
+     *  will be removed from comb.
      */
     private void preProcessConstraint() {
         // for each t-way combination
         // which is represented by par_row[] and val_row[]
-        int[][] par = ALG.cal_allC(parameter, t_way);
+        int[][] par = Alg.cal_allC(parameter, t_way);
         for( int[] par_row : par ) {
-            int[][] val = ALG.cal_allV(par_row, t_way, value);
+            int[][] val = Alg.cal_allV(par_row, t_way, value);
             for( int[] val_row : val ) {
                 if( !isValid(par_row, val_row) )
                     Covered(par_row, val_row, 1);
@@ -181,41 +190,40 @@ public class SUT {
         }
     }
 
-
     /*
-     *  Initialize AllS (all combinations to be covered).
+     *  Initialize comb (all combinations to be covered).
      *  This should be the first step before invoking any generation or evaluation methods.
      */
     public void initialization() {
-        AllS = null;
-        SCount = 0;
+        comb = null;
+        combUncovered = 0;
 
-        // assign uniformRow rows to AllS
-        AllS = new int[uniformRow][];
+        // assign uniformRow rows to comb
+        comb = new int[uniformRow][];
 
         // get all combinations of C(parameter, t_way)
-        int[][] data = ALG.cal_allC(parameter, t_way);
+        int[][] data = Alg.cal_allC(parameter, t_way);
 
         // for each combination
-        for( int i=0 ; i< uniformRow; i++ ) {
+        for( int i=0 ; i<uniformRow; i++ ) {
             // compute the number of t-way value combinations that are related to current parameters
             int comb = 1;
             for (int t = 0; t < t_way; t++)
                 comb = comb * value[data[i][t]];
 
-            // set and initialize AllS
+            // set and initialize comb
             int column = (int) Math.ceil((double) comb / (double) 32);
-            AllS[i] = new int[column];
+            this.comb[i] = new int[column];
 
             for (int k = 0; k < column; k++)
-                AllS[i][k] = 0x00000000;
+                this.comb[i][k] = 0x00000000;
 
-            // update SCount (the number of combinations to be covered)
-            SCount += comb;
+            // update combUncovered (the number of combinations to be covered)
+            combUncovered += comb;
         }
 
-        // update SCountAll
-        SCountAll = SCount;
+        // update combAll
+        combAll = combUncovered;
 
         // remove combinations that appear in hardConstraint
         if( hardConstraint != null )
@@ -228,14 +236,14 @@ public class SUT {
      *  i.e. the fitness function of one-test-at-a-time based CA generation.
      *
      *  INPUT PARAMETER:
-     *  If FLAG = 0, only a number is returned. AllS and SCount will not be updated.
-     *  If FLAG = 1, AllS and SCount will be updated accordingly.
+     *  If FLAG = 0, only a number is returned. comb and combUncovered will not be updated.
+     *  If FLAG = 1, comb and combUncovered will be updated accordingly.
      */
     public int FitnessValue(final int[] test, int FLAG) {
         int num = 0;
 
         // get all combinations of C(parameter, t_way)
-        int[][] data = ALG.cal_allC(parameter, t_way);
+        int[][] data = Alg.cal_allC(parameter, t_way);
 
         for( int i=0 ; i<uniformRow; i++ ) {
             // get position and schema
@@ -258,15 +266,15 @@ public class SUT {
      *  corresponding parameter values.
      *
      *  INPUT PARAMETER:
-     *  If FLAG = 0, AllS and SCount will not be updated.
-     *  If FLAG = 1, AllS and SCount will be updated accordingly.
+     *  If FLAG = 0, comb and combUncovered will not be updated.
+     *  If FLAG = 1, comb and combUncovered will be updated accordingly.
      */
     public boolean Covered(int[] position, int[] schema, int FLAG) {
         boolean ret = true;
 
-        // check the value of AllS[row][column] to determine cover or not
+        // check the value of comb[row][column] to determine cover or not
         // the row and column is computed based on position and schema, respectively
-        int row = ALG.cal_combine2num(position, parameter, t_way);
+        int row = Alg.cal_combine2num(position, parameter, t_way);
         int column ;       // which BYTE
         int column_bit ;   // which bit
 
@@ -288,11 +296,11 @@ public class SUT {
         // BYTE  : 0 0 0 0 0 0 0 0 ...
         //                 |
         //             column_bit
-        if ( (AllS[row][column] >>> (31-column_bit) & 0x00000001) != 0x00000001 ) {
+        if ( (comb[row][column] >>> (31-column_bit) & 0x00000001) != 0x00000001 ) {
             ret = false;
             if (FLAG == 1) {
-                AllS[row][column] = AllS[row][column] | 0x00000001 << (31 - column_bit);
-                SCount--;
+                comb[row][column] = comb[row][column] | 0x00000001 << (31 - column_bit);
+                combUncovered--;
             }
         }
         return ret;
@@ -315,25 +323,25 @@ public class SUT {
         for( Constraint c : basicConstraint )
             System.out.println("    " + c.toString());
 
-        // AllS
-        System.out.println("AllS: ");
+        // comb
+        System.out.println("comb: ");
         int[] p ;
         for (int i = 0; i < uniformRow; i++) {
-            p = ALG.cal_num2combine(i, parameter, t_way);
+            p = Alg.cal_num2combine(i, parameter, t_way);
             System.out.print("{ ");
             for (int m = 0; m < t_way; m++)
                 System.out.print(p[m] + " ");
             System.out.print("} : ");
 
-            int comb = 1;
+            int cc = 1;
             for (int q = 0; q < t_way; q++)
-                comb = comb * value[p[q]];
-            int column = (int) Math.ceil((double) comb / (double) 32);
+                cc = cc * value[p[q]];
+            int column = (int) Math.ceil((double) cc / (double) 32);
 
             int out = 0;
             for (int column_index = 0; column_index < column; column_index++) {
-                int ac = AllS[i][column_index];
-                for (int c = 0; c < 32 && out < comb; c++) {
+                int ac = this.comb[i][column_index];
+                for (int c = 0; c < 32 && out < cc; c++) {
                     // 循环左移一位
                     int b = ac >>> 31;
                     ac = ac << 1;
@@ -351,6 +359,6 @@ public class SUT {
 
         // Coverage
         System.out.println("uniformRow = " + uniformRow);
-        System.out.println("SCountAll = " + SCountAll + ", SCount = " + SCount);
+        System.out.println("combAll = " + combAll + ", combUncovered = " + combUncovered);
     }
 }

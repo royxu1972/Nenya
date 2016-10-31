@@ -1,6 +1,6 @@
 package Prioritization;
 
-import Basic.TestSuite;
+import Model.TestSuite;
 import EA.Common.FitnessFunction2D;
 import EA.Common.InitializerND;
 import EA.NSGA.NSGeneticAlgorithmII;

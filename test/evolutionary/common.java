@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-public class common {
+public class Common {
 
     @Test
     public void crossoverOperators() {

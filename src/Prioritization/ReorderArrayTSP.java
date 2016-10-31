@@ -1,6 +1,6 @@
 package Prioritization;
 
-import Basic.TestSuite;
+import Model.TestSuite;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

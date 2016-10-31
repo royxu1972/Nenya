@@ -1,13 +1,15 @@
 package function;
 
-import Basic.TestSuite;
+import Generation.SCA;
+import Model.SequenceSuite;
+import Model.TestSuite;
 import Generation.AETG;
 import org.junit.Test;
 
-public class generation {
+public class TestGeneration {
 
     @Test
-    public void test_coveredSchemaNumber() {
+    public void test_CoveredSchemaNumber() {
         int p = 5 ;
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
@@ -23,7 +25,6 @@ public class generation {
         System.out.println("f1 = " + f1);
 
     }
-
 
     @Test
     public void test_AETG() {
@@ -51,7 +52,18 @@ public class generation {
         System.out.println(gen.getSize());
     }
 
+    @Test
+    public void test_SCA() {
+        int e = 10 ;
+        int t = 3 ;
 
+        SequenceSuite ss = new SequenceSuite(e, t);
+        SCA sca = new SCA();
+        sca.Generation(ss);
+
+        System.out.print(ss.getTestSuite());
+        System.out.print("size = " + ss.getSize() + "\n");
+    }
 
 
 }

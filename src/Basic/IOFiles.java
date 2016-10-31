@@ -1,5 +1,7 @@
 package Basic;
 
+import Model.TestSuite;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;

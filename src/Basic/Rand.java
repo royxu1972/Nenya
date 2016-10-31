@@ -1,5 +1,7 @@
 package Basic;
 
+import Model.TestSuite;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;

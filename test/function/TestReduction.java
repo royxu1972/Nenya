@@ -1,11 +1,11 @@
 package function;
 
 import Basic.IOFiles;
-import Basic.TestSuite;
+import Model.TestSuite;
 import Reduction.PostRandomized;
 import org.junit.Test;
 
-public class reduction {
+public class TestReduction {
 
     @Test
     public void test_Reduction() {
@@ -15,7 +15,7 @@ public class reduction {
 
         // run reduction algorithm
         PostRandomized pr = new PostRandomized(ts);
-        pr.execution(100, 1);
+        pr.execution(100);
         System.out.println("new size = " + ts.getTestSuiteSize());
     }
 

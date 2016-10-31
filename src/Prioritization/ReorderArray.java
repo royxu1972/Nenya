@@ -1,7 +1,7 @@
 package Prioritization;
 
-import Basic.SUT;
-import Basic.TestSuite;
+import Model.SUT;
+import Model.TestSuite;
 import EA.NSGA.NSSolution2D;
 
 import java.util.ArrayList;

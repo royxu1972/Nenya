@@ -1,6 +1,6 @@
 package Generation;
 
-import Basic.TestSuite;
+import Model.TestSuite;
 
 import java.util.ArrayList;
 import java.util.Random;

@@ -5,7 +5,7 @@ import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.*;
 import org.junit.Test;
 
-public class basicSATSolver {
+public class TestSATSolver {
     @Test
     public void solver() throws ContradictionException, TimeoutException {
         final int MAXVAR = 100;
