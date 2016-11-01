@@ -26,7 +26,7 @@ public class TestPrioritization {
         int t = 2 ;
         ts = new TestSuite(p, v, t);
         AETG gen = new AETG();
-        gen.Generation(ts);
+        gen.generation(ts);
         re = new ReorderArray();
     }
 

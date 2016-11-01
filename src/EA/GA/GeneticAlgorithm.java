@@ -6,14 +6,14 @@ import java.util.*;
 
 /**
  *  A basic genetic algorithm for combinatorial testing.
- *      Representation: string (an integer array)
- *      Fitness Function: f(x) -> double
+ *    - Representation: string (an integer array)
+ *    - Fitness Function: f(x) -> double
  *  Initializer, Fitness Function and Operators should be implemented
  *  according to particular problem.
  *
- *  Reference:
- *      Larranaga, Pedro, et al. "Genetic algorithms for the travelling salesman problem:
- *      A review of representations and operators." Artificial Intelligence Review 13.2 (1999)
+ *  REFERENCE
+ *  Larranaga, Pedro, et al. "Genetic algorithms for the travelling salesman problem:
+ *  A review of representations and operators." Artificial Intelligence Review 13.2 (1999)
  */
 public class GeneticAlgorithm extends Genetic {
 

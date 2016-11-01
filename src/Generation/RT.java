@@ -9,6 +9,10 @@ public class RT {
 
     private Random rand;
 
+    public RT() {
+        rand = new Random();
+    }
+
     /*
      *  randomly sample a test case
      */
@@ -37,10 +41,32 @@ public class RT {
     }
 
     /*
+     *  Generate a fixed number of test suite
+     */
+    public void generationFixedSize(TestSuite ts, int size ) {
+        int dim = ts.system.parameter ;
+
+        // begin to sample
+        ArrayList<int[]> tempArray = new ArrayList<>();
+        while ( tempArray.size() < size ) {
+            int[] tp = randomSample(ts);
+            while ( duplicateExist(tp, tempArray) ) {
+                tp = randomSample(ts);
+            }
+            tempArray.add(tp);
+        }
+
+        // save to ts
+        ts.tests = new int[tempArray.size()][dim] ;
+        for( int i=0 ; i<tempArray.size() ; i++ ) {
+            System.arraycopy(tempArray.get(i), 0, ts.tests[i], 0, dim);
+        }
+    }
+
+    /*
      *  generate as more test cases as possible under a given time span
      */
-    public void GenerationViaSpan( TestSuite ts, long ec, long span ) {
-        this.rand = new Random();
+    public void generationFixedTime( TestSuite ts, long ec, long span ) {
         int dim = ts.system.parameter ;
 
         // begin to sample

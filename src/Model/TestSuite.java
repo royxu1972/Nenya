@@ -1,16 +1,21 @@
 package Model;
 
+import Basic.Alg;
 import Basic.Rand;
+
+import java.util.Arrays;
 
 /**
  *  Basic data structure and evaluations for classic test suite
  */
 public class TestSuite {
 
-    public SUT system;
-    public int[][] tests;           // the test suite
+    public SUT system;       // software under test
+    public int[][] tests;    // test suite
+
+    // For Test Suite Prioritization
     public int[] order;             // the test sequence
-    public double[] executionCost;  // the execution cost of each test, default = null
+    public double[] executionCost;  // the execution cost of each test, default = 0
     public double[] weight;         // the switching weight of each parameter, default = 1.0
 
     public TestSuite(int p, int[] v, int t) {
@@ -22,52 +27,94 @@ public class TestSuite {
             this.weight[k] = 1.0;
     }
 
-    public int getTestSuiteSize() {
+    public int testSuiteSize() {
         return this.tests.length;
     }
 
+    public void showTestSuite() {
+        int index = 0 ;
+        for( int[] row : tests ) {
+            System.out.println("#" + index + " : " + Arrays.toString(row));
+            index++;
+        }
+        System.out.println("size = " + tests.length);
+    }
+
     /*
-     *  Compute k-way combination coverage of a given test suite.
-     *  - Assume no constraint. (to be modified)
-    public double getCombinationCoverage( int strength, final int[][] tests ) {
+    *  Set hard constraint
+    */
+    public void setConstraint( final int[][] constraint ) {
+        system.setConstraint(constraint);
+    }
 
-        if( tests[0].length != system.parameter )
-            return -1 ;
+    /*
+     *  BASIC EVALUATION
+     *  Compute t-way combination coverage
+     */
+    public double tWayCoverage( int[][] suite,  int t ) {
+        if( suite == null )
+            suite = tests ;
 
-        int total = 0 ;
-        int total_uncovered = 0 ;
+        // the original t-way
+        int old_tway = system.t_way ;
 
-        // for each parameter combination
-        int[][] pComb = Alg.cal_allC(system.parameter, strength);
+        // get the total number of t-way combinations
+        // the invalid combinations are removed via initialization()
+        system.setCoveringStrength(t);
+        system.initialization();
+        int total = system.getCombAll();
+
+        // iterative each parameter combination
+        // to compute the number of covered combinations
+        int total_covered = 0 ;
+        int[][] pComb = Alg.cal_allC(system.parameter, t);
+
         for( int[] pos : pComb ) {
-            int uncovered = Alg.cal_combineValue(pos, system.value);
-            total = total + uncovered ;
+            // all possible value combinations
+            int len = Alg.cal_combineValue(pos, system.value);
+            int[] cover = new int[len];
+            for (int i = 0; i < len; i++)
+                cover[i] = 0;
 
-            // the number of covered value combinations
-            int[] cover = new int[uncovered];
-            for( int i=0 ; i<uncovered ; i++ )
-                cover[i] = 0 ;
-
+            int covered = 0 ;
             // for each row in tests
-            int[] sch = new int[strength];
-            for( int[] row : tests ) {
-                for( int k=0 ; k<strength ; k++ )
+            int[] sch = new int[t];
+            for (int[] row : suite) {
+                for (int k = 0; k < t; k++)
                     sch[k] = row[pos[k]];
-                int index = Alg.cal_val2num(pos, sch, strength, system.value);
+                int index = Alg.cal_val2num(pos, sch, t, system.value);
 
-                if( cover[index] == 0 ) {
-                    cover[index] = 1 ;
-                    uncovered -= 1 ;
+                if (cover[index] == 0) {
+                    cover[index] = 1;
+                    covered++;
                 }
             }
-            total_uncovered = total_uncovered + uncovered ;
+            total_covered += covered;
         }
-        return (double)(total - total_uncovered) / (double)total ;
+        system.setCoveringStrength(old_tway);
+        return (double)(total_covered) / (double)total ;
     }
-    */
+
 
     /*
-     *  determine whether solution is valid
+     *  BASIC EVALUATION
+     *  Compute the fault profile coverage from 2 to 6
+     *  F = p(2) * cov(2) + ... + p(6) * cov(6)
+     */
+    public double profileCoverage( int[][] suite, double[] profile ) {
+        if( profile.length != 6 )
+            return -1.0 ;
+
+        double f = 0.0 ;
+        for( int t=1 ; t<=6 ; t++ )
+            f += profile[t-1] * tWayCoverage(suite, t) ;
+
+        return f ;
+    }
+
+    /*
+     *  PRIORITIZATION
+     *  Determine whether a testing order is valid or not.
      */
     public boolean isValidTestingOrder(int[] od) {
         if (od == null)
@@ -75,9 +122,9 @@ public class TestSuite {
 
         int[] bit = new int[od.length];
         int assigned = 0;
-        for (int k = 0; k < od.length; k++) {
-            if (bit[od[k]] == 0) {
-                bit[od[k]] = 1;
+        for (int val : od ) {
+            if (bit[val] == 0) {
+                bit[val] = 1;
                 assigned++;
             }
         }
@@ -85,14 +132,8 @@ public class TestSuite {
     }
 
     /*
-     *  set hard constraint
-     */
-    public void setConstraint( final int[][] constraint ) {
-        system.setConstraint(constraint);
-    }
-
-    /*
-     *  set parameter weight
+     *  PRIORITIZATION
+     *  Set parameter weight
      */
     public void setWeight(double[] w) {
         if (w.length != weight.length) {
@@ -103,14 +144,14 @@ public class TestSuite {
     }
 
     /*
-     *  set executionCost based on normal distribution N(m, s)
-     *  but if m = 0, then set execution cost = 0 for all
+     *  PRIORITIZATION
+     *  Set execution cost based on normal distribution ~ N(m, s).
+     *  But if m = 0, then set execution cost = 0 for all.
      */
     public void setExecutionCost(double m, double s) {
         if (executionCost == null)
             executionCost = new double[tests.length];
 
-        // assign values
         if (m == 0.0) {
             for (int k = 0; k < executionCost.length; k++)
                 executionCost[k] = 0.0;
@@ -125,6 +166,10 @@ public class TestSuite {
         }
     }
 
+    /*
+     *  PRIORITIZATION
+     *  Set all execution cost to a fixed value.
+     */
     public void setExecutionCost(double ex) {
         if (executionCost == null)
             executionCost = new double[tests.length];
@@ -134,8 +179,9 @@ public class TestSuite {
     }
 
     /*
-     *  measure the distance between two test cases,
-     *  where i, j are indexes of default solution
+     *  PRIORITIZATION
+     *  Measure the distance between two test cases, where i, j
+     *  are indexes of default order (i.e. the row in tests).
      */
     public double distance(int i, int j) {
         if (i > tests.length || j > tests.length) {
@@ -150,8 +196,9 @@ public class TestSuite {
     }
 
     /*
-     *  get the total switching cost of the test suite with the solution od[]
-     *  no setting up cost
+     *  PRIORITIZATION
+     *  Get the total switching cost of testing order od[].
+     *  No setting up cost.
      */
     public double getTotalSwitchingCost(int[] od) {
         if (od == null)
@@ -165,7 +212,8 @@ public class TestSuite {
     }
 
     /*
-     *  get the average switching cost between any two test cases
+     *  PRIORITIZATION
+     *  Get the average switching cost between any two test cases.
      */
     public double getAverageSwitchingCost() {
         double sum = 0;
@@ -179,8 +227,9 @@ public class TestSuite {
     }
 
     /*
-     *  get the switching cost between adjacent test cases
-     *  no setting up cost, so len(ad) = tests.length - 1
+     *  PRIORITIZATION
+     *  Get the switching cost between adjacent test cases.
+     *  No setting up cost.
      */
     public double[] getAdjacentSwitchingCost(int[] od) {
         if (od == null)
@@ -193,8 +242,9 @@ public class TestSuite {
     }
 
     /*
-     *  get the total testing cost
-     *  i.e. setting-up cost + total switching cost + total execution cost
+     *  PRIORITIZATION
+     *  Get the total testing cost.
+     *  f = setting-up cost + total switching cost + total execution cost
      */
     public double getTotalTestingCost(int[] od) {
         if (od == null)
@@ -213,7 +263,8 @@ public class TestSuite {
     }
 
     /*
-     *  get the average number of switches of each parameter
+     *  PRIORITIZATION
+     *  Get the average number of switches of each parameter
      */
     public double getAverageNumberOfSwitches(int[] od) {
         if (od == null)
@@ -237,8 +288,9 @@ public class TestSuite {
     }
 
     /*
-     *  get F(t)-measure:
-     *  the required time unit to detect specified t-way failure schema with solution od[]
+     *  PRIORITIZATION
+     *  F(t)-measure = the required time unit to detect a specified
+     *  t-way failure schema with testing order od[]
      */
     public double getFt(int tway, final int[] schema, int[] od) {
         if (od == null)
@@ -266,8 +318,8 @@ public class TestSuite {
     }
 
     /*
-     *  get t-RFD value:
-     *  the rate of t-way combination coverage over test case
+     *  PRIORITIZATION
+     *  t-RFD value = the rate of t-way combination coverage over test case
      */
     public double getRFD(int[] od, int t) {
         if (od == null)
@@ -289,36 +341,38 @@ public class TestSuite {
     }
 
     /*
-     *  get the number of covered t-way combinations till each test case
+     *  PRIORITIZATION
+     *  Get the number of newly covered t-way combinations
+     *  till each test case
      */
     public long[] getCoverEach(int[] od, int t) {
         if (od == null)
             od = this.order;
         long[] cover = new long[tests.length];
 
-        SUT s = new SUT(system.parameter, system.value, t);
-        s.initialization();
+        int old_tway = system.t_way;
+        system.setCoveringStrength(t);
+        system.initialization();
 
         long pre = 0;
         for (int k = 0; k < tests.length; k++) {
-            int cov = s.FitnessValue(tests[od[k]], 1);
+            int cov = system.FitnessValue(tests[od[k]], 1);
             pre += cov;
             cover[k] = pre;
         }
+        system.setCoveringStrength(old_tway);
         return cover;
     }
 
     /*
-     *  compute the relative t-RFDc value:
-     *  the rate of t-way combination coverage over time cost
+     *  PRIORITIZATION
+     *  Relative t-RFDc value = the rate of t-way combination
+     *  coverage over time cost
      */
     public double getRFDc(int[] od, int t, double maxTime) {
         if (od == null)
             od = this.order;
         int len = tests.length;
-
-        SUT s = new SUT(system.parameter, system.value, t);
-        s.initialization();
 
         // the switching cost between test cases, len = tests.length - 1
         double[] cost = getAdjacentSwitchingCost(od);
@@ -341,13 +395,9 @@ public class TestSuite {
         return numerator / denominator;
     }
 
-    // ------------------------------------------------------
-    // The followings are used when we have realistic faults
-    // ------------------------------------------------------
-
     /*
-     *  get F(t)'-measure:
-     *  the required time unit to detect the first real faults
+     *  PRIORITIZATION : REAL FAULT
+     *  F(t)'-measure = the required time unit to detect the first fault
      */
     public double getFtTrue(int[] od, int[] testing_results) {
         if (od == null)
@@ -360,21 +410,19 @@ public class TestSuite {
         for (int i = 0; i < tests.length; i++) {
             int index = od[i];
             time += executionCost[index];  // run the test
-
             // check whether detect a fault
             if (testing_results[index] == 0) {
                 return time;
             }
-
-            if (i + 1 < tests.length)       // switch to the next test
+            if (i + 1 < tests.length)      // switch to the next test
                 time += distance(index, od[i + 1]);
         }
-
         return Double.MAX_VALUE;          // fail to detect failure
     }
 
     /*
-     *  get relative APFDc
+     *  PRIORITIZATION : REAL FAULT
+     *  Relative APFDc
      */
     public double getAPFDc(int[] od, int[] testing_results, double maxTime) {
         if (od == null)

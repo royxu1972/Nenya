@@ -32,10 +32,10 @@ public class SCA {
      *  that covers the most uncovered combinations and its inverted
      *  sequence into the coveringArray.
      */
-    public void Generation( SequenceSuite ss ) {
-        Generation(ss, 1000);
+    public void generation(SequenceSuite ss ) {
+        generation(ss, 1000);
     }
-    public void Generation( SequenceSuite ss, int N ) {
+    public void generation(SequenceSuite ss, int N ) {
         this.sut = ss.system;
         sut.initialization();
 
@@ -47,7 +47,7 @@ public class SCA {
 
             int repeat = 0 ;
             do {
-                Integer[] temp = RandomPermutation();
+                Integer[] temp = randomPermutation();
                 int covTemp = sut.FitnessValue(temp, 0);
 
                 // if the best fitness is achieved
@@ -68,7 +68,7 @@ public class SCA {
             sut.FitnessValue(best, 1);
 
             // add the inverted sequence of the best candidate into coveringArray
-            Integer[] bestR = Reverse(best);
+            Integer[] bestR = reverse(best);
             coveringArray.add(bestR);
             sut.FitnessValue(bestR, 1);
 
@@ -87,7 +87,7 @@ public class SCA {
     /*
      *  Generate a random permutation of events
      */
-    private Integer[] RandomPermutation() {
+    private Integer[] randomPermutation() {
         List<Integer> permutation = new ArrayList<>();
         for( int k=0 ; k<sut.event ; k++ ) {
             permutation.add(k);
@@ -97,9 +97,9 @@ public class SCA {
     }
 
     /*
-     *  Reverse a sequence
+     *  reverse a sequence
      */
-    private Integer[] Reverse(Integer[] seq ) {
+    private Integer[] reverse(Integer[] seq ) {
         Integer[] copy = seq.clone();
         Collections.reverse(Arrays.asList(copy));
         return copy;

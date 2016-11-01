@@ -14,7 +14,7 @@ public class FSCS {
     // size: the number of test cases to be generated
     // k:    the number of candidates, default = 10
     public void Generation( TestSuite ts, int size ) {
-        this.Generation(ts, size, 10);
+        this.Generation(ts, size, 30);
     }
     public void Generation( TestSuite ts, int size, int k ) {
         this.rand = new Random();

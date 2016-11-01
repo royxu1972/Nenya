@@ -11,7 +11,7 @@ public class TestFunction {
 
     @Test
     public void ALG_allC() {
-        int n = 3 , m = 1 ;
+        int n = 30 , m = 6 ;
         int[][] data = Alg.cal_allC(n, m);
         for( int[] line : data )
             System.out.println(Arrays.toString(line));

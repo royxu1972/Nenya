@@ -1,7 +1,9 @@
 package basic;
 
+import Generation.AETG;
 import Model.SUT;
 import Model.SUTSequence;
+import Model.TestSuite;
 import org.junit.Test;
 
 public class TestModel {
@@ -49,6 +51,34 @@ public class TestModel {
         System.out.println("fit(t1) = " + sut.FitnessValue(new Integer[]{1, 3, 4, 0, 2}, 1));
         System.out.println("fit(t1) = " + sut.FitnessValue(new Integer[]{1, 3, 4, 0, 2}, 1));
         sut.printInfo();
+    }
+
+
+    @Test
+    public void Coverage_Basic() {
+        int p = 6 ;
+        int[] v = new int[p] ;
+        for( int k=0 ; k<p ; k++ )
+            v[k] = 3 ;
+        int t = 2 ;
+        int[][] c = {
+                {0, -1, 0, -1, -1, -1},
+                {-1, -1, 2, 0, 1, -1}
+        };
+
+        TestSuite ts = new TestSuite(p, v, t);
+        ts.setConstraint(c);
+
+        AETG gen = new AETG();
+        gen.generation(ts);
+
+        ts.showTestSuite();
+        System.out.println("2-cov = " + ts.tWayCoverage(null, 2));
+        System.out.println("3-cov = " + ts.tWayCoverage(null, 3));
+        System.out.println("4-cov = " + ts.tWayCoverage(null, 4));
+
+        double[] pro = {0.7, 0.1, 0.1, 0.05, 0.05};
+        System.out.println("profile-cov = " + ts.profileCoverage(null, pro));
     }
 
 }

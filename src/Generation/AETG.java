@@ -73,13 +73,6 @@ public class AETG {
     }
 
     /*
-     * Get the size of current covering array.
-     */
-    public int getSize() {
-        return coveringArray.size();
-    }
-
-    /*
      *  Write current covering aArray to file.
      */
     public void writeCoveringArray( String file ) throws IOException {
@@ -105,10 +98,10 @@ public class AETG {
      *  The main AETG generation framework
      *  N = the number of candidates (default = 10)
      */
-    public void Generation( TestSuite ts ) {
-        Generation( ts, 10 );
+    public void generation(TestSuite ts ) {
+        generation( ts, 10 );
     }
-    public void Generation( TestSuite ts, int N ) {
+    public void generation(TestSuite ts, int N ) {
         this.sut = ts.system ;
         sut.initialization();
         initializeFirstWeight();

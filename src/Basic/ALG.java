@@ -83,10 +83,12 @@ public class Alg {
         }
         int end = m - 1;
 
-        int[][] data = new int[cal_combine(n, m)][m];
+        int[][] data = new int[cal_combine(n, m)][];
+
         int already = 0;
         while (already < cal_combine(n, m)) {
             // add current combination
+            data[already] = new int[m];
             System.arraycopy(temp, 0, data[already], 0, m);
 
             // calculate the next combination

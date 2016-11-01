@@ -28,7 +28,7 @@ public class SUT {
     public ConstraintSolver constraintSolver;
 
     // combinations to be covered
-    private int[][] comb;         // all the combinations, each of which is represented by a bit
+    private BitArray comb;        // all the combinations, each of which is represented by a bit
     private int combAll;          // the total number of combinations to be covered
     private int combUncovered;    // the number of uncovered combinations
     private int uniformRow;       // C(parameter, t_way), the number of uniform covering strength rows in comb
@@ -39,16 +39,16 @@ public class SUT {
         parameter = p;
         value = new int[p];
         System.arraycopy(v, 0, value, 0, p);
-        t_way = t;
+        t_way = t ;
+
+        uniformRow = Alg.cal_combine(parameter, t_way);
+        testCaseCoverMax = uniformRow;
+
         variables = null;
         hardConstraint = null;
         basicConstraint = null;
-        constraintSolver = null ;
-
-        uniformRow = Alg.cal_combine(p, t_way);
-        testCaseCoverMax = uniformRow;
+        constraintSolver = null;
     }
-
 
     // get combAll
     public int getCombAll() { return combAll; }
@@ -64,6 +64,15 @@ public class SUT {
 
     // get current coverage
     public double getCoverage() { return (double) (combAll - combUncovered) / (double) (combAll); }
+
+    /*
+     *  Change covering strength to a new level
+     */
+    public void setCoveringStrength( int t ) {
+        t_way = t ;
+        uniformRow = Alg.cal_combine(parameter, t_way);
+        testCaseCoverMax = uniformRow;
+    }
 
     /*
      *  Determine whether a k-tuple is invalid or not.
@@ -184,22 +193,25 @@ public class SUT {
         for( int[] par_row : par ) {
             int[][] val = Alg.cal_allV(par_row, t_way, value);
             for( int[] val_row : val ) {
-                if( !isValid(par_row, val_row) )
+                if( !isValid(par_row, val_row) ) {
                     Covered(par_row, val_row, 1);
+                    combAll-- ;
+                }
             }
         }
     }
 
     /*
-     *  Initialize comb (all combinations to be covered).
-     *  This should be the first step before invoking any generation or evaluation methods.
+     *  Initialize all combinations to be covered (i.e. comb) and
+     *  variables combAll and combUncovered. Generally, this should
+     *  be the first step before invoking any generation methods.
      */
     public void initialization() {
         comb = null;
         combUncovered = 0;
 
-        // assign uniformRow rows to comb
-        comb = new int[uniformRow][];
+        // assign uniformRow rows
+        comb = new BitArray(uniformRow);
 
         // get all combinations of C(parameter, t_way)
         int[][] data = Alg.cal_allC(parameter, t_way);
@@ -207,19 +219,15 @@ public class SUT {
         // for each combination
         for( int i=0 ; i<uniformRow; i++ ) {
             // compute the number of t-way value combinations that are related to current parameters
-            int comb = 1;
+            int cc = 1;
             for (int t = 0; t < t_way; t++)
-                comb = comb * value[data[i][t]];
+                cc = cc * value[data[i][t]];
 
-            // set and initialize comb
-            int column = (int) Math.ceil((double) comb / (double) 32);
-            this.comb[i] = new int[column];
+            // assign columns
+            comb.initializeRow(i, cc);
 
-            for (int k = 0; k < column; k++)
-                this.comb[i][k] = 0x00000000;
-
-            // update combUncovered (the number of combinations to be covered)
-            combUncovered += comb;
+            // update the number of uncovered combinations
+            combUncovered += cc;
         }
 
         // update combAll
@@ -229,7 +237,6 @@ public class SUT {
         if( hardConstraint != null )
             preProcessConstraint();
     }
-
 
     /*
      *  Get the number of uncovered combinations that are covered by a given test case,
@@ -259,7 +266,6 @@ public class SUT {
         return num;
     }
 
-
     /*
      *  Determine whether a particular k-way combination is covered or not, where
      *  position[] indicates the indexes of parameters, and schema[] indicates the
@@ -270,40 +276,25 @@ public class SUT {
      *  If FLAG = 1, comb and combUncovered will be updated accordingly.
      */
     public boolean Covered(int[] position, int[] schema, int FLAG) {
-        boolean ret = true;
-
         // check the value of comb[row][column] to determine cover or not
         // the row and column is computed based on position and schema, respectively
         int row = Alg.cal_combine2num(position, parameter, t_way);
-        int column ;       // which BYTE
-        int column_bit ;   // which bit
-
-        // compute column
-        int index = 0;
+        int column = 0;
         int it ;
         for (int i = 0; i < t_way; i++) {
             it = schema[i];
             for (int j = i + 1; j < t_way; j++)
                 it = value[position[j]] * it;
-            index += it;
+            column += it;
         }
 
-        column = index / 32;
-        column_bit = index % 32;
-
-        // determine column_bit is 0 (uncovered) or 1 (covered)
-        // index : 0 1 2 3 4 5 6 7 ...
-        // BYTE  : 0 0 0 0 0 0 0 0 ...
-        //                 |
-        //             column_bit
-        if ( (comb[row][column] >>> (31-column_bit) & 0x00000001) != 0x00000001 ) {
-            ret = false;
-            if (FLAG == 1) {
-                comb[row][column] = comb[row][column] | 0x00000001 << (31 - column_bit);
-                combUncovered--;
-            }
+        // determiner whether seq[] is covered or not
+        boolean r = comb.getElement(row, column) != 0 ;
+        if( !r & FLAG == 1 ) {
+            comb.setElement(row, column, 1);
+            combUncovered--;
         }
-        return ret;
+        return r;
     }
 
     /*
@@ -332,29 +323,10 @@ public class SUT {
             for (int m = 0; m < t_way; m++)
                 System.out.print(p[m] + " ");
             System.out.print("} : ");
-
             int cc = 1;
             for (int q = 0; q < t_way; q++)
                 cc = cc * value[p[q]];
-            int column = (int) Math.ceil((double) cc / (double) 32);
-
-            int out = 0;
-            for (int column_index = 0; column_index < column; column_index++) {
-                int ac = this.comb[i][column_index];
-                for (int c = 0; c < 32 && out < cc; c++) {
-                    // 循环左移一位
-                    int b = ac >>> 31;
-                    ac = ac << 1;
-                    ac = ac | b;
-
-                    if ((ac & 0x00000001) == 0x00000001)
-                        System.out.print(1 + " ");
-                    else
-                        System.out.print(0 + " ");
-                    out++;
-                }
-            }
-            System.out.print("\n");
+            System.out.print(comb.getRow(i, cc));
         }
 
         // Coverage
