@@ -1,7 +1,7 @@
 package Generation;
 
 import Model.SUTSequence;
-import Model.SequenceSuite;
+import Model.TestSuiteSequence;
 
 import java.util.*;
 
@@ -32,10 +32,10 @@ public class SCA {
      *  that covers the most uncovered combinations and its inverted
      *  sequence into the coveringArray.
      */
-    public void generation(SequenceSuite ss ) {
+    public void generation(TestSuiteSequence ss ) {
         generation(ss, 1000);
     }
-    public void generation(SequenceSuite ss, int N ) {
+    public void generation(TestSuiteSequence ss, int N ) {
         this.sut = ss.system;
         sut.initialization();
 

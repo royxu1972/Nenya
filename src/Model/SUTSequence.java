@@ -1,6 +1,7 @@
 package Model;
 
 import Basic.Alg;
+import Basic.BitArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,6 +1,6 @@
-package EA.Common;
+package EA.oldGA.Common;
 
-import EA.NSGA.NSGeneticAlgorithmII;
+import EA.oldGA.NSGeneticAlgorithmII;
 
 public interface InitializerND {
     void initialization(NSGeneticAlgorithmII NSGA, int size);

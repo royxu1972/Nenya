@@ -1,4 +1,4 @@
-package Model;
+package Basic;
 
 public class BitArray {
 

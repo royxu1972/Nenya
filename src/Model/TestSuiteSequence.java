@@ -5,12 +5,12 @@ import java.util.Arrays;
 /**
  *  Basic data structure and evaluations for sequence test suite
  */
-public class SequenceSuite {
+public class TestSuiteSequence {
 
     public SUTSequence system ;
     public int[][] tests;           // the test suite
 
-    public SequenceSuite(int p, int t) {
+    public TestSuiteSequence(int p, int t) {
         this.system = new SUTSequence(p, t);
         this.tests = null;
     }

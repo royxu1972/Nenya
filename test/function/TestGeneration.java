@@ -1,14 +1,17 @@
 package function;
 
 import Generation.*;
-import Model.SequenceSuite;
+import Model.TestSuiteSequence;
 import Model.TestSuite;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class TestGeneration {
 
     @Test
-    public void test_CoveredSchemaNumber() {
+    public void testCoveredSchemaNumber() {
+        /* auxiliary functions for AETG */
         int p = 5 ;
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
@@ -18,34 +21,26 @@ public class TestGeneration {
         ts.system.initialization();
 
         AETG gen = new AETG();
-
         int[] tc1 = {-1, -1, -1, -1, 0};
         System.out.println("f1 = " + gen.coveredSchemaNumber(tc1, 1, 2));
     }
 
     @Test
-    public void test_AETG() {
+    public void testAETG() {
         /* basic version, no constraint */
-        int p = 10 ;
-        int v[] = new int[p];
-        for( int k=0 ; k<p ; k++ )
-            v[k] = 6 ;
-        int t = 2 ;
-        double[] pro = {0.7, 0.1, 0.1, 0.05, 0.05};
+        int p = 9 ;
+        int[] v = new int[]{2, 2, 3, 3, 2, 2, 2, 2, 5};
+        int t = 6 ;
         TestSuite ts = new TestSuite(p, v, t);
 
-        AETG gen = new AETG();
-        for( int k=0 ; k<30 ; k++ ) {
-            gen.generation(ts);
-            System.out.println("size = " + ts.testSuiteSize() +
-                            " , profile-cov = " + ts.profileCoverage(null, pro));
-        }
+        new AETG().generation(ts);
+        System.out.println("size = " + ts.testSuiteSize());
     }
 
     @Test
-    public void test_AETG2() {
+    public void testAETG_Constraint() {
+        /* constraint version */
         /*
-         *  constraint version
          *  p1  p2  p3  p4  p5
          *   1   4   7  10  13
          *   2   5   8  11  14
@@ -69,12 +64,26 @@ public class TestGeneration {
     }
 
     @Test
-    public void test_SCA() {
+    public void testGA() {
+        /* basic version, no constraint */
+        int p = 10 ;
+        int[] v = new int[p];
+        for( int k=0 ; k<p ; k++ )
+            v[k] = 6 ;
+        int t = 2 ;
+        TestSuite ts = new TestSuite(p, v, t);
+
+        new GA().oneTestGeneration(ts);
+        System.out.println("size = " + ts.testSuiteSize());
+    }
+
+    @Test
+    public void testSCA() {
         /* basic version, no constraint */
         int e = 10 ;
         int t = 3 ;
 
-        SequenceSuite ss = new SequenceSuite(e, t);
+        TestSuiteSequence ss = new TestSuiteSequence(e, t);
         SCA sca = new SCA();
         sca.generation(ss);
 
@@ -82,38 +91,86 @@ public class TestGeneration {
         System.out.print("size = " + ss.getSize() + "\n");
     }
 
-    @Test
-    public void test_ProfileCoverage() {
+    private void printCoverage(double[] cov ) {
+        for( double v : cov )
+            System.out.print(String.format("%.2f", v) + " ");
+        System.out.print("\n");
+    }
 
-        int p = 26 ;
-        int v[] = new int[p];
+    @Test
+    public void testCoverage() {
+        //int p = 6 ;
+        //int[] v = new int[]{3, 3, 3, 5, 5, 6};
+
+        int p = 15 ;
+        int[] v = new int[p];
         for( int k=0 ; k<p ; k++ )
             v[k] = 3 ;
+
         int t = 2 ;
-        double[] pro = {0.5, 0.3, 0.1, 0.1, 0.0, 0.0};
+        double[] pro = {0.5, 0.2, 0.1, 0.1, 0.05, 0.05};
         TestSuite ts = new TestSuite(p, v, t);
 
-        // AETG
-        System.out.println("AETG");
+        // AETG (base)
         new AETG().generation(ts);
         int size = ts.testSuiteSize();
-        for( int i=1 ; i<=6 ; i++ )
-            System.out.println( i + "-cov = " + ts.tWayCoverage(null, i));
-        System.out.println("profile-cov = " + ts.profileCoverage(null, pro)+"\n");
+        System.out.println("size = " + size);
+
+        System.out.print("AETG: ");
+        printCoverage(ts.profileCoverage(null, pro));
 
         // RT
-        System.out.println("RT");
+        System.out.print("RT:   ");
         new RT().generationFixedSize(ts, size);
-        for( int i=1 ; i<=6 ; i++ )
-            System.out.println( i + "-cov = " + ts.tWayCoverage(null, i));
-        System.out.println("profile-cov = " + ts.profileCoverage(null, pro)+"\n");
+        printCoverage(ts.profileCoverage(null, pro));
 
         // ART
-        System.out.println("ART");
-        new FSCS().Generation(ts, size);
-        for( int i=1 ; i<=6 ; i++ )
-            System.out.println( i + "-cov = " + ts.tWayCoverage(null, i));
-        System.out.println("profile-cov = " + ts.profileCoverage(null, pro)+"\n");
+        System.out.print("ART:  ");
+        new ART().FSCS(ts, size);
+        printCoverage(ts.profileCoverage(null, pro));
+    }
+
+    @Test
+    public void testRCT() {
+        int p = 15 ;
+        int v[] = new int[p];
+        for( int k=0 ; k<p ; k++ )
+            v[k] = 5 ;
+        int t = 2 ;
+        double[] pro = {0.1, 0.1, 0.1, 0.2, 0.2, 0.3};
+        TestSuite ts = new TestSuite(p, v, t);
+
+        int size = 10 ;
+
+        // RT
+        System.out.print("RT:      ");
+        new RT().generationFixedSize(ts, size);
+        printCoverage(ts.profileCoverage(null, pro));
+
+        // ART
+        System.out.print("ART:     ");
+        new ART().FSCS(ts, size);
+        printCoverage(ts.profileCoverage(null, pro));
+
+        // maximize 2-way
+        new RCT().generationFixed(ts, size, 2);
+        System.out.print("2-way:   ");
+        printCoverage(ts.profileCoverage(null, pro));
+
+        // maximize 3-way
+        new RCT().generationFixed(ts, size, 3);
+        System.out.print("3-way:   ");
+        printCoverage(ts.profileCoverage(null, pro));
+
+        // maximize 4-way
+        new RCT().generationFixed(ts, size, 4);
+        System.out.print("4-way:   ");
+        printCoverage(ts.profileCoverage(null, pro));
+
+        // maximize profile
+        System.out.print("profile: ");
+        new RCT().generationProfile(ts, size, pro);
+        printCoverage(ts.profileCoverage(null, pro));
     }
 
 

@@ -2,7 +2,7 @@ package Prioritization;
 
 import Model.SUT;
 import Model.TestSuite;
-import EA.NSGA.NSSolution2D;
+import EA.oldGA.NSSolution2D;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -195,6 +195,7 @@ public class ReorderArray {
      *  Switching cost based solution by GA
      */
     public void toGASwitchOrder( TestSuite test ) {
+        /*
         SEvolution se = new SEvolution(test);
         se.run();
 
@@ -202,6 +203,7 @@ public class ReorderArray {
         se.GA.setParameter(100, 360, 0.9, 0.7);
 
         System.arraycopy(se.solution, 0, test.order, 0, se.solution.length);
+        */
     }
 
     /*

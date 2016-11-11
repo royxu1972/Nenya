@@ -7,16 +7,19 @@ import java.util.Random;
 /**
  *  ART generator FSCS
  */
-public class FSCS {
+public class ART {
 
-    private Random rand;
+    private Random rand ;
 
-    // size: the number of test cases to be generated
-    // k:    the number of candidates, default = 10
-    public void Generation( TestSuite ts, int size ) {
-        this.Generation(ts, size, 30);
+    /*
+     *  FSCS Algorithm
+     *  size: the number of test cases to be generated
+     *  k:    the number of candidates, default = 30
+     */
+    public void FSCS(TestSuite ts, int size ) {
+        this.FSCS(ts, size, 30);
     }
-    public void Generation( TestSuite ts, int size, int k ) {
+    public void FSCS(TestSuite ts, int size, int k ) {
         this.rand = new Random();
         int dim = ts.system.parameter ;
         ts.tests = new int[size][dim] ;
@@ -71,17 +74,15 @@ public class FSCS {
         for( int m = 0 ; m < dim ; m++ ) {
             ts.tests[index][m] = candidates[maxIndex][m] ;
         }
-
     }
 
-    // distance measure: Euler distance
+    // distance measure
     private double Distance( int[] x, int[] y) {
-        int dim = x.length ;
+        int dim = x.length;
         double dist = 0;
-        for( int i=0 ; i<dim ; i++ ) {
-            dist += (double)( (x[i]-y[i]) * (x[i]-y[i]) );
+        for (int i = 0; i < dim; i++) {
+            dist += (double) ((x[i] - y[i]) * (x[i] - y[i]));
         }
-        return ( Math.sqrt(dist) );
+        return Math.sqrt(dist);
     }
-
 }

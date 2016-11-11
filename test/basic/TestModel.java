@@ -28,7 +28,7 @@ public class TestModel {
         SUT sut = new SUT(p, v, t);
         sut.setConstraint(c);
 
-        // initialization
+        // init
         sut.initialization();
         // compute fitness value
         //int[] test = {0, 1, 1, 0, 2};
@@ -73,9 +73,9 @@ public class TestModel {
         gen.generation(ts);
 
         ts.showTestSuite();
-        System.out.println("2-cov = " + ts.tWayCoverage(null, 2));
-        System.out.println("3-cov = " + ts.tWayCoverage(null, 3));
-        System.out.println("4-cov = " + ts.tWayCoverage(null, 4));
+        System.out.println("2-cov = " + ts.tCoverage(null, 2));
+        System.out.println("3-cov = " + ts.tCoverage(null, 3));
+        System.out.println("4-cov = " + ts.tCoverage(null, 4));
 
         double[] pro = {0.7, 0.1, 0.1, 0.05, 0.05};
         System.out.println("profile-cov = " + ts.profileCoverage(null, pro));

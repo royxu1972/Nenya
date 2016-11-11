@@ -1,10 +1,10 @@
 package Prioritization;
 
 import Model.TestSuite;
-import EA.Common.FitnessFunction2D;
-import EA.Common.InitializerND;
-import EA.NSGA.NSGeneticAlgorithmII;
-import EA.NSGA.NSSolution2D;
+import EA.oldGA.Common.FitnessFunction2D;
+import EA.oldGA.Common.InitializerND;
+import EA.oldGA.NSGeneticAlgorithmII;
+import EA.oldGA.NSSolution2D;
 
 import java.util.ArrayList;
 

@@ -1,13 +1,13 @@
-package EA.Common;
+package EA.oldGA.Common;
 
 import java.util.*;
 
 /**
- *  Partially Matched Crossover (PMX)
+ *  Partially Matched Crossover (PMX) [Sequence Representation]
  *  A portion of one parent's string is mapped onto a portion of the
  *  other parent's string, and the remaining information is exchanged.
  */
-public class CrossoverPMX implements OperatorCrossover {
+public class PMX implements OPCrossover {
 
     @Override
     public String toString() {

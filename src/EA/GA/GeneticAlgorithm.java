@@ -1,131 +1,122 @@
 package EA.GA;
 
-import EA.Common.*;
+import EA.GA.Common.*;
 
 import java.util.*;
 
 /**
- *  A basic genetic algorithm for combinatorial testing.
- *    - Representation: string (an integer array)
- *    - Fitness Function: f(x) -> double
- *  Initializer, Fitness Function and Operators should be implemented
- *  according to particular problem.
- *
- *  REFERENCE
- *  Larranaga, Pedro, et al. "Genetic algorithms for the travelling salesman problem:
- *  A review of representations and operators." Artificial Intelligence Review 13.2 (1999)
+ *  Basic framework of genetic algorithm (GA).
  */
-public class GeneticAlgorithm extends Genetic {
+public class GeneticAlgorithm <T extends Chromosome> {
 
-    public ArrayList<int[]> population;
+    // the population
+    public ArrayList<T> population;
 
-    public Initializer init ;
-    public FitnessFunction fitness ;
+    // the best result and its fitness value
+    private double bestFitness;
+    public T bestCandidate;
 
-    // the best result
-    public double best_fitness;
-    public int[]  best_candidate;
+    // method to initialize population
+    public Initializer<T> initializer ;
+    // method to compute fitness value, the smaller the better
+    public FitnessFunction<T> fitnessFunction;
 
-    // the fitness of each candidate
-    public double[] fit;
+    // operators
+    public OperatorSelection<T> OP_Selection;
+    public OperatorCrossover<T> OP_Crossover;
+    public OperatorMutation<T> OP_Mutation ;
 
-    public GeneticAlgorithm( int len ) {
+    // configuration parameters
+    private int    N ;
+    private int    ITE ;
+    private double CROSSOVER_PRO ;
+    private double MUTATION_PRO ;
+
+    public GeneticAlgorithm() {
         population = new ArrayList<>();
-        LENGTH = len ;
+        bestFitness = Double.MAX_VALUE;
 
-        // a smaller fitness value indicates a better solution
-        best_candidate = new int[len];
-        best_fitness = Double.MAX_VALUE ;
-
-        // default algorithm settings
-        N             = 100 ;
-        ITE           = 360 ;
+        // default parameter settings
+        N             = 400 ;
+        ITE           = 600 ;
         CROSSOVER_PRO = 0.9 ;
         MUTATION_PRO  = 0.7 ;
+    }
 
-        op_selection = new SelectionBinaryTournament();
-        op_crossover = new CrossoverPMX();
-        op_mutation = new MutationExchange();
+    public void assignParameter( int n, int ite, double crossover, double mutation ) {
+        N = n ;
+        ITE = ite ;
+        CROSSOVER_PRO = crossover ;
+        MUTATION_PRO = mutation ;
     }
 
     /*
-     *  Assign initializer and fitness function
+     *  Comparator for chromosome
      */
-    public void setInitializer( Initializer i ) {
-        init = i ;
-    }
-    public void setFitnessFunction( FitnessFunction f ) {
-        fitness = f ;
+    private class ChromosomeComparator implements Comparator<T> {
+        @Override
+        public int compare(T o1, T o2) {
+            // the smaller the better
+            return Double.compare(o1.fitness, o2.fitness);
+        }
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     public void evolve() {
+        // reset
         population.clear();
-        fit = new double[N];
+        bestFitness = Double.MAX_VALUE;
 
-        // initialize candidates
-        init.initialization(this, N);
+        // initialize population
+        initializer.init(population, N);
 
-        // evolution
+        // evolution starts
         int it = 1;
-        while ( it < ITE ) {
+        while ( true ) {
             // evaluate each candidate solution
-            // the best one is stored in best_candidate
-            for( int k = 0 ; k < N ; k++ ) {
-                fit[k] = fitness.value(population.get(k));
-                if (fit[k] < best_fitness) {
-                    best_fitness = fit[k];
-                    System.arraycopy(population.get(k), 0, best_candidate, 0, LENGTH);
+            for( T each : population ) {
+                each.fitness = fitnessFunction.value(each);
+                if ( each.fitness < bestFitness ) {
+                    bestFitness = each.fitness ;
+                    bestCandidate = (T)each.clone();
+                }
+                else if( each.fitness == bestFitness ) {
+                    if( new Random().nextDouble() < 0.5 ) {
+                        bestFitness = each.fitness ;
+                        bestCandidate = (T)each.clone();
+                    }
                 }
             }
+
+            if( it == ITE )
+                break;
 
             // produce the next generation
-            ArrayList<int[]> next = new ArrayList<>();
-            while ( next.size() < N ) {
+            while ( population.size() < 2 * N ) {
                 // selection
-                int par1 = op_selection.selection(this);
-                int par2 = op_selection.selection(this);
+                int par1 = OP_Selection.selection(population);
+                int par2 = OP_Selection.selection(population);
 
                 // crossover
-                List<int[]> children ;
-                int[] p1 = population.get(par1);
-                int[] p2 = population.get(par2);
-
-                double alpha = random.nextDouble() ;
-                if( alpha < CROSSOVER_PRO )
-                    children = op_crossover.crossover(p1, p2, random);
-                else {
-                    children = new ArrayList<>();
-                    children.add(p1.clone());
-                    children.add(p2.clone());
-                }
+                T p1 = population.get(par1);
+                T p2 = population.get(par2);
+                List<T> children = OP_Crossover.crossover(p1, p2, CROSSOVER_PRO);
 
                 // mutation
-                for( int[] each : children ) {
-                    double beta = random.nextDouble() ;
-                    if( beta < MUTATION_PRO )
-                        op_mutation.mutation(each, random);
-                }
+                children.forEach( each -> OP_Mutation.mutation(each, MUTATION_PRO));
 
                 // add to the next generation
-                next.addAll(children);
+                population.addAll(children);
             }
 
-            // population = next
-            population.clear();
-            population.addAll(next);
-            next.clear();
+            // keep the best N candidates to the next generation
+            Collections.sort(population, new ChromosomeComparator());
+            while (population.size() > N)
+                population.remove(population.size()-1);
 
             // next iteration
             it++;
 
         } // end while
-
-    }
-
-    public void printCurrentPopulation() {
-        for( int[] each : population) {
-            System.out.println(Arrays.toString(each));
-        }
     }
 }

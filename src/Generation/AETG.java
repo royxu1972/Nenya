@@ -143,8 +143,8 @@ public class AETG {
         ts.executionCost = new double[coveringArray.size()] ;
         int x = 0 ;
         for( int[] t : coveringArray ) {
-            System.arraycopy(t, 0, ts.tests[x], 0, sut.parameter);
-            ts.order[x] = x ;             // set default solution
+            ts.tests[x] = t.clone();
+            ts.order[x] = x ;             // set default order
             ts.executionCost[x] = 0.0 ;   // set default execution cost = 0.0
             x++ ;
         }

@@ -1,33 +1,16 @@
-package EA.Common;
+package EA.oldGA.Common;
 
-import EA.GA.GeneticAlgorithm;
-import EA.NSGA.NSGeneticAlgorithmII;
+import EA.oldGA.NSGeneticAlgorithmII;
 
 /**
  *  Binary Tournament Selection
  *  Select two candidates randomly. The better one will
  *  be selected as a parent.
  */
-public class SelectionBinaryTournament implements OperatorSelection {
+public class BinaryTournament implements OPSelection {
     @Override
     public String toString() {
         return "Binary Tournament";
-    }
-
-    // single-objective
-    @Override
-    public int selection(GeneticAlgorithm GA) {
-        int a = GA.random.nextInt(GA.N);
-        int b = GA.random.nextInt(GA.N);
-        while( a == b )
-            b = GA.random.nextInt(GA.N);
-
-        double fit_a = GA.fitness.value(GA.population.get(a));
-        double fit_b = GA.fitness.value(GA.population.get(b));
-        if( fit_a < fit_b )
-            return a ;
-        else
-            return b ;
     }
 
     // multi-objective

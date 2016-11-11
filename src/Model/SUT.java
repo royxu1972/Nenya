@@ -1,6 +1,7 @@
 package Model;
 
 import Basic.Alg;
+import Basic.BitArray;
 import Basic.Constraint;
 import Basic.ConstraintSolver;
 import org.sat4j.specs.ContradictionException;
@@ -168,9 +169,8 @@ public class SUT {
             hardConstraint.add(new Constraint(k, variables));
 
         // initialize solver
-        constraintSolver = new ConstraintSolver(
-                max_var,
-                basicConstraint.size() + hardConstraint.size());
+        int SS = basicConstraint.size() + hardConstraint.size();
+        constraintSolver = new ConstraintSolver(max_var, SS);
         try {
             constraintSolver.addClauses(basicConstraint);
             constraintSolver.addClauses(hardConstraint);
@@ -239,11 +239,12 @@ public class SUT {
     }
 
     /*
-     *  Get the number of uncovered combinations that are covered by a given test case,
-     *  i.e. the fitness function of one-test-at-a-time based CA generation.
+     *  Get the number of uncovered combinations that are covered
+     *  by a given test case, i.e. the fitness function of
+     *  one-test-at-a-time based CA generation.
      *
      *  INPUT PARAMETER:
-     *  If FLAG = 0, only a number is returned. comb and combUncovered will not be updated.
+     *  If FLAG = 0, only a number is returned be.
      *  If FLAG = 1, comb and combUncovered will be updated accordingly.
      */
     public int FitnessValue(final int[] test, int FLAG) {
@@ -267,9 +268,10 @@ public class SUT {
     }
 
     /*
-     *  Determine whether a particular k-way combination is covered or not, where
-     *  position[] indicates the indexes of parameters, and schema[] indicates the
-     *  corresponding parameter values.
+     *  Determine whether a particular k-way combination is
+     *  covered or not, where position[] indicates the indexes
+     *  of parameters, and schema[] indicates the corresponding
+     *  parameter values.
      *
      *  INPUT PARAMETER:
      *  If FLAG = 0, comb and combUncovered will not be updated.
@@ -288,7 +290,7 @@ public class SUT {
             column += it;
         }
 
-        // determiner whether seq[] is covered or not
+        // determiner whether combination is covered or not
         boolean r = comb.getElement(row, column) != 0 ;
         if( !r & FLAG == 1 ) {
             comb.setElement(row, column, 1);

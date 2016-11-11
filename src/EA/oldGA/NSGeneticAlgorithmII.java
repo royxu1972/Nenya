@@ -1,7 +1,6 @@
-package EA.NSGA;
+package EA.oldGA;
 
-import EA.Common.*;
-import EA.GA.Genetic;
+import EA.oldGA.Common.*;
 
 import java.util.*;
 
@@ -31,9 +30,9 @@ public class NSGeneticAlgorithmII extends Genetic {
         CROSSOVER_PRO = 0.9 ;
         MUTATION_PRO  = 0.7 ;
 
-        op_selection = new SelectionBinaryTournament();
-        op_crossover = new CrossoverPMX();
-        op_mutation = new MutationExchange();
+        op_selection = new BinaryTournament();
+        op_crossover = new PMX();
+        op_mutation = new Exchange();
     }
 
     /*

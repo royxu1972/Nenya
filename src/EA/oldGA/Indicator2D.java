@@ -1,4 +1,4 @@
-package EA.NSGA;
+package EA.oldGA;
 
 import java.util.ArrayList;
 

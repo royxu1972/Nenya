@@ -1,4 +1,4 @@
-package EA.Common;
+package EA.oldGA.Common;
 
 public interface FitnessFunction2D {
     // return

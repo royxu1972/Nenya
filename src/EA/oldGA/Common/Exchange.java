@@ -1,12 +1,12 @@
-package EA.Common;
+package EA.oldGA.Common;
 
 import java.util.Random;
 
 /**
- *  Exchange Mutation (EM) / Swap Mutation
+ *  Exchange Mutation (EM) / Swap Mutation [General / Sequence Representation]
  *  Select two positions randomly and then exchange them.
  */
-public class MutationExchange implements OperatorMutation {
+public class Exchange implements OPMutation {
 
     @Override
     public String toString() {

@@ -1,7 +1,7 @@
 package function;
 
 import Model.TestSuite;
-import EA.NSGA.NSSolution2D;
+import EA.oldGA.NSSolution2D;
 import Generation.AETG;
 import Prioritization.ReorderArray;
 import Prioritization.SEvolution;
@@ -22,7 +22,7 @@ public class TestPrioritization {
         int p = 10 ;
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
-            v[k] = 5 ;
+            v[k] = 2 ;
         int t = 2 ;
         ts = new TestSuite(p, v, t);
         AETG gen = new AETG();
@@ -160,7 +160,6 @@ public class TestPrioritization {
         }
     }
 
-
     @Test
     public void testSEvolution() {
         SEvolution se = new SEvolution(ts);
@@ -169,7 +168,6 @@ public class TestPrioritization {
         System.out.println("cost = " + ts.getTotalSwitchingCost(se.solution));
         System.out.println("RFD  = " + ts.getRFD(se.solution, 2));
     }
-
 
     @Test
     public void testMEvolution() {

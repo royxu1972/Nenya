@@ -1,11 +1,11 @@
-package EA.Common;
+package EA.oldGA.Common;
 
 import java.util.Random;
 
 /**
- *  Displacement Mutation (DM)
+ *  Displacement Mutation (DM) [General / Sequence Representation]
  */
-public class MutationDisplacement implements OperatorMutation {
+public class Displacement implements OPMutation {
     @Override
     public String toString() {
         return "DM";

@@ -1,8 +1,8 @@
-package EA.GA;
+package EA.oldGA;
 
-import EA.Common.OperatorCrossover;
-import EA.Common.OperatorMutation;
-import EA.Common.OperatorSelection;
+import EA.oldGA.Common.OPCrossover;
+import EA.oldGA.Common.OPMutation;
+import EA.oldGA.Common.OPSelection;
 
 import java.util.Random;
 
@@ -23,9 +23,9 @@ public abstract class Genetic {
     public double MUTATION_PRO ;
 
     // operator
-    public OperatorMutation op_mutation ;
-    public OperatorCrossover op_crossover ;
-    public OperatorSelection op_selection ;
+    public OPMutation op_mutation ;
+    public OPCrossover op_crossover ;
+    public OPSelection op_selection ;
 
     public Genetic() {
         random = new Random();
@@ -40,8 +40,8 @@ public abstract class Genetic {
     }
 
     // assign selection and variation operators
-    public void setOperator( OperatorSelection selection, OperatorCrossover crossover,
-                             OperatorMutation mutation ) {
+    public void setOperator(OPSelection selection, OPCrossover crossover,
+                            OPMutation mutation ) {
         op_selection = selection ;
         op_crossover = crossover ;
         op_mutation = mutation ;

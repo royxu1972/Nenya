@@ -1,7 +1,6 @@
-package EA.NSGA;
+package EA.oldGA;
 
 import java.util.Comparator;
-import java.util.DoubleSummaryStatistics;
 
 /**
  *  NSGA-II for test suite prioritization.

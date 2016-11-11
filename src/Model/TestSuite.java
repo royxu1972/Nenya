@@ -51,27 +51,24 @@ public class TestSuite {
      *  BASIC EVALUATION
      *  Compute t-way combination coverage
      */
-    public double tWayCoverage( int[][] suite,  int t ) {
+    public double tCoverage( int[][] suite, int t ) {
         if( suite == null )
             suite = tests ;
 
-        // the original t-way
-        int old_tway = system.t_way ;
-
         // get the total number of t-way combinations
-        // the invalid combinations are removed via initialization()
-        system.setCoveringStrength(t);
-        system.initialization();
-        int total = system.getCombAll();
+        // the invalid combinations are removed via init()
+        SUT ss = new SUT(system.parameter, system.value, t);
+        ss.initialization();
+        int total = ss.getCombAll();
 
         // iterative each parameter combination
         // to compute the number of covered combinations
         int total_covered = 0 ;
-        int[][] pComb = Alg.cal_allC(system.parameter, t);
+        int[][] pComb = Alg.cal_allC(ss.parameter, t);
 
         for( int[] pos : pComb ) {
             // all possible value combinations
-            int len = Alg.cal_combineValue(pos, system.value);
+            int len = Alg.cal_combineValue(pos, ss.value);
             int[] cover = new int[len];
             for (int i = 0; i < len; i++)
                 cover[i] = 0;
@@ -82,7 +79,7 @@ public class TestSuite {
             for (int[] row : suite) {
                 for (int k = 0; k < t; k++)
                     sch[k] = row[pos[k]];
-                int index = Alg.cal_val2num(pos, sch, t, system.value);
+                int index = Alg.cal_val2num(pos, sch, t, ss.value);
 
                 if (cover[index] == 0) {
                     cover[index] = 1;
@@ -91,25 +88,32 @@ public class TestSuite {
             }
             total_covered += covered;
         }
-        system.setCoveringStrength(old_tway);
+
         return (double)(total_covered) / (double)total ;
     }
 
 
     /*
      *  BASIC EVALUATION
-     *  Compute the fault profile coverage from 2 to 6
-     *  F = p(2) * cov(2) + ... + p(6) * cov(6)
+     *  Compute the fault profile coverage
+     *  F = p(1) * cov(1) + p(2) * cov(2) + ... + p(6) * cov(6)
+     *
+     *  Return:
+     *  t-way coverage where t = 1, 2, 3, 4, ..., 6 and profile coverage
      */
-    public double profileCoverage( int[][] suite, double[] profile ) {
+    public double[] profileCoverage( int[][] suite, double[] profile ) {
         if( profile.length != 6 )
-            return -1.0 ;
+            return null ;
 
+        double[] cov = new double[profile.length+1];
         double f = 0.0 ;
-        for( int t=1 ; t<=6 ; t++ )
-            f += profile[t-1] * tWayCoverage(suite, t) ;
+        for( int t=0 ; t<6 ; t++ ) {
+            cov[t] = tCoverage(suite, t+1);
+            f = f + profile[t] * cov[t];
+        }
+        cov[profile.length] = f ;
 
-        return f ;
+        return cov ;
     }
 
     /*
