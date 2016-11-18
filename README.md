@@ -1,41 +1,53 @@
 # Nenya
 
-The project Nenya aims to provide advanced algorithms for various 
-applications of combinatorial testing, including test suite generation,
-reduction and prioritization.
+Nenya provides algorithms for various applications of
+combinatorial testing (CT), including test suite generation,
+reduction, prioritization and evaluation.
 
 ## Test Suite Generation
 
-Generate a covering array with as few test cases as possible.
+Conventional t-way covering array (CA) generation
+with one-test-at-a-time framework.
 
-* AETG (a greedy one-test-at-a-time generation algorithm with constraint support)
+- **AETG-like** (with constraints)
+- **GA** (classic genetic algorithm)
 
-Generate a random test suite.
+Sequence covering array (permutation) generation 
+for event-based software.
 
-* RT
-* ART-FSCS
+- **SCA**
+
+Random and adaptive random test suite generation
+with fixed size.
+
+- **RT**
+- **ART-FSCS**
 
 ## Test Suite Reduction
 
-Reduce the size of a given test suite while maintaining its combination coverage.
-A refined randomized post-optimization algorithm is applied.
+Reduce the size of a given test suite while maintaining 
+its t-way combination coverage. A refined randomized 
+post-optimization algorithm is provided.
 
 ## Test Suite Prioritization
 
-Reordering existing test suite to maximize combination coverage or minimize switching cost.
+Reordering existing test suite, especially focusing on
+optimizing combination coverage and switching cost.
 
-* Combination coverage based prioritization
-    * Greedy Algorithm
+- Algorithms to maximize rate of combination coverage.
+    * Greedy
 
-* Switching cost based prioritization
-	* Greedy Algorithm
-	* Dynamic Programming (optimal)
-	* Genetic Algorithm
-	* LKH Solver for TSP (Windows only)
+- Algorithms to minimize total switching cost.
+    * Greedy
+    * Dynamic Programming (optimal)
+    * GA
+    * LKH Solver for TSP (Windows only)
 
-* Hybrid based prioritization (combination coverage + testing cost)
-    * Greedy Algorithm
+- Algorithms to balance combination coverage and testing cost
+    * Greedy (hybrid metric)
+    * NSGA-II
 
-* Multi-objective optimization (combination coverage + testing cost)
-	* NSGA-II
+## Test Suite Evaluation
 
+Evaluate t-way combination coverage and fault profile
+coverage for a given test suite.

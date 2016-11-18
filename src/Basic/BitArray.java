@@ -1,5 +1,9 @@
 package Basic;
 
+/**
+ * A two dimensional array where each element is
+ * implemented by one bit.
+ */
 public class BitArray {
 
     private byte[][] matrix ;
@@ -21,8 +25,10 @@ public class BitArray {
         }
     }
 
-    /*
-     *  initialize matrix[index] to zero
+    /**
+     * Initialize a single row, i.e. matrix[index], by zero.
+     * @param index index of row
+     * @param length number of elements in that row
      */
     public void initializeRow( int index, int length ) {
         // get the actual number of columns
@@ -35,29 +41,40 @@ public class BitArray {
             matrix[index][j] = 0x00 ;
     }
 
-    /*
-     *  Get the element (zero or one) in row i and column j.
+    /**
+     * Get the element (zero or one) in row i and column j.
+     * @param i index of row
+     * @param j index of column
+     * @return zero or one
      */
     public int getElement( int i, int j ) {
+        // get the element of the jBit-th bit of jByte-th byte
         int jByte = j / 8 ;
         int jBit = j % 8 ;
         return (matrix[i][jByte] >>> (7-jBit) & 0x01) == 0x01 ? 1 : 0 ;
     }
 
-    /*
-     *  Set the element (zero or one) in row i and column j.
+    /**
+     * Set the element (zero or one) in row i and column j.
+     * @param i index of row
+     * @param j index of column
+     * @param value new element value
      */
     public void setElement( int i, int j, int value ) {
         int jByte = j / 8 ;
         int jBit = j % 8 ;
+
         if ( value == 0 ) // set to zero
             matrix[i][jByte] = (byte)(matrix[i][jByte] & (0xFE << (7 - jBit)));
         else              // set to one
             matrix[i][jByte] = (byte)(matrix[i][jByte] | (0x01 << (7 - jBit)));
     }
 
-    /*
-     *  print a single row[]
+    /**
+     * Convert a specified row into a string representation.
+     * @param index index of row
+     * @param length number of elements in that row
+     * @return string representation
      */
     public String getRow( int index , int length ) {
         StringBuilder sb = new StringBuilder();

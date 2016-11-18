@@ -9,7 +9,7 @@ import org.sat4j.specs.TimeoutException;
 
 import java.util.Vector;
 
-public class ConstraintSolver {
+public class ConstraintSolver implements Cloneable {
 
     private int MAXVAR ;    // maximum number of variable
     private int NBCLAUSES ; // number of clauses
@@ -26,8 +26,10 @@ public class ConstraintSolver {
         solver.setExpectedNumberOfClauses(NBCLAUSES);
     }
 
-    /*
-     *  feed the solver using Dimacs format, using arrays of int
+    /**
+     * Feed the solver using Dimacs format, i.e. an integer arrays
+     * @param constraints all constraints
+     * @throws ContradictionException exception
      */
     public void addClauses( final Vector<Constraint> constraints ) throws ContradictionException {
         for( Constraint clause : constraints ) {
@@ -35,19 +37,15 @@ public class ConstraintSolver {
         }
     }
 
-    /*
-     *  determine whether a clause is satisfiable or not
+    /**
+     * Determine whether a clause is satisfiable or not
+     * @param clause the candidate clause
+     * @return satisfiable or not
+     * @throws TimeoutException exception
      */
     public boolean isSatisfiable( final int[] clause ) throws TimeoutException {
         VecInt c = new VecInt(clause);
         IProblem problem = solver;
-        if (problem.isSatisfiable(c)) {
-            //System.out.println("satisfiable");
-            return true;
-        }
-        else {
-            //System.out.println("no");
-            return false;
-        }
+        return problem.isSatisfiable(c);
     }
 }

@@ -4,7 +4,10 @@ import Generation.AETG;
 import Model.SUT;
 import Model.SUTSequence;
 import Model.TestSuite;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 public class TestModel {
     @Test
@@ -26,7 +29,7 @@ public class TestModel {
         };
 
         SUT sut = new SUT(p, v, t);
-        sut.setConstraint(c);
+        sut.setConstraint(c, 1);
 
         // init
         sut.initialization();
@@ -34,7 +37,7 @@ public class TestModel {
         //int[] test = {0, 1, 1, 0, 2};
         //sut.FitnessValue(test, 1);
         // print
-        sut.printInfo();
+        sut.show();
     }
 
 
@@ -73,12 +76,34 @@ public class TestModel {
         gen.generation(ts);
 
         ts.showTestSuite();
-        System.out.println("2-cov = " + ts.tCoverage(null, 2));
-        System.out.println("3-cov = " + ts.tCoverage(null, 3));
-        System.out.println("4-cov = " + ts.tCoverage(null, 4));
+        System.out.println("2-cov = " + ts.tCoverage(2));
+        System.out.println("3-cov = " + ts.tCoverage(3));
+        System.out.println("4-cov = " + ts.tCoverage(4));
 
         double[] pro = {0.7, 0.1, 0.1, 0.05, 0.05};
-        System.out.println("profile-cov = " + ts.profileCoverage(null, pro));
+        System.out.println("profile-cov = " + ts.profileCoverage(pro));
+    }
+
+
+    @Test
+    public void faultDetection() {
+        TestSuite ts = new TestSuite(4, new int[]{3,3,3,3}, 2);
+        new AETG().generation(ts);
+
+        int[] defaults = new int[6];
+        ArrayList<int[]> ff = new ArrayList<>();
+        ff.add(new int[]{ 0, -1, -1, -1, -1, -1});  // yes
+        ff.add(new int[]{-1, -1, -1, -1,  0, -1});  // yes
+        ff.add(new int[]{-1, -1, -1, -1,  1, -1});  // no
+        ff.add(new int[]{ 0, -1,  2, -1, -1, -1});  // yes
+        ff.add(new int[]{-1,  1, -1, -1, -1,  1});  // no
+        ff.add(new int[]{-1,  1, -1, -1, -1,  0});  // yes
+        ff.add(new int[]{-1,  1, -1,  1,  1, -1});  // no
+        ff.add(new int[]{-1,  2, -1, -1,  0,  0});  // yes
+
+        int num = ts.getFaultDetection(ff, defaults);
+        System.out.println("detected num = " + num);
+        Assert.assertEquals( 5, num );
     }
 
 }

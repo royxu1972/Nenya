@@ -13,7 +13,7 @@ public class TestSATSolver {
 
         ISolver solver = SolverFactory.newDefault();
 
-        // prepare the solver to accept MAXVAR variables. MANDATORY for MAXSAT solving
+        // prepare the solver to accept MAXVAR relations. MANDATORY for MAXSAT solving
         solver.newVar(MAXVAR);
         solver.setExpectedNumberOfClauses(NBCLAUSES);
 
@@ -46,7 +46,5 @@ public class TestSATSolver {
             System.out.println("no");
         }
     }
-
-
 
 }

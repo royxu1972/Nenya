@@ -1,6 +1,6 @@
 package Model;
 
-import Basic.Alg;
+import Basic.ALG;
 import Basic.BitArray;
 import Basic.Constraint;
 import Basic.ConstraintSolver;
@@ -15,7 +15,7 @@ import java.util.Vector;
 /**
  *  Software Under Test
  */
-public class SUT {
+public class SUT implements Cloneable {
 
     // testing model
     public int parameter;
@@ -23,9 +23,9 @@ public class SUT {
     public int t_way;
 
     // constraint solving
-    public int[][] variables;                   // the mapping between parameter value and variable in CNF
-    public Vector<Constraint> hardConstraint;   // hard constraint
-    public Vector<Constraint> basicConstraint;  // at-least and at-most constraint
+    public int[][] relations;                  // the mapping between parameter value and variable in CNF
+    public Vector<Constraint> hardConstraint;  // hard constraint
+    public Vector<Constraint> basicConstraint; // at-least and at-most constraint
     public ConstraintSolver constraintSolver;
 
     // combinations to be covered
@@ -42,13 +42,38 @@ public class SUT {
         System.arraycopy(v, 0, value, 0, p);
         t_way = t ;
 
-        uniformRow = Alg.cal_combine(parameter, t_way);
+        uniformRow = ALG.combine(parameter, t_way);
         testCaseCoverMax = uniformRow;
 
-        variables = null;
+        relations = null;
         hardConstraint = null;
         basicConstraint = null;
         constraintSolver = null;
+    }
+
+    @Override
+    public SUT clone() {
+        SUT sut = new SUT(parameter, value, t_way);
+        // copy constraint
+        if( relations != null ) {
+            sut.relations = relations.clone();
+            sut.hardConstraint = new Vector<>();
+            sut.basicConstraint = new Vector<>();
+            hardConstraint.forEach(p -> sut.hardConstraint.add(p.clone()));
+            basicConstraint.forEach(p -> sut.basicConstraint.add(p.clone()));
+
+            // initialize solver
+            int SS = basicConstraint.size() + hardConstraint.size();
+            int MAX = relations[parameter - 1][value[parameter - 1] - 1];
+            sut.constraintSolver = new ConstraintSolver(MAX, SS);
+            try {
+                sut.constraintSolver.addClauses(sut.basicConstraint);
+                sut.constraintSolver.addClauses(sut.hardConstraint);
+            } catch (ContradictionException e) {
+                System.err.println(e.getMessage());
+            }
+        }
+        return sut ;
     }
 
     // get combAll
@@ -71,7 +96,7 @@ public class SUT {
      */
     public void setCoveringStrength( int t ) {
         t_way = t ;
-        uniformRow = Alg.cal_combine(parameter, t_way);
+        uniformRow = ALG.combine(parameter, t_way);
         testCaseCoverMax = uniformRow;
     }
 
@@ -87,7 +112,7 @@ public class SUT {
         // transfer to disjunction of literals
         int[] clause = new int[position.length];
         for( int i=0 ; i<position.length ; i++ )
-            clause[i] = variables[position[i]][schema[i]];
+            clause[i] = relations[position[i]][schema[i]];
 
         // determine satisfiable or not
         boolean satisfiable = false ;
@@ -112,7 +137,7 @@ public class SUT {
         List<Integer> list = new ArrayList<>();
         for( int i=0 ; i<test.length ; i++ ) {
             if( test[i] != -1 )
-                list.add(variables[i][test[i]]);
+                list.add(relations[i][test[i]]);
         }
         int[] clause = new int[list.size()];
         for( int i=0 ; i<list.size() ; i++ )
@@ -130,43 +155,55 @@ public class SUT {
 
 
     /*
-     *  Set (hard) constraint. variables[][] is the mapping from parameter value to
+     *  Set (hard) constraint. relations[][] is the mapping from parameter value to
      *  variable of constraint solver. At-least and at-most constraints will be
      *  generated automatically based on testing model.
+     *
+     *  MODE = 1 : test case representation
+     *  MODE = 2 : disjunction representation
      */
-    public void setConstraint( int[][] c ) {
+    public void setConstraint( final int[][] c, int MODE ) {
+        ArrayList<int[]> a = new ArrayList<>();
+        a.addAll(Arrays.asList(c));
+        setConstraint(a, MODE);
+    }
+    public void setConstraint( ArrayList<int[]> c, int MODE ) {
         basicConstraint = new Vector<>();
         hardConstraint = new Vector<>();
 
         // set mapping relationship
-        variables = new int[parameter][];
+        relations = new int[parameter][];
         int start = 1 ;
         for( int i=0 ; i<parameter ; i++ ) {
-            variables[i] = new int[value[i]];
+            relations[i] = new int[value[i]];
             for( int j=0 ; j<value[i] ; j++ , start++ )
-                variables[i][j] = start ;
+                relations[i][j] = start ;
         }
         int max_var = start ;
 
         // set at-least constraint
         for( int i=0 ; i<parameter ; i++ ) {
-            basicConstraint.add(new Constraint(variables[i]));
+            basicConstraint.add(new Constraint(relations[i]));
         }
 
         // set at-most constraint
         for( int i=0 ; i<parameter ; i++ ) {
-            int[][] data = Alg.cal_allC(value[i], 2);
+            int[][] data = ALG.allC(value[i], 2);
             for( int[] row : data ) {
                 int[] tp = new int[2];
-                tp[0] = 0 - variables[i][row[0]];
-                tp[1] = 0 - variables[i][row[1]];
+                tp[0] = 0 - relations[i][row[0]];
+                tp[1] = 0 - relations[i][row[1]];
                 basicConstraint.add(new Constraint(tp));
             }
         }
 
         // set hard constraints
-        for( int[] k : c )
-            hardConstraint.add(new Constraint(k, variables));
+        for( int[] k : c ) {
+            if( MODE == 1 )
+                hardConstraint.add(new Constraint(k, relations));
+            if( MODE == 2 )
+                hardConstraint.add(new Constraint(k));
+        }
 
         // initialize solver
         int SS = basicConstraint.size() + hardConstraint.size();
@@ -176,9 +213,11 @@ public class SUT {
             constraintSolver.addClauses(hardConstraint);
         }
         catch (ContradictionException e) {
-            System.err.println(e);
+            System.err.println(e.getMessage());
         }
     }
+
+
 
     /*
      *  Pre-processing when solving constraint. Check every k-way combination
@@ -189,9 +228,9 @@ public class SUT {
     private void preProcessConstraint() {
         // for each t-way combination
         // which is represented by par_row[] and val_row[]
-        int[][] par = Alg.cal_allC(parameter, t_way);
+        int[][] par = ALG.allC(parameter, t_way);
         for( int[] par_row : par ) {
-            int[][] val = Alg.cal_allV(par_row, t_way, value);
+            int[][] val = ALG.cal_allV(par_row, t_way, value);
             for( int[] val_row : val ) {
                 if( !isValid(par_row, val_row) ) {
                     Covered(par_row, val_row, 1);
@@ -203,7 +242,7 @@ public class SUT {
 
     /*
      *  Initialize all combinations to be covered (i.e. comb) and
-     *  variables combAll and combUncovered. Generally, this should
+     *  relations combAll and combUncovered. Generally, this should
      *  be the first step before invoking any generation methods.
      */
     public void initialization() {
@@ -214,7 +253,7 @@ public class SUT {
         comb = new BitArray(uniformRow);
 
         // get all combinations of C(parameter, t_way)
-        int[][] data = Alg.cal_allC(parameter, t_way);
+        int[][] data = ALG.allC(parameter, t_way);
 
         // for each combination
         for( int i=0 ; i<uniformRow; i++ ) {
@@ -251,7 +290,7 @@ public class SUT {
         int num = 0;
 
         // get all combinations of C(parameter, t_way)
-        int[][] data = Alg.cal_allC(parameter, t_way);
+        int[][] data = ALG.allC(parameter, t_way);
 
         for( int i=0 ; i<uniformRow; i++ ) {
             // get position and schema
@@ -280,7 +319,7 @@ public class SUT {
     public boolean Covered(int[] position, int[] schema, int FLAG) {
         // check the value of comb[row][column] to determine cover or not
         // the row and column is computed based on position and schema, respectively
-        int row = Alg.cal_combine2num(position, parameter, t_way);
+        int row = ALG.combine2num(position, parameter, t_way);
         int column = 0;
         int it ;
         for (int i = 0; i < t_way; i++) {
@@ -299,36 +338,42 @@ public class SUT {
         return r;
     }
 
-    /*
-     *  Print testing information
-     */
-    public void printInfo() {
+    public void showModel() {
+        System.out.print("Parameter = " + parameter);
+        System.out.print(", Value = " + Arrays.toString(value));
+        System.out.print(", t_way = " + t_way);
+        if( hardConstraint != null )
+            System.out.print(", Constraint = " + hardConstraint.size());
+        System.out.print("\n");
+    }
+
+    public void show() {
         // Basic
-        System.out.println("parameter = " + parameter + ", value = " + Arrays.toString(value) + ", t_way = " + t_way);
+        System.out.print("Parameter = " + parameter);
+        System.out.print(", Value = " + Arrays.toString(value));
+        System.out.print(", t_way = " + t_way + "\n");
 
         // Constraint
-        System.out.println("Hard Constraint: ");
-        for( Constraint c : hardConstraint )
-            System.out.println("    " + c.toString());
-
-        // Constraint
-        System.out.println("Basic Constraint: ");
-        for( Constraint c : basicConstraint )
-            System.out.println("    " + c.toString());
+        if( hardConstraint != null ) {
+            System.out.println("# Hard  Constraint: " + hardConstraint.size());
+            System.out.println("# Basic Constraint: " + basicConstraint.size());
+        }
 
         // comb
-        System.out.println("comb: ");
-        int[] p ;
-        for (int i = 0; i < uniformRow; i++) {
-            p = Alg.cal_num2combine(i, parameter, t_way);
-            System.out.print("{ ");
-            for (int m = 0; m < t_way; m++)
-                System.out.print(p[m] + " ");
-            System.out.print("} : ");
-            int cc = 1;
-            for (int q = 0; q < t_way; q++)
-                cc = cc * value[p[q]];
-            System.out.print(comb.getRow(i, cc));
+        if( comb != null ) {
+            System.out.println("comb: ");
+            int[] p ;
+            for (int i = 0; i < uniformRow; i++) {
+                p = ALG.num2combine(i, parameter, t_way);
+                System.out.print("{ ");
+                for (int m = 0; m < t_way; m++)
+                    System.out.print(p[m] + " ");
+                System.out.print("} : ");
+                int cc = 1;
+                for (int q = 0; q < t_way; q++)
+                    cc = cc * value[p[q]];
+                System.out.print(comb.getRow(i, cc));
+            }
         }
 
         // Coverage

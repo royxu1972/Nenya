@@ -1,12 +1,10 @@
 package Basic;
 
+import Model.SUT;
 import Model.TestSuite;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * 1) Read CA file (.txt) for updating parameter, value, CArray, and CSize
@@ -78,10 +76,8 @@ public class IOFiles {
             ts = new TestSuite(parameter, value, t_way);
             transferTestSuite(ca, ts);
 
-        } catch (FileNotFoundException e) {
-            System.err.println(e);
         } catch (IOException e) {
-            System.err.println(e);
+            System.err.println(e.getMessage());
         }
 
         return ts ;

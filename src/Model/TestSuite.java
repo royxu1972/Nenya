@@ -1,8 +1,9 @@
 package Model;
 
-import Basic.Alg;
-import Basic.Rand;
+import Basic.ALG;
+import Basic.RandomTool;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -27,6 +28,15 @@ public class TestSuite {
             this.weight[k] = 1.0;
     }
 
+    public TestSuite(SUT sut) {
+        this.system = sut.clone() ;
+        this.tests = null;
+        this.weight = new double[sut.parameter];
+        this.executionCost = null;
+        for (int k = 0; k < sut.parameter; k++)
+            this.weight[k] = 1.0;
+    }
+
     public int testSuiteSize() {
         return this.tests.length;
     }
@@ -41,34 +51,32 @@ public class TestSuite {
     }
 
     /*
-    *  Set hard constraint
-    */
+     *  Set constraint
+     */
     public void setConstraint( final int[][] constraint ) {
-        system.setConstraint(constraint);
+        system.setConstraint(constraint, 1);
     }
 
     /*
      *  BASIC EVALUATION
-     *  Compute t-way combination coverage
+     *  Compute t-way combination coverage of tests
      */
-    public double tCoverage( int[][] suite, int t ) {
-        if( suite == null )
-            suite = tests ;
-
+    public double tCoverage( int t ) {
         // get the total number of t-way combinations
-        // the invalid combinations are removed via init()
-        SUT ss = new SUT(system.parameter, system.value, t);
+        // the invalid combinations are removed by init()
+        SUT ss = system.clone();
+        ss.setCoveringStrength(t);
         ss.initialization();
         int total = ss.getCombAll();
 
         // iterative each parameter combination
         // to compute the number of covered combinations
         int total_covered = 0 ;
-        int[][] pComb = Alg.cal_allC(ss.parameter, t);
+        int[][] pComb = ALG.allC(ss.parameter, t);
 
         for( int[] pos : pComb ) {
             // all possible value combinations
-            int len = Alg.cal_combineValue(pos, ss.value);
+            int len = ALG.combineValue(pos, ss.value);
             int[] cover = new int[len];
             for (int i = 0; i < len; i++)
                 cover[i] = 0;
@@ -76,10 +84,10 @@ public class TestSuite {
             int covered = 0 ;
             // for each row in tests
             int[] sch = new int[t];
-            for (int[] row : suite) {
+            for (int[] row : tests) {
                 for (int k = 0; k < t; k++)
                     sch[k] = row[pos[k]];
-                int index = Alg.cal_val2num(pos, sch, t, ss.value);
+                int index = ALG.val2num(pos, sch, t, ss.value);
 
                 if (cover[index] == 0) {
                     cover[index] = 1;
@@ -101,20 +109,58 @@ public class TestSuite {
      *  Return:
      *  t-way coverage where t = 1, 2, 3, 4, ..., 6 and profile coverage
      */
-    public double[] profileCoverage( int[][] suite, double[] profile ) {
-        if( profile.length != 6 )
-            return null ;
-
+    public double[] profileCoverage( double[] profile ) {
         double[] cov = new double[profile.length+1];
         double f = 0.0 ;
-        for( int t=0 ; t<6 ; t++ ) {
-            cov[t] = tCoverage(suite, t+1);
+        for( int t=0 ; t<profile.length ; t++ ) {
+            cov[t] = tCoverage(t+1);
             f = f + profile[t] * cov[t];
         }
         cov[profile.length] = f ;
 
         return cov ;
     }
+
+    /*
+     *  BASIC EVALUATION
+     *  Compute how many randomFaults in ArrayList<int[]> randomFaults can be
+     *  detected by test suite tests[][]. Each fault is represented
+     *  as a test case, where -1 indicates unfixed value.
+     */
+    public int getFaultDetection(final ArrayList<int[]> faults, final int[] defaults) {
+        int num = 0 ;
+        for( int[] f : faults ) {
+            for( int[] test : tests ) {
+
+                // f.length may be greater than test.length (f corresponds to full model)
+                // in this case, the test must be extended by default values
+                int[] ts = new int[f.length];
+                if ( f.length == test.length )
+                    System.arraycopy(test, 0, ts, 0, test.length);
+                else {
+                    System.arraycopy(test, 0, ts, 0, test.length);
+                    System.arraycopy(defaults, test.length, ts, test.length, defaults.length-test.length);
+                }
+
+                // determine whether f can be detected or not
+                int s1 = 0, s2 = 0 ;
+                for( int l=0 ; l<ts.length ; l++ ) {
+                    if( f[l] != -1 ) {
+                        s1++ ;
+                        if( f[l] == ts[l] )
+                            s2++ ;
+                    }
+                }
+                if( s1 == s2 ) {
+                    // detected
+                    num++;
+                    break;
+                }
+            }   // end each test
+        }
+        return num ;
+    }
+
 
     /*
      *  PRIORITIZATION
@@ -160,7 +206,7 @@ public class TestSuite {
             for (int k = 0; k < executionCost.length; k++)
                 executionCost[k] = 0.0;
         } else {
-            Rand rd = new Rand();
+            RandomTool rd = new RandomTool();
             for (int k = 0; k < executionCost.length; k++) {
                 double c = rd.Gaussian(m, s);
                 if (c < 0.0)
@@ -323,7 +369,7 @@ public class TestSuite {
 
     /*
      *  PRIORITIZATION
-     *  t-RFD value = the rate of t-way combination coverage over test case
+     *  t-RFD value = the RATE of t-way combination coverage over test case
      */
     public double getRFD(int[] od, int t) {
         if (od == null)
@@ -354,9 +400,9 @@ public class TestSuite {
             od = this.order;
         long[] cover = new long[tests.length];
 
-        int old_tway = system.t_way;
-        system.setCoveringStrength(t);
-        system.initialization();
+        SUT sut = system.clone();
+        sut.setCoveringStrength(t);
+        sut.initialization();
 
         long pre = 0;
         for (int k = 0; k < tests.length; k++) {
@@ -364,13 +410,12 @@ public class TestSuite {
             pre += cov;
             cover[k] = pre;
         }
-        system.setCoveringStrength(old_tway);
         return cover;
     }
 
     /*
      *  PRIORITIZATION
-     *  Relative t-RFDc value = the rate of t-way combination
+     *  Relative t-RFDc value = the RATE of t-way combination
      *  coverage over time cost
      */
     public double getRFDc(int[] od, int t, double maxTime) {
@@ -434,7 +479,7 @@ public class TestSuite {
 
         double APFDc = 0 ;
 
-        // the number of faulty test cases (a set of m faults revealed by T)
+        // the number of faulty test cases (a set of m randomFaults revealed by T)
         int m = 0 ;
         for( int k = 0 ; k < testing_results.length ; k++ )
             if( testing_results[k] == 0 )

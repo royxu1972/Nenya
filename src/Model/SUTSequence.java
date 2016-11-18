@@ -1,6 +1,6 @@
 package Model;
 
-import Basic.Alg;
+import Basic.ALG;
 import Basic.BitArray;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class SUTSequence {
     public int combUncovered;     // number of uncovered combinations
     public int testCaseCoverMax; // the maximum number of combinations that can be covered by a test case
 
-    // the permutations of t variables
+    // the permutations of t relations
     private HashMap<ArrayList<Integer>, Integer> permutation ;
 
     public SUTSequence( int event, int t_way ) {
@@ -31,12 +31,12 @@ public class SUTSequence {
         this.t_way = t_way ;
 
         // C(n, t) * t!
-        this.nRow = Alg.cal_combine(event, t_way);
-        this.nColumn = Alg.cal_factorial(t_way);
+        this.nRow = ALG.combine(event, t_way);
+        this.nColumn = ALG.cal_factorial(t_way);
         // all possible permutations of any t events
         // e.g. permutation [1, 2, 0] of events [a(0), b(1), c(2)]
         // represents the 3-way event sequence (b, c, a)
-        this.permutation = Alg.cal_permutation(t_way);
+        this.permutation = ALG.cal_permutation(t_way);
     }
 
     /*
@@ -63,7 +63,7 @@ public class SUTSequence {
     public int FitnessValue(final Integer[] test, int FLAG) {
         int fitness = 0;
         // get all combinations of C(event, t_way)
-        int[][] data = Alg.cal_allC(event, t_way);
+        int[][] data = ALG.allC(event, t_way);
 
         for( int i=0 ; i<data.length; i++ ) {
             // get each position
@@ -88,10 +88,10 @@ public class SUTSequence {
     public boolean Covered( int[] seq, int FLAG ) {
         // sort
         int[] seqOrdered = seq.clone();
-        Alg.sortArray(seqOrdered);
+        ALG.sortArray(seqOrdered);
 
         // determine the index of row and column
-        int row = Alg.cal_combine2num(seqOrdered, event, t_way);
+        int row = ALG.combine2num(seqOrdered, event, t_way);
         int column ;
 
         // seq:        (5, 0, 3)
@@ -132,7 +132,7 @@ public class SUTSequence {
         }
         System.out.print("\ncomb:\n");
         for (int i = 0; i < nRow; i++) {
-            int[] p = Alg.cal_num2combine(i, event, t_way);
+            int[] p = ALG.num2combine(i, event, t_way);
             System.out.print(Arrays.toString(p) + " : ");
             System.out.print(comb.getRow(i, nColumn));
             System.out.print("\n");

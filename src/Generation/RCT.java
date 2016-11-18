@@ -34,7 +34,7 @@ public class RCT {
 
     // maximize the t-way coverage
     public void generationFixed(TestSuite ts, int size, int t) {
-        ts.system.setCoveringStrength(t);
+        ts.system.t_way = t;
         generation(ts, 30, size, 1, null);
     }
     // maximize profile coverage
