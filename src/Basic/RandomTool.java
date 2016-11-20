@@ -7,28 +7,31 @@ import java.util.HashSet;
 import java.util.Random;
 
 /**
- * generate random variables
+ * generate random relations
  */
-public class Rand {
+public class RandomTool {
 
-    private Random rand ;
-    public Rand( long seed ) {
-        rand = new Random(seed);
-    }
-    public Rand() {
-        rand = new Random();
+    private Random random;
+    public RandomTool() {
+        random = new Random();
     }
 
-    /*
-     *  generate a random value ~ N(m, s)
+    /**
+     * Generate a random value ~ N(m, s).
+     * @param m mean
+     * @param s standard deviation
+     * @return random value
      */
     public double Gaussian( double m, double s ) {
-        return Math.sqrt(s)*rand.nextGaussian() + m ;
+        return Math.sqrt(s)* random.nextGaussian() + m ;
     }
 
-    /*
-     *  generate a random t-way schema
-     *  example: Schema(2, 4, [3, 3, 3, 3]) -> [-1, -1, 2, 0]
+    /**
+     * Generate a random t-way combination.
+     * @param t strength
+     * @param p number of parameters
+     * @param val number of each parameter value
+     * @return t-way combination
      */
     public int[] Schema( int t, int p, final int[] val ) {
         int[] re = new int[p] ;
@@ -37,24 +40,27 @@ public class Rand {
 
         HashSet<Integer> pos_set = new HashSet<>() ;
         while ( pos_set.size() != t )
-            pos_set.add( rand.nextInt(p) );
+            pos_set.add( random.nextInt(p) );
 
         for( Integer x : pos_set ) {
-            re[x] = rand.nextInt( val[x] );
+            re[x] = random.nextInt( val[x] );
         }
 
         return re ;
     }
 
-    /*
-     *  generate a random t-way schema that exists in the given test suite TS
+    /**
+     * Generate a random t-way combination that exists in the given test suite.
+     * @param t strength
+     * @param p number of parameters
+     * @param val number of each parameter value
+     * @param TS test suite
+     * @return t-way combination
      */
     public int[] SchemaExist( int t, int p, final int[] val, TestSuite TS ) {
         int[] re ;
         while( true ) {
-            // get a random schema
-            re = Schema(t, p, val) ;
-
+            re = Schema(t, p, val) ;  // get a random schema
             // check
             for( int i = 0 ; i < TS.tests.length ; i ++ ) {
                 int flag = 0 ;
@@ -68,24 +74,26 @@ public class Rand {
         }
     }
 
-    /*
-     *  generate a set of random t-way schemas, and make them as evenly spread as possible
-     *  the result will be saved in ArrayList<int[]> Schemas
+    /**
+     * Generate a set of random t-way combinations, which are
+     * as evenly spread as possible.
+     * @param schemas list for generated combinations
+     * @param num the size of required set
+     * @param t strength
+     * @param p number of parameters
+     * @param val number of each parameter value
      */
-    public void SchemaSet( ArrayList<int[]> Schemas, int num, int t, int p, int[] val ) {
-        Schemas.clear();
-
+    public void SchemaSet( ArrayList<int[]> schemas, int num, int t, int p, int[] val ) {
+        schemas.clear();
         for( int i=0 ; i<num ; i++ ) {
             int[] best = new int[p];
             int fit_best = 0 ;
-
-            // generate 10 candidates (FSCS)
+            // generate 10 candidates (FSCS-like)
             for( int j=0 ; j<10 ; j++ ) {
                 int[] s = Schema(t, p, val);
-
                 // evaluate s, hamming distance
                 int fit_s = 2 * t ;
-                for( int[] each : Schemas ) {
+                for( int[] each : schemas ) {
                     int fit = 0 ;
                     for( int k=0 ; k<p ; k++ ) {
                         if( each[k] != s[k] )
@@ -100,10 +108,9 @@ public class Rand {
                     best = s.clone() ;
                 }
             }
-
             // add the best one
             int[] added = best.clone();
-            Schemas.add(added);
+            schemas.add(added);
         }
     }
 }

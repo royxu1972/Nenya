@@ -1,6 +1,6 @@
 package basic;
 
-import Basic.Alg;
+import Basic.ALG;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -11,8 +11,9 @@ public class TestFunction {
 
     @Test
     public void ALG_allC() {
-        int n = 30 , m = 6 ;
-        int[][] data = Alg.cal_allC(n, m);
+        int n = 4 , m = 0 ;
+        System.out.println(ALG.combine(n,m));
+        int[][] data = ALG.allC(n, m);
         for( int[] line : data )
             System.out.println(Arrays.toString(line));
     }
@@ -22,7 +23,7 @@ public class TestFunction {
         int[] v = {3, 4, 2, 3, 3};
         int[] pos = {1, 2};
 
-        int[][] data = Alg.cal_allV(pos, 2, v);
+        int[][] data = ALG.cal_allV(pos, 2, v);
         for( int[] line : data )
             System.out.println(Arrays.toString(line));
     }
@@ -38,7 +39,7 @@ public class TestFunction {
         int[] pos = new int[p1.length+p2.length];
         int[] sch = new int[v1.length+v2.length];
 
-        Alg.combineSortedArray(p1, v1, p2, v2, pos, sch);
+        ALG.combineSortedArray(p1, v1, p2, v2, pos, sch);
         System.out.println(Arrays.toString(pos));
         System.out.println(Arrays.toString(sch));
     }
@@ -50,8 +51,8 @@ public class TestFunction {
         for( int i = 0 ; i < t ; i++ )
             a[i] = i ;
 
-        System.out.println("factorial(" + t + ") = " + Alg.cal_factorial(t));
-        HashMap<ArrayList<Integer>, Integer> p = Alg.cal_permutation(t);
+        System.out.println("factorial(" + t + ") = " + ALG.cal_factorial(t));
+        HashMap<ArrayList<Integer>, Integer> p = ALG.cal_permutation(t);
         p.forEach( (k,v) -> System.out.println(v + "\t = " + k.toString()));
 
         Integer[] kk = {2, 0, 1};

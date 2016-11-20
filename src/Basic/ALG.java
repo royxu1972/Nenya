@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class Alg {
+public class ALG {
 
-    /*
-     *  C(n. m)
+    /**
+     * Calculate binomial coefficient C(n, m)
+     * @param n number of parameters
+     * @param m number of chosen parameters
+     * @return C(n, m)
      */
-    public static int cal_combine(int n, int m) {
+    public static int combine(int n, int m) {
         int ret = 1;
         int p = n;
         for (int x = 1; x <= m; x++, p--) {
@@ -19,62 +22,73 @@ public class Alg {
         return ret;
     }
 
-    /*
-     *  the number of possible value combinations among par[]
+    /**
+     * Calculate the number of all possible value combinations
+     * among a given parameter set.
+     * @param par indexes of chosen parameters
+     * @param value number of values of all parameters
+     * @return number of value combinations among par
      */
-    public static int cal_combineValue(final int[] par, final int[] value) {
+    public static int combineValue(final int[] par, final int[] value) {
         int comb = 1 ;
         for( int k=0 ; k<par.length ; k++ )
             comb = comb * value[par[k]] ;
         return comb ;
     }
 
-    /*
-     *  Get the index of c[] in all possible parameter combinations of C(n, m),
-     *  where index starts at 0
+    /**
+     * Calculate the index of a parameter combination in all possible
+     * parameter combinations of C(n, m), where index starts at 0.
      *
-     *  For example: cal_combine2num({1, 2}, 4, 2) = 3,
-     *  because C(4,2) is as 0 1 , 0 2 , 0 3 , 1 2 , 1 3 , 2 3
+     * combine2num({1, 2}, 4, 2) = 3,
+     * because C(4,2) is as 0 1 , 0 2 , 0 3 , 1 2 , 1 3 , 2 3
+     *
+     * @param c a parameter combination
+     * @param n number of parameters
+     * @param m number of chosen parameters
+     * @return index of c
      */
-    public static int cal_combine2num(final int[] c, int n, int m) {
-        int ret = cal_combine(n, m);
+    public static int combine2num(final int[] c, int n, int m) {
+        int ret = combine(n, m);
         for (int i = 0; i < m; i++) {
-            ret -= cal_combine(n - c[i] - 1, m - i);
+            ret -= combine(n - c[i] - 1, m - i);
         }
         return ret - 1;
     }
 
-
-    /*
-     *  Get the t-th parameter combination of C(n, m), where index starts at 0
+    /**
+     * Calculate the t-th parameter combination of C(n, m),
+     * where index starts at 0.
      *
-     *  For example: cal_num2combine(2, 4, 2) = {0, 3}
-     *  because C(4,2) is as 0 1 , 0 2 , 0 3 , 1 2 , 1 3 , 2 3
+     * num2combine(2, 4, 2) = {0, 3}
+     * because C(4,2) is as 0 1 , 0 2 , 0 3 , 1 2 , 1 3 , 2 3
+     *
+     * @param t index of required parameter combination
+     * @param n number of parameters
+     * @param m number of chosen parameters
+     * @return the t-th parameter combination
      */
-    public static int[] cal_num2combine(int t, int n, int m) {
+    public static int[] num2combine(int t, int n, int m) {
         int[] ret = new int[m];
         t = t + 1;
         int j = 1, k;
-
         for (int i = 0; i < m; ret[i++] = j++) {
-            for (; t > (k = cal_combine(n - j, m - i - 1)); t -= k, j++) ;
+            for (; t > (k = combine(n - j, m - i - 1)); t -= k, j++) ;
         }
-
         for (int p = 0; p < m; p++)
             ret[p] = ret[p] - 1;
         return ret;
     }
 
-    /*
-     *  Get all parameter combinations of C(n, m)
+    /**
+     * Calculate all parameter combinations of C(n, m).
+     * num2combine(4, 2) = {{0, 1}, {0, 2}, {0, 3}, {1, 2}, {1, 3}, {2, 3}}
      *
-     *  OUTPUT:
-     *  data[][], which has cal_combine(n, m) rows and each row's length is m
-     *
-     *  For example:
-     *  cal_num2combine(4, 2) = {{0, 1}, {0, 2}, {0, 3}, {1, 2}, {1, 3}, {2, 3}}
+     * @param n number of parameters
+     * @param m number of chosen parameters
+     * @return all parameter combinations, each in a row
      */
-    public static int[][] cal_allC(int n, int m) {
+    public static int[][] allC(int n, int m) {
         int[] temp = new int[m];        // current combination
         int[] temp_max = new int[m];    // the maximum value of each element
         for (int k = 0; k < m; k++) {
@@ -83,10 +97,9 @@ public class Alg {
         }
         int end = m - 1;
 
-        int[][] data = new int[cal_combine(n, m)][];
-
+        int[][] data = new int[combine(n, m)][];
         int already = 0;
-        while (already < cal_combine(n, m)) {
+        while (already < combine(n, m)) {
             // add current combination
             data[already] = new int[m];
             System.arraycopy(temp, 0, data[already], 0, m);
@@ -95,14 +108,14 @@ public class Alg {
             temp[end] = temp[end] + 1; // 末位加1
             int ptr = end;
             while (ptr > 0) {
-                if (temp[ptr] > temp_max[ptr]) { // 超过该位允许最大值
+                if (temp[ptr] > temp_max[ptr]) {     // 超过该位允许最大值
                     temp[ptr-1] = temp[ptr-1] + 1;   // 前一位加1
                     ptr--;
                 } else {
                     break;
                 }
             }
-            if (temp[ptr] <= temp_max[ptr]) { // 若该位值不是最大，后面每位在前一位基础上加1
+            if (temp[ptr] <= temp_max[ptr]) {   // 若该位值不是最大，后面每位在前一位基础上加1
                 for (int i = ptr+1; i < m; i++) {
                     temp[i] = temp[i-1] + 1;
                 }
@@ -112,17 +125,21 @@ public class Alg {
         return data ;
     }
 
-
-    /*
-     *  Get the index of a t-way value combination sch[] among parameters pos[],
-     *  where index starts at 0
+    /**
+     * Calculate the index of a t-way value combination among
+     * given parameters, where index starts at 0.
      *
-     *  For example:
-     *  cal_val2num({0, 1}, {1, 2}, 2, {3, 3, 3, 3}) = 5, as the orders of all
-     *  3^2 value combinations among parameters {0, 1} are 0 0, 0 1, 0 2, 1 0,
-     *  1 1, 1 2, 2 0, 2 1, 2 2
+     * val2num({0, 1}, {1, 2}, 2, {3, 3, 3, 3}) = 5, as the
+     * orders of all 3^2 value combinations among parameters {0, 1}
+     * are 0 0, 0 1, 0 2, 1 0, 1 1, 1 2, 2 0, 2 1, 2 2
+     *
+     * @param pos indexes of chosen parameters
+     * @param sch a value combination
+     * @param t  number of chosen parameters
+     * @param value number of values of all parameters
+     * @return index of sch
      */
-    public static int cal_val2num(final int[] pos, final int[] sch, int t, final int[] value) {
+    public static int val2num(final int[] pos, final int[] sch, int t, final int[] value) {
         int com = 1;
         int ret = 0;
         for (int k = t - 1; k >= 0; k--) {
@@ -132,15 +149,18 @@ public class Alg {
         return ret;
     }
 
-
-    /*
-     *  Get the i-th t-way value combination among parameter pos[], where index
-     *  starts at 0
+    /**
+     * Calculate the i-th t-way value combination among a given
+     * parameter set, where index starts at 0.
+     * num2val(4, {1, 2}, 2, {3, 3, 3, 3}) = {1, 1}
      *
-     *  For example:
-     *  cal_num2val(4, {1, 2}, 2, {3, 3, 3, 3}) = {1, 1}
+     * @param i index of required value combination
+     * @param pos indexes of chosen parameters
+     * @param t number of chosen parameters
+     * @param value number of values of all parameters
+     * @return the i-th value combination
      */
-    public static int[] cal_num2val(int i, final int[] pos, int t, final int[] value) {
+    public static int[] num2val(int i, final int[] pos, int t, final int[] value) {
         int[] ret = new int[t];
 
         int div = 1;
@@ -156,16 +176,15 @@ public class Alg {
         return ret;
     }
 
-
-    /*
-     *  Get all value combinations among a fixed number of parameters
+    /**
+     * Calculate all t-way value combinations among a given parameter set.
+     * cal_allV({0, 1}, 2, {3, 3, 3, 3}) =
+     * {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}}
      *
-     *  OUTPUT:
-     *  data[][], which has (v^t) rows and each row's length is t
-     *
-     *  For example:
-     *  cal_allV({0, 1}, 2, {3, 3, 3, 3}) = {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2},
-     *                                       {2, 0}, {2, 1}, {2, 2}}
+     * @param pos indexes of chosen parameters
+     * @param t number of chosen parameters
+     * @param value number of values of all parameters
+     * @return all value combinations among pos
      */
     public static int[][] cal_allV(final int[] pos, int t, final int[] value) {
         int[] counter = new int[t];         // current combination
@@ -200,9 +219,17 @@ public class Alg {
         return data;
     }
 
-    /*
-     *  Given two sorted arrays p1 (v1) and p2 (v2), combine them into a new
-     *  sorted array pos (val).
+    /**
+     * Combine two sorted arrays into a new sorted array. The ordering
+     * is conducted on primary arrays, while values in additional arrays
+     * will be exchanged at the same time.
+     *
+     * @param p1 first array
+     * @param v1 additional array of p1
+     * @param p2 second array
+     * @param v2 additional array of p2
+     * @param pos new array
+     * @param sch additional array of pos
      */
     public static void combineSortedArray(int[] p1, int[] v1, int[] p2, int[] v2, int[] pos, int[] sch) {
         int i ; // index of p1
@@ -236,8 +263,10 @@ public class Alg {
         }
     }
 
-    /*
-     *  Get t!
+    /**
+     * Calculate the factorial of a non-negative integer.
+     * @param t input integer
+     * @return t!
      */
     public static int cal_factorial( int t ) {
         int n = 1 ;
@@ -246,11 +275,12 @@ public class Alg {
         return n ;
     }
 
-    /*
-     *  Get permutations of t variables {0, 1, 2, ..., t-1}
+    /**
+     * Calculate all permutations of t relations {0, 1, 2, ..., t-1}
+     * [1] The Countdown QuickPerm Algorithm, http://www.quickperm.org/
      *
-     *  The Countdown QuickPerm Algorithm
-     *  http://www.quickperm.org/
+     * @param t the number of relations
+     * @return all permutations
      */
     public static HashMap<ArrayList<Integer>, Integer> cal_permutation(int t ) {
         HashMap<ArrayList<Integer>, Integer> permutation = new HashMap<>();
@@ -287,8 +317,9 @@ public class Alg {
         return permutation;
     }
 
-    /*
-     *  quick sort, ascending solution
+    /**
+     * Quick sort with ascending order.
+     * @param a primary array
      */
     public static void sortArray(int[] a) {
         sortArray(a, 0, a.length-1);
@@ -300,16 +331,14 @@ public class Alg {
             j = right;
             temp = a[i];
             while (i != j) {
-                while (a[j] >= temp && i < j) {
+                while (a[j] >= temp && i < j)
                     j--;
-                }
                 if (i < j) {
                     a[i] = a[j];
                     i++;
                 }
-                while (a[i] <= temp && i < j) {
+                while (a[i] <= temp && i < j)
                     i++;
-                }
                 if (i < j) {
                     a[j] = a[i];
                     j--;
@@ -321,11 +350,11 @@ public class Alg {
         }
     }
 
-
-    /*
-     *  quick sort an array a and swap corresponding elements in b simultaneously
-     *  version = 0: ascending solution
-     *  version = 1: descending solution
+    /**
+     * Quick sort by a and swap corresponding elements in b simultaneously.
+     * @param a primary array
+     * @param b additional array
+     * @param version 0 (ascending) or 1 (descending)
      */
     public static void sortArray(int[] a, int[] b, int version) {
         sortArray(a, b, 0, a.length - 1, version);
@@ -339,17 +368,15 @@ public class Alg {
             temp = a[i];
             temp_1 = b[i];
             while (i != j) {
-                while (a[j] >= temp && i < j) {
+                while (a[j] >= temp && i < j)
                     j--;
-                }
                 if (i < j) {
                     a[i] = a[j];
                     b[i] = b[j];
                     i++;
                 }
-                while (a[i] <= temp && i < j) {
+                while (a[i] <= temp && i < j)
                     i++;
-                }
                 if (i < j) {
                     a[j] = a[i];
                     b[j] = b[i];
@@ -368,17 +395,15 @@ public class Alg {
             temp = a[i];
             temp_1 = b[i];
             while (i != j) {
-                while (a[j] <= temp && i < j) {
+                while (a[j] <= temp && i < j)
                     j--;
-                }
                 if (i < j) {
                     a[i] = a[j];
                     b[i] = b[j];
                     i++;
                 }
-                while (a[i] >= temp && i < j) {
+                while (a[i] >= temp && i < j)
                     i++;
-                }
                 if (i < j) {
                     a[j] = a[i];
                     b[j] = b[i];
@@ -392,15 +417,15 @@ public class Alg {
         }
     }
 
-
-    /*
-     *  particularly designed for reduction
-     *  quick sort an array and swap corresponding elements in 2D-array simultaneously
+    /**
+     * Quick sort by a and swap corresponding elements in b simultaneously.
+     * @param a primary array
+     * @param b additional 2D array
      */
-    public static void sortArray2D( int[] a, int[][] b ) {
-        sortArray2D(a, b, 0, a.length - 1);
+    public static void sortArray(int[] a, int[][] b ) {
+        sortArray(a, b, 0, a.length - 1);
     }
-    public static void sortArray2D( int[] a, int[][] b, int left, int right )
+    public static void sortArray(int[] a, int[][] b, int left, int right )
     {
         int i, j ;
         int temp ;
@@ -439,9 +464,23 @@ public class Alg {
             for( int k=0 ; k<len ; k++ )
                 b[i][k] = tpc[k];
 
-            sortArray2D(a, b, left, i - 1);
-            sortArray2D(a, b, i+1 , right);
+            sortArray(a, b, left, i - 1);
+            sortArray(a, b, i+1 , right);
         }
+    }
+
+    /**
+     * Determine whether an integer array exists in an ArrayList
+     * @param list target ArrayList
+     * @param t candidate array
+     * @return true or false
+     */
+    public static boolean inList( final ArrayList<int[]> list, final int[] t ) {
+        for( final int[] item : list){
+            if(Arrays.equals(item, t))
+                return true;
+        }
+        return false;
     }
 
 }

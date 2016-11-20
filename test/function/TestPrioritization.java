@@ -19,14 +19,13 @@ public class TestPrioritization {
 
     @Before
     public void init() {
-        int p = 10 ;
+        int p = 20 ;
         int[] v = new int[p] ;
         for( int k=0 ; k<p ; k++ )
-            v[k] = 2 ;
+            v[k] = 3 ;
         int t = 2 ;
         ts = new TestSuite(p, v, t);
-        AETG gen = new AETG();
-        gen.generation(ts);
+        new AETG().generation(ts);
         re = new ReorderArray();
     }
 
@@ -45,8 +44,8 @@ public class TestPrioritization {
         re.toGASwitchOrder(ts);
         System.out.println("GA,      cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
 
-        re.toLKHSwitchOrder(ts);
-        System.out.println("LKH,     cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
+        //re.toLKHSwitchOrder(ts);
+        //System.out.println("LKH,     cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
 
         re.toGreedyHybridOrder(ts);
         System.out.println("hybrid,  cost = " + ts.getTotalSwitchingCost(null) + ", 2-RFD = " + ts.getRFD(null, 2));
@@ -81,7 +80,7 @@ public class TestPrioritization {
                 ORDER.COVERAGE,
                 ORDER.GREEDY,
                 ORDER.GA,
-                ORDER.LKH,
+                //ORDER.LKH,
                 ORDER.HYBRID,
                 ORDER.MO
         };

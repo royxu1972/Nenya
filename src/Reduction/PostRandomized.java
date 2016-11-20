@@ -1,6 +1,6 @@
 package Reduction;
 
-import Basic.Alg;
+import Basic.ALG;
 import Model.SUT;
 import Model.TestSuite;
 
@@ -77,11 +77,11 @@ public class PostRandomized {
                 tempCA[i][j] = -1 ;
 
         // for each t-way parameter combination
-        int[][] p_Comb = Alg.cal_allC(column, sut.t_way);
+        int[][] p_Comb = ALG.allC(column, sut.t_way);
         for( int[] pos : p_Comb ) {
 
             // the number of all possible value combinations
-            int num = Alg.cal_combineValue(pos, sut.value);
+            int num = ALG.combineValue(pos, sut.value);
             // the number of appearances of each value combinations
             int[] cover = new int[num] ;
             // the index of the first appearances
@@ -98,7 +98,7 @@ public class PostRandomized {
                     sch[k] = coveringArray[j][pos[k]];
 
                 // compute the index value of pos-sch
-                int index = Alg.cal_val2num(pos, sch, sut.t_way, sut.value);
+                int index = ALG.val2num(pos, sch, sut.t_way, sut.value);
 
                 cover[index]++ ;
                 if( cover[index] == 1 )
@@ -134,8 +134,8 @@ public class PostRandomized {
         int[] count1 = count.clone();
 
         // reorder
-        Alg.sortArray2D(count, relative);
-        Alg.sortArray2D(count1, coveringArray);
+        ALG.sortArray(count, relative);
+        ALG.sortArray(count1, coveringArray);
 
         // find the first row which has *
         int begin_star = 0 ;
@@ -157,7 +157,7 @@ public class PostRandomized {
         if( count[row-1] != column && count[row-1] != 0 ) {
 
             // for each t-way parameter combination of the last row
-            int[][] pComb = Alg.cal_allC(sut.parameter, sut.t_way);
+            int[][] pComb = ALG.allC(sut.parameter, sut.t_way);
             for( int[] p_row : pComb ) {
 
                 // determine whether it is a fixed combination
@@ -249,11 +249,11 @@ public class PostRandomized {
                 tempCA[i][j] = -1 ;
 
         // for each t-way parameter combination
-        int[][] p_Comb = Alg.cal_allC(column, sut.t_way);
+        int[][] p_Comb = ALG.allC(column, sut.t_way);
         for( int[] pos : p_Comb ) {
 
             // the number of all possible value combinations
-            int num = Alg.cal_combineValue(pos, sut.value);
+            int num = ALG.combineValue(pos, sut.value);
             // the appearances of each value combinations
             int[] cover = new int[num] ;
             for( int k=0 ; k<num ; k++ )
@@ -266,7 +266,7 @@ public class PostRandomized {
                     sch[k] = coveringArray[j][pos[k]];
 
                 // compute the index value of pos-sch
-                int index = Alg.cal_val2num(pos, sch, sut.t_way, sut.value);
+                int index = ALG.val2num(pos, sch, sut.t_way, sut.value);
 
                 // the first appearance will be set to original values
                 if( cover[index] == 0 ) {

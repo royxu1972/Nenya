@@ -28,3 +28,6 @@ proguard/
 .gradle
 build/
 local.properties
+
+# Data
+resources/data
